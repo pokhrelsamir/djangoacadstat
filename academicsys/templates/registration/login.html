@@ -1,13 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
 
-{% extends 'base/base.html' %}
-{% block content %}
-
-<h3>Login</h3>
+<h2>Login</h2>
 
 <form method="post">
-{% csrf_token %}
-{{ form.as_p }}
-<button class="btn btn-success">Login</button>
+    {% csrf_token %}
+
+    <label>Username</label>
+    <input type="text" name="username">
+
+    <br><br>
+
+    <label>Password</label>
+    <input type="password" name="password">
+
+    <br><br>
+
+    <button type="submit">Login</button>
+
 </form>
 
-{% endblock %}
+</body>
+</html>

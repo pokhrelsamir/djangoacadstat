@@ -7,13 +7,13 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
-'django.contrib.admin',
-'django.contrib.auth',
-'django.contrib.contenttypes',
-'django.contrib.sessions',
-'django.contrib.messages',
-'django.contrib.staticfiles',
-'core',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -42,14 +42,14 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'academicsys.wsgi.application'
 
 DATABASES = {
-'default': {
-'ENGINE': 'django.db.backends.postgresql',
-'NAME': 'academics_db',
-'USER': 'postgres',
-'PASSWORD': 'password',
-'HOST': 'localhost',
-'PORT': '5432',
-}
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'acadstat',
+        'USER': 'shree',
+        'PASSWORD': 'password123',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
 }
 
 LANGUAGE_CODE = 'en-us'
@@ -62,3 +62,7 @@ STATICFILES_DIRS = [BASE_DIR / 'academicsys/static']
 
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'

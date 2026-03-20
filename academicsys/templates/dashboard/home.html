@@ -1,10 +1,57 @@
-
 {% extends 'base/base.html' %}
+
 {% block content %}
 
-<h2>Welcome to Academic Analytics System</h2>
-<p>This system visualizes student academic performance.</p>
+<div class="home-page">
+    
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-content">
+            <!-- Logo Section - Placeholder for user to add logo -->
+            <div class="logo-section">
+                <div class="logo-placeholder">
+                    <span class="logo-icon">🎓</span>
+                    <span class="logo-text">AcadSys</span>
+                </div>
+                <p class="logo-tagline">Academic Performance Analytics</p>
+            </div>
+            
+            <h1 class="hero-title">Welcome to Academic Analytics System</h1>
+            <p class="hero-subtitle">
+                Visualize and analyze student academic performance with ease. 
+                Track marks, monitor progress, and generate insightful reports.
+            </p>
+            
+            <div class="hero-buttons">
+                <a href="/login" class="btn btn-primary">
+                    <span>🔑</span> Login
+                </a>
+                <a href="/admin" class="btn btn-secondary">
+                    <span>⚙️</span> Admin Panel
+                </a>
+            </div>
+        </div>
+        
+        <!-- Feature Cards -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Analytics</h3>
+                <p>Comprehensive performance analytics</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>Marks Management</h3>
+                <p>Easy marks entry and tracking</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>Reports</h3>
+                <p>Generate detailed reports</p>
+            </div>
+        </div>
+    </div>
 
-<a href="/accounts/login/" class="btn btn-primary">Login</a>
+</div>
 
 {% endblock %}

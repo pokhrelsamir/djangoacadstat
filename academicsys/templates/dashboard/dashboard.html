@@ -1,3 +1,50 @@
-<h1>Welcome {{ user.username }}</h1>
+{% extends 'base/base.html' %}
 
-<a href="/logout/">Logout</a>
+{% block content %}
+
+<div class="dashboard">
+
+    <!-- Welcome Message -->
+    <div class="welcome-message">
+        Welcome back, <strong>{{ user.username }}</strong>! Here's an overview of your academic data.
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="cards">
+
+        <div class="card">
+            <h3>Total Students</h3>
+            <p>{{ total_students }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Subjects</h3>
+            <p>{{ total_subjects }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Average Score</h3>
+            <p>{{ average_marks }}%</p>
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="/add-marks/" class="action-btn">
+                <span>➕</span> Add Marks
+            </a>
+            <a href="/marks-list/" class="action-btn">
+                <span>📋</span> View All Marks
+            </a>
+            <a href="/admin/" class="action-btn">
+                <span>⚙️</span> Admin Panel
+            </a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

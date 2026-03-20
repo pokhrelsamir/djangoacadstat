@@ -45,7 +45,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'acadstat',
-        'USER': 'shree',
+        'USER': 'shreeadhikari',
         'PASSWORD': 'password123',
         'HOST': 'localhost',
         'PORT': '5432',
@@ -61,7 +61,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'academicsys/static']
 
 LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/'
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'

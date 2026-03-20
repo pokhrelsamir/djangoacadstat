@@ -1,0 +1,17 @@
+<h2>All Marks</h2>
+<table border="1">
+    <tr>
+        <th>Student</th>
+        <th>Subject</th>
+        <th>Marks Obtained</th>
+        <th>Total Marks</th>
+    </tr>
+    {% for mark in result %}
+    <tr>
+        <td>{{ mark.student }}</td>
+        <td>{{ mark.subject }}</td>
+        <td>{{ mark.marks_obtained }}</td>
+        <td>{{ mark.total_marks }}</td>
+    </tr>
+    {% endfor %}
+</table>

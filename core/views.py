@@ -1,8 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from .forms import ResultForm
 from .models import Result, Student, Subject
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
+import json
 
 
 # 🏠 HOME VIEW (LANDING PAGE)
@@ -75,5 +78,34 @@ def add_marks(request):
 # 📋 MARKS LIST
 @login_required
 def marks_list(request):
-    all_marks = Result.objects.all()
+    all_marks = Result.objects.all().select_related('student', 'subject')
     return render(request, 'dashboard/marks_list.html', {'result': all_marks})
+
+# ✏️ EDIT MARKS
+@login_required
+@require_http_methods(["POST"])
+def edit_marks(request, mark_id):
+    """API endpoint to update marks"""
+    try:
+        result = get_object_or_404(Result, id=mark_id)
+        data = json.loads(request.body)
+        
+        result.marks_obtained = float(data.get('marks_obtained', 0))
+        result.total_marks = float(data.get('total_marks', 100))
+        result.save()
+        
+        return JsonResponse({'success': True, 'message': 'Marks updated successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
+
+# 🗑️ DELETE MARKS
+@login_required
+@require_http_methods(["POST"])
+def delete_marks(request, mark_id):
+    """API endpoint to delete marks"""
+    try:
+        result = get_object_or_404(Result, id=mark_id)
+        result.delete()
+        return JsonResponse({'success': True, 'message': 'Marks deleted successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)

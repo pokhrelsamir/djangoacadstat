@@ -60,6 +60,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'academicsys/static']
 
+# Admin custom settings
+ADMIN_SITE_HEADER = 'Academic System'
+ADMIN_SITE_TITLE = 'Academic Admin'
+ADMIN_INDEX_TITLE = 'Dashboard'
+
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 

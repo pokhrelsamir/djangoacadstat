@@ -41,12 +41,23 @@ TEMPLATES = [{
 
 WSGI_APPLICATION = 'academicsys.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'acadstat',
+#         'USER': 'shreeadhikari',
+#         'PASSWORD': 'password123',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'acadstat',
-        'USER': 'shreeadhikari',
-        'PASSWORD': 'password123',
+        'NAME': 'acadstatmain',
+        'USER': 'username',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '5432',
     }

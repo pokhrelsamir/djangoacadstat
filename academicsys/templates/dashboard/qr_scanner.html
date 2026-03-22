@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner - Academic System</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- QR Code Reader Library -->
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <!-- Theme detection script to prevent flash -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    
+    <style>
+        .scanner-page-wrapper {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .scanner-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .scanner-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .scanner-header h2 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .scanner-header p {
+            color: var(--text-secondary);
+        }
+        
+        #qr-reader {
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            min-height: 300px;
+        }
+        
+        #qr-reader video {
+            border-radius: 15px;
+        }
+        
+        #qr-reader__scan_region {
+            background: #1a1a1a;
+        }
+        
+        #qr-reader__dashboard {
+            padding: 15px;
+        }
+        
+        #qr-reader__dashboard_section {
+            padding: 10px;
+        }
+        
+        .scanner-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .scanner-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-stop {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-camera {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .scanner-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .scan-result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+        
+        .scan-result.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            display: block;
+        }
+        
+        .scan-result.error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+            display: block;
+        }
+        
+        .scan-result .student-info {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .scan-result .scan-time {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .manual-entry {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .manual-entry h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .manual-entry form {
+            display: flex;
+            gap: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .manual-entry input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid var(--input-border);
+            font-size: 1rem;
+        }
+        
+        .manual-entry button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .camera-select {
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .camera-select select {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 600px) {
+            .scanner-card {
+                padding: 20px;
+            }
+            
+            #qr-reader {
+                min-height: 250px;
+            }
+            
+            .scanner-controls {
+                flex-direction: column;
+            }
+            
+            .scanner-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <h2 class="logo">🎓 AcadStat</h2>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            {% if user.is_authenticated %}
+                <a href="/dashboard/">Dashboard</a>
+                <a href="/qr-codes/">QR Codes</a>
+                <a href="/attendance/">Attendance</a>
+                <a href="/logout/">Logout</a>
+            {% else %}
+                <a href="/login/">Login</a>
+            {% endif %}
+            
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+        <div class="scanner-page-wrapper">
+            <a href="/dashboard/" class="back-btn" style="display: inline-flex; align-items: center; gap: 8px; color: #667eea; text-decoration: none; font-weight: 500; margin-bottom: 20px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Dashboard
+            </a>
+            
+            <div class="scanner-card">
+                <div class="scanner-header">
+                    <h2>📷 QR Code Attendance Scanner</h2>
+                    <p>Point your camera at a student's QR code to mark attendance</p>
+                </div>
+                
+                <!-- QR Reader -->
+                <div id="qr-reader"></div>
+                
+                <!-- Camera Selection -->
+                <div class="camera-select">
+                    <label for="cameraSelect" style="color: var(--text-secondary); margin-right: 10px;">Select Camera:</label>
+                    <select id="cameraSelect">
+                        <option value="">Loading cameras...</option>
+                    </select>
+                </div>
+                
+                <!-- Scanner Controls -->
+                <div class="scanner-controls">
+                    <button class="scanner-btn btn-start" id="startBtn" onclick="startScanner()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        Start Scanner
+                    </button>
+                    <button class="scanner-btn btn-stop" id="stopBtn" onclick="stopScanner()" style="display: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="6" width="12" height="12"/>
+                        </svg>
+                        Stop Scanner
+                    </button>
+                </div>
+                
+                <!-- Scan Result Display -->
+                <div id="scanResult" class="scan-result"></div>
+                
+                <!-- Manual Entry -->
+                <div class="manual-entry">
+                    <h3>Or enter QR data manually:</h3>
+                    <form onsubmit="manualScan(event)">
+                        <input type="text" id="manualQR" placeholder="Enter QR code data..." required>
+                        <button type="submit">Mark Attendance</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let html5QrCode;
+        let isScanning = false;
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            html5QrCode = new Html5Qrcode("qr-reader");
+            loadCameras();
+            
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            
+            updateThemeIcon(html.getAttribute('data-theme'));
+            
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+            });
+            
+            function updateThemeIcon(theme) {
+                const sunIcon = themeToggle.querySelector('.sun-icon');
+                const moonIcon = themeToggle.querySelector('.moon-icon');
+                if (theme === 'dark') {
+                    sunIcon.style.display = 'block';
+                    moonIcon.style.display = 'none';
+                } else {
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'block';
+                }
+            }
+        });
+        
+        // Load available cameras
+        async function loadCameras() {
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                const select = document.getElementById('cameraSelect');
+                select.innerHTML = '';
+                
+                if (devices && devices.length) {
+                    devices.forEach((device, index) => {
+                        const option = document.createElement('option');
+                        option.value = device.id;
+                        option.text = device.label || `Camera ${index + 1}`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">No cameras found</option>';
+                }
+            } catch (err) {
+                console.error('Error loading cameras:', err);
+                document.getElementById('cameraSelect').innerHTML = '<option value="">Camera access denied</option>';
+            }
+        }
+        
+        // Start QR Scanner
+        function startScanner() {
+            const cameraId = document.getElementById('cameraSelect').value;
+            if (!cameraId) {
+                alert('Please select a camera first');
+                return;
+            }
+            
+            const config = { 
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+            
+            html5QrCode.start(
+                cameraId,
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).then(() => {
+                isScanning = true;
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'inline-flex';
+            }).catch(err => {
+                console.error('Error starting scanner:', err);
+                alert('Failed to start camera. Please ensure camera permissions are granted.');
+            });
+        }
+        
+        // Stop QR Scanner
+        function stopScanner() {
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop().then(() => {
+                    isScanning = false;
+                    document.getElementById('startBtn').style.display = 'inline-flex';
+                    document.getElementById('stopBtn').style.display = 'none';
+                }).catch(err => {
+                    console.error('Error stopping scanner:', err);
+                });
+            }
+        }
+        
+        // Handle successful QR scan
+        function onScanSuccess(decodedText, decodedResult) {
+            // Pause scanning briefly to prevent duplicate scans
+            if (html5QrCode && isScanning) {
+                html5QrCode.pause();
+            }
+            
+            processQRCode(decodedText);
+            
+            // Resume after 3 seconds
+            setTimeout(() => {
+                if (html5QrCode && isScanning) {
+                    html5QrCode.resume();
+                }
+            }, 3000);
+        }
+        
+        // Handle scan failure
+        function onScanFailure(error) {
+            // This is called continuously when no QR code is found
+            // console.warn(`Code scan error = ${error}`);
+        }
+        
+        // Process QR code data
+        function processQRCode(qrData) {
+            const deviceInfo = navigator.userAgent;
+            
+            fetch('/process-qr-scan/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    qr_data: qrData,
+                    device_info: deviceInfo
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('scanResult');
+                resultDiv.className = 'scan-result ' + (data.success ? 'success' : 'error');
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="student-info">✓ ${data.message}</div>
+                        <div class="scan-time">Student: ${data.student_name} | Time: ${data.time}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="student-info">✗ ${data.message}</div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const resultDiv = document.getElementById('scanResult');
+                resultDiv.className = 'scan-result error';
+                resultDiv.innerHTML = `<div class="student-info">✗ Error processing QR code</div>`;
+            });
+        }
+        
+        // Manual QR code entry
+        function manualScan(event) {
+            event.preventDefault();
+            const qrData = document.getElementById('manualQR').value;
+            
+            if (qrData) {
+                processQRCode(qrData);
+                document.getElementById('manualQR').value = '';
+            }
+        }
+        
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

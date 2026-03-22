@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AcadStat - Mobile QR Scanner</title>
+    
+    <!-- QR Code Reader Library -->
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .scanner-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        #qr-reader {
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            min-height: 300px;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-stop {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+        
+        .result.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            display: block;
+        }
+        
+        .result.error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+            display: block;
+        }
+        
+        .result h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .camera-select {
+            margin-top: 15px;
+        }
+        
+        .camera-select select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            font-size: 1rem;
+        }
+        
+        .manual-entry {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .manual-entry input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        .manual-entry button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .app-info {
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scanner-container">
+        <div class="header">
+            <h1>📷 AcadStat Scanner</h1>
+            <p>Scan student QR code to mark attendance</p>
+        </div>
+        
+        <div id="qr-reader"></div>
+        
+        <div class="camera-select">
+            <select id="cameraSelect">
+                <option value="">Select Camera...</option>
+            </select>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-start" id="startBtn" onclick="startScanner()">Start Scanner</button>
+            <button class="btn btn-stop" id="stopBtn" onclick="stopScanner()" style="display: none;">Stop Scanner</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="manual-entry">
+            <p style="text-align: center; color: #666; margin-bottom: 10px;">Or enter QR code data manually:</p>
+            <input type="text" id="manualQR" placeholder="Enter QR code data...">
+            <button onclick="manualScan()">Mark Attendance</button>
+        </div>
+        
+        <div class="app-info">
+            AcadStat Mobile App v1.0
+        </div>
+    </div>
+
+    <script>
+        let html5QrCode;
+        let isScanning = false;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            html5QrCode = new Html5Qrcode("qr-reader");
+            loadCameras();
+        });
+        
+        async function loadCameras() {
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                const select = document.getElementById('cameraSelect');
+                select.innerHTML = '';
+                
+                if (devices && devices.length) {
+                    devices.forEach((device, index) => {
+                        const option = document.createElement('option');
+                        option.value = device.id;
+                        option.text = device.label || `Camera ${index + 1}`;
+                        select.appendChild(option);
+                    });
+                    
+                    // Auto-select back camera on mobile
+                    const backCamera = devices.find(d => 
+                        d.label.toLowerCase().includes('back') || 
+                        d.label.toLowerCase().includes('rear')
+                    );
+                    if (backCamera) {
+                        select.value = backCamera.id;
+                    }
+                } else {
+                    select.innerHTML = '<option value="">No cameras found</option>';
+                }
+            } catch (err) {
+                console.error('Error loading cameras:', err);
+                document.getElementById('cameraSelect').innerHTML = '<option value="">Camera access denied</option>';
+            }
+        }
+        
+        function startScanner() {
+            const cameraId = document.getElementById('cameraSelect').value;
+            if (!cameraId) {
+                alert('Please select a camera first');
+                return;
+            }
+            
+            const config = { 
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+            
+            html5QrCode.start(
+                cameraId,
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).then(() => {
+                isScanning = true;
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'block';
+            }).catch(err => {
+                console.error('Error starting scanner:', err);
+                alert('Failed to start camera. Please ensure camera permissions are granted.');
+            });
+        }
+        
+        function stopScanner() {
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop().then(() => {
+                    isScanning = false;
+                    document.getElementById('startBtn').style.display = 'block';
+                    document.getElementById('stopBtn').style.display = 'none';
+                }).catch(err => {
+                    console.error('Error stopping scanner:', err);
+                });
+            }
+        }
+        
+        function onScanSuccess(decodedText, decodedResult) {
+            if (html5QrCode && isScanning) {
+                html5QrCode.pause();
+            }
+            
+            processQRCode(decodedText);
+            
+            setTimeout(() => {
+                if (html5QrCode && isScanning) {
+                    html5QrCode.resume();
+                }
+            }, 3000);
+        }
+        
+        function onScanFailure(error) {
+            // Continuously called when no QR code found
+        }
+        
+        function processQRCode(qrData) {
+            const deviceInfo = navigator.userAgent;
+            
+            fetch('/process-qr-scan/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    qr_data: qrData,
+                    device_info: deviceInfo
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = 'result ' + (data.success ? 'success' : 'error');
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <h3>✓ ${data.message}</h3>
+                        <p>Student: ${data.student_name}</p>
+                        <p>Time: ${data.time}</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<h3>✗ ${data.message}</h3>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>✗ Error processing QR code</h3>`;
+            });
+        }
+        
+        function manualScan() {
+            const qrData = document.getElementById('manualQR').value;
+            if (qrData) {
+                processQRCode(qrData);
+                document.getElementById('manualQR').value = '';
+            }
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

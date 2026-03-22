@@ -21,7 +21,7 @@
 
     <!-- Navbar -->
     <nav class="navbar">
-        <h2 class="logo">🎓 AcadSys</h2>
+        <h2 class="logo">🎓 AcadStat </h2>
         <div class="nav-links">
             <a href="/">Home</a>
             {% if user.is_authenticated %}
@@ -75,6 +75,11 @@
                     <h3>Average Score</h3>
                     <p>{{ average_marks }}%</p>
                 </div>
+
+                <div class="card">
+                    <h3>Today's Attendance</h3>
+                    <p>{{ today_attendance }}</p>
+                </div>
             </div>
 
             <!-- Quick Actions -->
@@ -86,6 +91,15 @@
                     </a>
                     <a href="/marks-list/" class="action-btn">
                         <span>📋</span> View All Marks
+                    </a>
+                    <a href="/qr-codes/" class="action-btn">
+                        <span>📱</span> Student QR Codes
+                    </a>
+                    <a href="/qr-scanner/" class="action-btn">
+                        <span>📷</span> QR Scanner
+                    </a>
+                    <a href="/attendance/" class="action-btn">
+                        <span>✅</span> Attendance
                     </a>
                     <a href="/admin/" class="action-btn">
                         <span>⚙️</span> Admin Panel

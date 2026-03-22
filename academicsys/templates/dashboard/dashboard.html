@@ -6,12 +6,11 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
-    <!-- Theme detection script to prevent flash -->
+    <!-- Theme detection script - Default to dark theme -->
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+            const theme = savedTheme || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>

@@ -3,15 +3,17 @@
 
 {% block extrahead %}
 {{ block.super }}
-<!-- Theme detection script to prevent flash -->
+<!-- Theme detection script - Default to dark theme -->
 <script>
     (function() {
         const savedTheme = localStorage.getItem('theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        const theme = savedTheme || 'dark';
         document.documentElement.setAttribute('data-theme', theme);
     })();
 </script>
+<!-- Flatpickr for better date picker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 <style>
     #header {
@@ -263,6 +265,17 @@
                 sunIcon.style.display = 'none';
                 moonIcon.style.display = 'block';
             }
+        }
+        
+        // Initialize Flatpickr for date fields
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("input[type='date']", {
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                clickOpens: true,
+                maxDate: "today",
+                defaultDate: null
+            });
         }
         
         // Make app sections collapsible

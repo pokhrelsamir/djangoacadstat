@@ -5,42 +5,48 @@
     box-sizing: border-box;
 }
 
-/* CSS Variables for Light Theme (default) */
-:root, [data-theme="light"] {
-    --bg-primary: #f4f7f8;
-    --bg-secondary: #ffffff;
-    --bg-card: #ffffff;
-    --text-primary: #333333;
-    --text-secondary: #555555;
-    --text-muted: #888888;
-    --border-color: #e0e0e0;
-    --border-light: #eeeeee;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-    --shadow-md: 0 4px 15px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
-    --input-bg: #f8fafc;
-    --input-border: #e2e8f0;
-    --table-hover: #f8f9fa;
-    --navbar-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-/* CSS Variables for Dark Theme */
-[data-theme="dark"] {
+/* CSS Variables for Dark Theme (Default - White Text) */
+:root, [data-theme="dark"] {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-card: #1e293b;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --bg-card-hover: #334155;
+    --text-primary: #ffffff;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
     --border-color: #334155;
     --border-light: #1e293b;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-    --shadow-md: 0 4px 15px rgba(0,0,0,0.4);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
-    --input-bg: #0f172a;
-    --input-border: #334155;
-    --table-hover: #1e293b;
-    --navbar-bg: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 15px rgba(0,0,0,0.5);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.6);
+    --input-bg: #1e293b;
+    --input-border: #475569;
+    --table-hover: #334155;
+    --navbar-bg: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    --btn-primary: #667eea;
+    --btn-hover: #5a67d8;
+}
+
+/* CSS Variables for Light Theme (Black Text) */
+[data-theme="light"] {
+    --bg-primary: #f4f7f8;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --border-color: #e2e8f0;
+    --border-light: #edf2f7;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 15px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+    --input-bg: #ffffff;
+    --input-border: #e2e8f0;
+    --table-hover: #f7fafc;
+    --navbar-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --btn-primary: #667eea;
+    --btn-hover: #5a67d8;
 }
 
 body {

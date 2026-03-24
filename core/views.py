@@ -76,7 +76,11 @@ def add_marks(request):
     if request.method == "POST":
         form = ResultForm(request.POST)
         if form.is_valid():
-            form.save()
+            # Handle terminal from form data if not in form
+            terminal = request.POST.get('terminal', '1st')
+            result = form.save(commit=False)
+            result.terminal = terminal
+            result.save()
             return redirect('/marks-list/')
     else:
         form = ResultForm()

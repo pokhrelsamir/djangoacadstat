@@ -452,11 +452,13 @@
                             </td>
                             <td>
                                 {% widthratio result.marks_obtained result.total_marks 100 as pct %}
-                                {% if pct >= 40 %}
+                                {% with pct|add:0 as pct_num %}
+                                {% if pct_num >= 40 %}
                                 <span class="grade-badge pass">P</span>
                                 {% else %}
                                 <span class="grade-badge fail">F</span>
                                 {% endif %}
+                                {% endwith %}
                             </td>
                         </tr>
                         {% endfor %}

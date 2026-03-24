@@ -47,12 +47,19 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     # Check if user is a student (has username matching a student)
-    try:
-        student = Student.objects.get(name=request.user.username)
-        # Redirect students to their own dashboard
-        return student_dashboard(request, student.id)
-    except Student.DoesNotExist:
-        pass
+    username = request.user.username.lower().strip()
+    
+    # Try to find student by exact name match (case-insensitive)
+    students = Student.objects.all()
+    for student in students:
+        if student.name.lower().strip() == username:
+            # Redirect students to their own dashboard
+            return student_dashboard(request, student.id)
+    
+    # Also try partial match
+    for student in students:
+        if username in student.name.lower() or student.name.lower() in username:
+            return student_dashboard(request, student.id)
     
     # Get all results for calculations (for admin/teachers)
     results = Result.objects.all()

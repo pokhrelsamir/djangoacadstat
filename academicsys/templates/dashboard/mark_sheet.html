@@ -440,6 +440,43 @@
             border-width: 0 40px 40px 0;
             border-color: transparent #764ba2 transparent transparent;
         }
+        
+        .grade-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-align: center;
+            min-width: 40px;
+        }
+        
+        .grade-badge.pass {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        
+        .grade-badge.fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
+        /* Terminal Selection Badge in Header */
+        .document-type {
+            position: absolute;
+            top: 15px;
+            right: 150px;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 
@@ -501,7 +538,7 @@
             </div>
             
             {% if student_results %}
-            {% with student_results.0.student as student %}
+            {% with selected_student as student %}
             <!-- Mark Sheet Document -->
             <div class="mark-sheet-wrapper ocr-readable">
                 
@@ -519,7 +556,7 @@
                         </div>
                         <p class="qr-label">Scan for Verification</p>
                     </div>
-                    <span class="document-type">Official Mark Sheet</span>
+                    <span class="document-type">{{ selected_terminal }} Terminal Mark Sheet</span>
                 </div>
                 
                 <!-- Student Information -->
@@ -568,7 +605,7 @@
                             <line x1="16" y1="13" x2="8" y2="13"/>
                             <line x1="16" y1="17" x2="8" y2="17"/>
                         </svg>
-                        Academic Performance
+                        {{ selected_terminal }} Terminal - Academic Performance
                     </div>
                     <table class="marks-table">
                         <thead>
@@ -583,24 +620,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for result in student_results %}
+                            {% for item in student_results %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td class="subject-code">{{ result.subject.code }}</td>
-                                <td>{{ result.subject.name }}</td>
-                                <td class="marks-obtained">{{ result.marks_obtained }}</td>
-                                <td class="marks-total">{{ result.total_marks }}</td>
-                                <td>{{ result.percentage|floatformat:1 }}%</td>
+                                <td class="subject-code">{{ item.result.subject.code }}</td>
+                                <td>{{ item.result.subject.name }}</td>
+                                <td class="marks-obtained">{{ item.result.marks_obtained|floatformat:1 }}</td>
+                                <td class="marks-total">{{ item.result.total_marks|floatformat:1 }}</td>
+                                <td>{{ item.percentage|floatformat:1 }}%</td>
                                 <td>
-                                    {% widthratio result.marks_obtained result.total_marks 100 as percentage %}
-                                    {% if percentage >= 90 %}A+
-                                    {% elif percentage >= 80 %}A
-                                    {% elif percentage >= 70 %}B+
-                                    {% elif percentage >= 60 %}B
-                                    {% elif percentage >= 50 %}C
-                                    {% elif percentage >= 40 %}D
-                                    {% else %}F
-                                    {% endif %}
+                                    <span class="grade-badge {% if item.grade == 'P' %}pass{% else %}fail{% endif %}">
+                                        {{ item.grade }}
+                                    </span>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -617,7 +648,7 @@
                         </div>
                         <div class="summary-item">
                             <div class="summary-label">Total Marks</div>
-                            <div class="summary-value">{{ total_marks_obtained }}/{{ total_marks }}</div>
+                            <div class="summary-value">{{ total_marks_obtained|floatformat:1 }}/{{ total_marks|floatformat:1 }}</div>
                         </div>
                         <div class="summary-item">
                             <div class="summary-label">Overall %</div>
@@ -626,21 +657,19 @@
                             </div>
                         </div>
                         <div class="summary-item">
-                            <div class="summary-label">Division</div>
-                            <div class="summary-value {% if overall_percentage >= 40 %}pass{% else %}fail{% endif %}">
-                                {% if overall_percentage >= 75 %}Distinction
-                                {% elif overall_percentage >= 60 %}First
-                                {% elif overall_percentage >= 50 %}Second
-                                {% elif overall_percentage >= 40 %}Third
-                                {% else %}Fail
-                                {% endif %}
+                            <div class="summary-label">Result</div>
+                            <div class="summary-value {% if all_passed %}pass{% else %}fail{% endif %}">
+                                {% if all_passed %}PASS{% else %}FAIL{% endif %}
                             </div>
                         </div>
                     </div>
                     <div style="text-align: center;">
-                        <span class="result-badge {% if overall_percentage >= 40 %}pass{% else %}fail{% endif %}">
-                            {% if overall_percentage >= 40 %}✓ PASSED{% else %}✗ FAILED{% endif %}
+                        <span class="result-badge {% if all_passed %}pass{% else %}fail{% endif %}">
+                            {% if all_passed %}✓ PASSED{% else %}✗ FAILED{% endif %}
                         </span>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: #6c757d;">
+                        <strong>Grading System:</strong> P (Pass) = ≥ 40% | F (Fail) = < 40%
                     </div>
                 </div>
                 

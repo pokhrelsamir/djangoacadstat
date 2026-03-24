@@ -46,7 +46,15 @@ def logout_view(request):
 # 📊 DASHBOARD (MAIN PAGE AFTER LOGIN)
 @login_required
 def dashboard(request):
-    # Get all results for calculations
+    # Check if user is a student (has username matching a student)
+    try:
+        student = Student.objects.get(name=request.user.username)
+        # Redirect students to their own dashboard
+        return student_dashboard(request, student.id)
+    except Student.DoesNotExist:
+        pass
+    
+    # Get all results for calculations (for admin/teachers)
     results = Result.objects.all()
     
     # Calculate average marks
@@ -66,8 +74,106 @@ def dashboard(request):
         'average_marks': avg_marks,
         'today_attendance': today_attendance,
         'user': request.user,
+        'is_admin': True,
     }
     return render(request, 'dashboard/dashboard.html', context)
+
+
+# 🎓 STUDENT DASHBOARD (Limited Access)
+@login_required
+def student_dashboard(request, student_id=None):
+    """Student dashboard with limited access - shows only their own data"""
+    import qrcode
+    from io import BytesIO
+    import base64
+    
+    # If student_id is provided, use that, otherwise find by username
+    if student_id:
+        student = get_object_or_404(Student, id=student_id)
+    else:
+        # Try to find student by username
+        try:
+            student = Student.objects.get(name=request.user.username)
+        except Student.DoesNotExist:
+            return render(request, 'dashboard/student_dashboard.html', {
+                'error': 'Student profile not found. Please contact admin.'
+            })
+    
+    # Get student's own results
+    student_results = Result.objects.filter(student=student).select_related('subject')
+    
+    # Calculate own stats
+    total_marks_obtained = sum(r.marks_obtained for r in student_results)
+    total_marks = sum(r.total_marks for r in student_results)
+    overall_percentage = (total_marks_obtained / total_marks * 100) if total_marks > 0 else 0
+    
+    # Get attendance count
+    student_attendance = Attendance.objects.filter(student=student)
+    total_attendance = student_attendance.count()
+    
+    # Get marks by terminal for chart
+    terminal_data = {}
+    for terminal in ['1st', '2nd', '3rd', 'Final']:
+        terminal_results = student_results.filter(terminal=terminal)
+        if terminal_results.exists():
+            t_marks = sum(r.marks_obtained for r in terminal_results)
+            t_total = sum(r.total_marks for r in terminal_results)
+            t_percentage = (t_marks / t_total * 100) if t_total > 0 else 0
+            terminal_data[terminal] = {
+                'obtained': t_marks,
+                'total': t_total,
+                'percentage': round(t_percentage, 1)
+            }
+    
+    # Get subject-wise performance
+    subject_data = {}
+    for result in student_results:
+        if result.subject.name not in subject_data:
+            subject_data[result.subject.name] = []
+        percentage = (result.marks_obtained / result.total_marks * 100) if result.total_marks > 0 else 0
+        subject_data[result.subject.name].append({
+            'terminal': result.terminal,
+            'percentage': round(percentage, 1),
+            'marks': result.marks_obtained,
+            'total': result.total_marks
+        })
+    
+    # Generate QR code for student
+    if student.qr_code_data:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(student.qr_code_data)
+        qr.make(fit=True)
+        
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
+    else:
+        qr_code_base64 = None
+    
+    context = {
+        'student': student,
+        'student_results': student_results,
+        'total_subjects': student_results.values('subject').distinct().count(),
+        'total_marks_obtained': total_marks_obtained,
+        'total_marks': total_marks,
+        'overall_percentage': round(overall_percentage, 1),
+        'total_attendance': total_attendance,
+        'terminal_data': terminal_data,
+        'subject_data': subject_data,
+        'terminal_data_json': json.dumps(terminal_data),
+        'subject_data_json': json.dumps(subject_data),
+        'qr_code': qr_code_base64,
+        'user': request.user,
+        'is_student': True,
+    }
+    
+    return render(request, 'dashboard/student_dashboard.html', context)
 
 
 # ➕ ADD MARKS
@@ -417,26 +523,51 @@ def chart_data(request):
 
 # 📄 MARK SHEET VIEW
 @login_required
-def mark_sheet(request, student_id=None):
-    """Generate official mark sheet for a student"""
+def mark_sheet(request, student_id=None, terminal=None):
+    """Generate official mark sheet for a student with terminal filter"""
     import qrcode
     from io import BytesIO
     import base64
     from datetime import datetime
     
-    if student_id:
-        # Get specific student's results
+    # Get all students for selection dropdown
+    students = Student.objects.all().order_by('name')
+    
+    if student_id and terminal:
+        # Get specific student's results for a specific terminal
+        results = Result.objects.filter(
+            student_id=student_id,
+            terminal=terminal
+        ).select_related('student', 'subject')
+        selected_student = Student.objects.get(id=student_id)
+    elif student_id:
+        # Get specific student's results (all terminals)
         results = Result.objects.filter(student_id=student_id).select_related('student', 'subject')
-        student_results = results
+        selected_student = Student.objects.get(id=student_id)
+        terminal = 'All'
     else:
-        # Get first student's results for demo
-        student_results = Result.objects.select_related('student', 'subject')[:10]
+        results = []
+        selected_student = None
+        terminal = 'All'
     
     # Calculate totals
-    total_subjects = student_results.count()
-    total_marks_obtained = sum(r.marks_obtained for r in student_results)
-    total_marks = sum(r.total_marks for r in student_results)
+    total_subjects = len(results) if results else 0
+    total_marks_obtained = sum(r.marks_obtained for r in results)
+    total_marks = sum(r.total_marks for r in results)
     overall_percentage = (total_marks_obtained / total_marks * 100) if total_marks > 0 else 0
+    
+    # Determine overall pass/fail (all subjects must have >= 40%)
+    all_passed = all((r.marks_obtained / r.total_marks * 100) >= 40 for r in results) if results else False
+    
+    # Build results list with grade and percentage attributes
+    results_with_grades = []
+    for r in results:
+        pct = (r.marks_obtained / r.total_marks * 100) if r.total_marks > 0 else 0
+        results_with_grades.append({
+            'result': r,
+            'grade': 'P' if pct >= 40 else 'F',
+            'percentage': round(pct, 1)
+        })
     
     # Generate college QR code
     college_data = "SOCH_COLLEGE_OF_IT|RANIPAWA-12|POKHARA|ESTD:2020"
@@ -461,11 +592,15 @@ def mark_sheet(request, student_id=None):
     doc_id = f"SOCH-{datetime.now().strftime('%Y%m%d')}-{student_id or 'DEMO'}"
     
     context = {
-        'student_results': student_results,
+        'students': students,
+        'student_results': results_with_grades,
+        'selected_student': selected_student,
+        'selected_terminal': terminal,
         'total_subjects': total_subjects,
         'total_marks_obtained': total_marks_obtained,
         'total_marks': total_marks,
         'overall_percentage': round(overall_percentage, 2),
+        'all_passed': all_passed,
         'academic_year': f"{academic_year}-{academic_year + 1}",
         'college_qr_code': college_qr_code,
         'doc_id': doc_id,
@@ -474,7 +609,24 @@ def mark_sheet(request, student_id=None):
     return render(request, 'dashboard/mark_sheet.html', context)
 
 
-# 📊 STUDENT ANALYSIS VIEW
+# 📋 SELECT STUDENT FOR MARK SHEET
+@login_required
+def select_mark_sheet(request):
+    """Student selection page for mark sheet generation"""
+    students = Student.objects.all().order_by('name')
+    
+    # Get unique terminals
+    terminals = Result.objects.values_list('terminal', flat=True).distinct()
+    
+    context = {
+        'students': students,
+        'terminals': terminals,
+    }
+    
+    return render(request, 'dashboard/select_mark_sheet.html', context)
+
+
+#  STUDENT ANALYSIS VIEW
 @login_required
 def student_analysis(request):
     """AI-powered analysis of student performance, focusing on students with low marks"""

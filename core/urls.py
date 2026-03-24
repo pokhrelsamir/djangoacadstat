@@ -20,4 +20,11 @@ urlpatterns = [
     path('regenerate-qr/', views.regenerate_qr_codes, name='regenerate_qr_codes'),
     path('attendance/', views.attendance_list, name='attendance_list'),
     path('attendance-report/', views.attendance_report, name='attendance_report'),
+    
+    # Mark Sheet URLs
+    path('mark-sheet/', views.mark_sheet, name='mark_sheet'),
+    path('mark-sheet/<int:student_id>/', views.mark_sheet, name='mark_sheet_student'),
+    
+    # Student Analysis URLs
+    path('student-analysis/', views.student_analysis, name='student_analysis'),
 ]

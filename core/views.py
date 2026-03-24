@@ -331,3 +331,357 @@ def regenerate_qr_codes(request):
         'success': True, 
         'message': f'QR codes regenerated for {count} students'
     })
+
+
+# 📊 CHART DATA API
+@login_required
+def chart_data(request):
+    """Get chart data for dashboard visualization"""
+    from django.db.models import Avg, Count
+    
+    # Get marks distribution by percentage ranges
+    results = Result.objects.all()
+    
+    distribution = {
+        'labels': ['0-40%', '40-60%', '60-75%', '75-90%', '90-100%'],
+        'data': [0, 0, 0, 0, 0]
+    }
+    
+    for result in results:
+        percentage = (result.marks_obtained / result.total_marks * 100) if result.total_marks > 0 else 0
+        if percentage < 40:
+            distribution['data'][0] += 1
+        elif percentage < 60:
+            distribution['data'][1] += 1
+        elif percentage < 75:
+            distribution['data'][2] += 1
+        elif percentage < 90:
+            distribution['data'][3] += 1
+        else:
+            distribution['data'][4] += 1
+    
+    # Get average marks by subject
+    subject_averages = Result.objects.values('subject__name').annotate(
+        avg_marks=Avg('marks_obtained')
+    ).order_by('-avg_marks')[:10]
+    
+    subject_data = {
+        'labels': [s['subject__name'] for s in subject_averages],
+        'data': [round(s['avg_marks'], 1) for s in subject_averages]
+    }
+    
+    # Get top 5 students by average
+    student_averages = Result.objects.values(
+        'student__id', 'student__name'
+    ).annotate(
+        avg_marks=Avg('marks_obtained')
+    ).order_by('-avg_marks')[:5]
+    
+    top_students = {
+        'labels': [s['student__name'] for s in student_averages],
+        'data': [round(s['avg_marks'], 1) for s in student_averages]
+    }
+    
+    # Get attendance by date (last 7 days)
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    dates = []
+    attendance_counts = []
+    for i in range(7):
+        date = timezone.now().date() - timedelta(days=i)
+        count = Attendance.objects.filter(date=date).count()
+        dates.append(date.strftime('%b %d'))
+        attendance_counts.append(count)
+    
+    dates.reverse()
+    attendance_counts.reverse()
+    
+    return JsonResponse({
+        'distribution': distribution,
+        'subject_averages': subject_data,
+        'top_students': top_students,
+        'attendance': {
+            'labels': dates,
+            'data': attendance_counts
+        },
+        'total_students': Student.objects.count(),
+        'total_results': Result.objects.count(),
+        'average_percentage': round(sum([r for r in distribution['data'] if r > 0]) / len([r for r in distribution['data'] if r > 0]) if any(d > 0 for d in distribution['data']) else 0, 1)
+    })
+
+
+# 📄 MARK SHEET VIEW
+@login_required
+def mark_sheet(request, student_id=None):
+    """Generate official mark sheet for a student"""
+    import qrcode
+    from io import BytesIO
+    import base64
+    from datetime import datetime
+    
+    if student_id:
+        # Get specific student's results
+        results = Result.objects.filter(student_id=student_id).select_related('student', 'subject')
+        student_results = results
+    else:
+        # Get first student's results for demo
+        student_results = Result.objects.select_related('student', 'subject')[:10]
+    
+    # Calculate totals
+    total_subjects = student_results.count()
+    total_marks_obtained = sum(r.marks_obtained for r in student_results)
+    total_marks = sum(r.total_marks for r in student_results)
+    overall_percentage = (total_marks_obtained / total_marks * 100) if total_marks > 0 else 0
+    
+    # Generate college QR code
+    college_data = "SOCH_COLLEGE_OF_IT|RANIPAWA-12|POKHARA|ESTD:2020"
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(college_data)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format='PNG')
+    college_qr_code = base64.b64encode(buffer.getvalue()).decode()
+    
+    # Get current academic year
+    academic_year = datetime.now().year
+    
+    # Generate document ID
+    doc_id = f"SOCH-{datetime.now().strftime('%Y%m%d')}-{student_id or 'DEMO'}"
+    
+    context = {
+        'student_results': student_results,
+        'total_subjects': total_subjects,
+        'total_marks_obtained': total_marks_obtained,
+        'total_marks': total_marks,
+        'overall_percentage': round(overall_percentage, 2),
+        'academic_year': f"{academic_year}-{academic_year + 1}",
+        'college_qr_code': college_qr_code,
+        'doc_id': doc_id,
+    }
+    
+    return render(request, 'dashboard/mark_sheet.html', context)
+
+
+# 📊 STUDENT ANALYSIS VIEW
+@login_required
+def student_analysis(request):
+    """AI-powered analysis of student performance, focusing on students with low marks"""
+    
+    # Get filter parameters
+    filter_type = request.GET.get('filter', 'attention')
+    selected_class = request.GET.get('class', '')
+    sort_by = request.GET.get('sort', 'lowest')
+    
+    # Get all students with their results
+    students = Student.objects.all().prefetch_related('result_set')
+    
+    student_analyses = []
+    all_classes = []
+    needs_attention_count = 0
+    at_risk_count = 0
+    total_percentage = 0
+    student_count = 0
+    
+    for student in students:
+        results = list(student.result_set.select_related('subject').all())
+        
+        if not results:
+            continue
+            
+        all_classes.append(student.student_class)
+        
+        # Calculate percentage
+        total_obtained = sum(r.marks_obtained for r in results)
+        total_possible = sum(r.total_marks for r in results)
+        percentage = (total_obtained / total_possible * 100) if total_possible > 0 else 0
+        
+        total_percentage += percentage
+        student_count += 1
+        
+        # Find weak subjects (below 50%)
+        weak_subjects = []
+        for r in results:
+            r_percentage = (r.marks_obtained / r.total_marks * 100) if r.total_marks > 0 else 0
+            if r_percentage < 50:
+                weak_subjects.append(r)
+        
+        # Count students needing attention
+        if percentage < 60:
+            needs_attention_count += 1
+        if percentage < 40:
+            at_risk_count += 1
+        
+        # Add to analyses if matches filter
+        should_add = False
+        
+        if filter_type == 'all':
+            should_add = True
+        elif filter_type == 'critical' and percentage < 40:
+            should_add = True
+        elif filter_type == 'warning' and 40 <= percentage < 60:
+            should_add = True
+        elif filter_type == 'attention' and percentage < 60:
+            should_add = True
+        
+        # Filter by class
+        if selected_class and student.student_class != selected_class:
+            should_add = False
+        
+        if should_add:
+            # Generate AI Summary
+            ai_summary = generate_ai_summary(student, results, percentage, weak_subjects)
+            
+            # Generate Recommendations
+            recommendations = generate_recommendations(student, results, percentage, weak_subjects)
+            
+            student_analyses.append({
+                'student': student,
+                'percentage': round(percentage, 2),
+                'weak_subjects': weak_subjects,
+                'total_attempts': len(results),
+                'ai_summary': ai_summary,
+                'recommendations': recommendations,
+            })
+    
+    # Sort analyses
+    if sort_by == 'lowest':
+        student_analyses.sort(key=lambda x: x['percentage'])
+    elif sort_by == 'highest':
+        student_analyses.sort(key=lambda x: x['percentage'], reverse=True)
+    elif sort_by == 'name':
+        student_analyses.sort(key=lambda x: x['student'].name)
+    
+    # Calculate class average
+    class_average = (total_percentage / student_count) if student_count > 0 else 0
+    
+    # Get unique classes
+    all_classes = sorted(set(all_classes))
+    
+    context = {
+        'student_analyses': student_analyses,
+        'total_students': student_count,
+        'needs_attention_count': needs_attention_count,
+        'at_risk_count': at_risk_count,
+        'class_average': class_average,
+        'classes': all_classes,
+        'selected_class': selected_class,
+        'filter_type': filter_type,
+        'sort_by': sort_by,
+    }
+    
+    return render(request, 'dashboard/student_analysis.html', context)
+
+
+def generate_ai_summary(student, results, percentage, weak_subjects):
+    """Generate AI-powered summary for a student"""
+    
+    total_obtained = sum(r.marks_obtained for r in results)
+    total_possible = sum(r.total_marks for r in results)
+    
+    # Determine performance level
+    if percentage < 40:
+        level = "critical"
+        intro = f"🚨 {student.name} is showing concerning performance with an overall average of {percentage:.1f}%. "
+    elif percentage < 60:
+        level = "warning"
+        intro = f"⚠️ {student.name}'s performance needs improvement. Current average is {percentage:.1f}%. "
+    elif percentage < 75:
+        level = "good"
+        intro = f"👍 {student.name} is performing at a satisfactory level with {percentage:.1f}% average. "
+    else:
+        level = "excellent"
+        intro = f"🌟 {student.name} is performing excellently with {percentage:.1f}% average! "
+    
+    # Add subject-specific analysis
+    subject_analysis = ""
+    if weak_subjects:
+        weak_names = [f"**{ws.subject.name}** ({ws.marks_obtained}/{ws.total_marks})" for ws in weak_subjects[:3]]
+        if len(weak_names) > 1:
+            subject_analysis = f" Areas of concern include {', '.join(weak_names[:-1])} and {weak_names[-1]}."
+        else:
+            subject_analysis = f" Primary area of concern is {weak_names[0]}."
+    
+    # Add best subject
+    best_result = max(results, key=lambda r: (r.marks_obtained / r.total_marks * 100) if r.total_marks > 0 else 0)
+    best_percentage = (best_result.marks_obtained / best_result.total_marks * 100) if best_result.total_marks > 0 else 0
+    if best_percentage >= 80:
+        subject_analysis += f" Shows strong performance in **{best_result.subject.name}** ({best_percentage:.1f}%)."
+    
+    # Add summary
+    if level == "critical":
+        summary = "Immediate intervention is required. Student's current trajectory may lead to academic failure."
+    elif level == "warning":
+        summary = "With targeted improvement in weak areas, student can significantly improve performance."
+    elif level == "good":
+        summary = "Student is on track. Focus on weak subjects can help achieve distinction."
+    else:
+        summary = "Excellent performance! Student should be encouraged to maintain this standard."
+    
+    return intro + subject_analysis + " " + summary
+
+
+def generate_recommendations(student, results, percentage, weak_subjects):
+    """Generate personalized recommendations for a student"""
+    
+    recommendations = []
+    
+    # Priority recommendations based on performance
+    if percentage < 40:
+        recommendations.append({
+            'priority': 'high',
+            'title': '🔴 Immediate Parent Meeting Required',
+            'description': 'Schedule urgent meeting with parents/guardians to discuss academic intervention strategies.'
+        })
+        recommendations.append({
+            'priority': 'high',
+            'title': '📚 Mandatory Tutoring Sessions',
+            'description': 'Student requires additional support through remedial classes or private tutoring.'
+        })
+    elif percentage < 60:
+        recommendations.append({
+            'priority': 'medium',
+            'title': '🟡 Schedule Academic Counseling',
+            'description': 'Arrange meeting to identify specific learning challenges and set improvement goals.'
+        })
+    
+    # Subject-specific recommendations
+    for weak in weak_subjects[:2]:
+        weak_percentage = (weak.marks_obtained / weak.total_marks * 100) if weak.total_marks > 0 else 0
+        rec_title = f"Focus on {weak.subject.name}"
+        
+        if weak_percentage < 30:
+            rec_desc = f"Critical weakness in {weak.subject.name} (scored {weak.marks_obtained}/{weak.total_marks}). Consider remedial classes."
+        elif weak_percentage < 40:
+            rec_desc = f"Weak performance in {weak.subject.name}. Recommend extra practice and teacher consultations."
+        else:
+            rec_desc = f"{weak.subject.name} needs improvement. Suggest focused study plan and regular assessments."
+            
+        recommendations.append({
+            'priority': 'medium' if weak_percentage < 40 else 'low',
+            'title': rec_title,
+            'description': rec_desc
+        })
+    
+    # General recommendations
+    if percentage >= 40:
+        recommendations.append({
+            'priority': 'low',
+            'title': '📖 Establish Study Schedule',
+            'description': 'Create a structured daily study routine with dedicated time for each subject.'
+        })
+    
+    recommendations.append({
+        'priority': 'low',
+        'title': '💪 Encourage Participation',
+        'description': 'Promote active engagement in class discussions and practical activities.'
+    })
+    
+    return recommendations[:5]  # Return top 5 recommendations

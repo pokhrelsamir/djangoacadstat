@@ -422,6 +422,40 @@
             transform: translateX(-5px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
+
+        /* Terminal Selector */
+        .terminal-selector {
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-dropdown {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+            color: #1e293b;
+            transition: all 0.3s;
+        }
+
+        .terminal-dropdown:hover {
+            border-color: #667eea;
+        }
+
+        .terminal-dropdown:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .action-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         
         /* OCR Optimized Elements */
         .ocr-readable {
@@ -525,7 +559,17 @@
                     </svg>
                     Back to List
                 </a>
-                <div class="action-group">
+                <div class="action-group" style="display: flex; align-items: center; gap: 10px;">
+                    <!-- Terminal Selection Dropdown -->
+                    <div class="terminal-selector">
+                        <label for="terminalSelect" style="font-size: 0.85rem; color: #64748b; margin-right: 5px;">Terminal:</label>
+                        <select id="terminalSelect" class="terminal-dropdown" onchange="changeTerminal(this.value)" style="padding: 8px 12px; border-radius: 8px; border: 2px solid #e2e8f0; font-size: 0.9rem; font-weight: 600; cursor: pointer; background: white;">
+                            <option value="1st" {% if selected_terminal == '1st' %}selected{% endif %}>1st Terminal</option>
+                            <option value="2nd" {% if selected_terminal == '2nd' %}selected{% endif %}>2nd Terminal</option>
+                            <option value="3rd" {% if selected_terminal == '3rd' %}selected{% endif %}>3rd Terminal</option>
+                            <option value="Final" {% if selected_terminal == 'Final' %}selected{% endif %}>Final</option>
+                        </select>
+                    </div>
                     <button onclick="window.print()" class="btn-print">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 6 2 18 2 18 9"/>
@@ -672,6 +716,38 @@
                         <strong>Grading System:</strong> P (Pass) = ≥ 40% | F (Fail) = < 40%
                     </div>
                 </div>
+
+                <!-- Marks Validation Section - Shows entered marks for error checking -->
+                <div class="validation-section" style="padding: 20px 30px; background: #fffbeb; border-top: 2px solid #fcd34d;">
+                    <div class="section-title" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); margin: -20px -30px 15px -30px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        Marks Entered for {{ selected_terminal }} Terminal (Verification)
+                    </div>
+                    <div class="validation-info" style="margin-bottom: 15px;">
+                        <p style="font-size: 0.85rem; color: #92400e; margin: 0;">
+                            <strong>Note:</strong> Please verify the marks below. If there are errors, go to <a href="/marks-list/" style="color: #d97706; text-decoration: underline;">Marks List</a> to edit them.
+                        </p>
+                    </div>
+                    <div class="validation-table" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                        {% for item in student_results %}
+                        <div class="subject-mark-card" style="background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div style="font-weight: 600; color: #374151; font-size: 0.9rem; margin-bottom: 5px;">{{ item.result.subject.name }}</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 1rem; font-weight: 700; color: #1a1a2e;">{{ item.result.marks_obtained|floatformat:1 }} / {{ item.result.total_marks|floatformat:1 }}</span>
+                                <span class="grade-badge {% if item.grade == 'P' %}pass{% else %}fail{% endif %}" style="font-size: 0.75rem; padding: 3px 10px;">{{ item.grade }}</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #6b7280; margin-top: 5px;">{{ item.percentage|floatformat:1 }}%</div>
+                        </div>
+                        {% empty %}
+                        <div style="text-align: center; padding: 20px; color: #92400e; grid-column: 1 / -1;">
+                            No marks entered for this terminal yet.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
                 
                 <!-- Footer Section -->
                 <div class="mark-sheet-footer">
@@ -710,6 +786,29 @@
     </div>
 
     <script>
+        // Change Terminal Function
+        function changeTerminal(terminal) {
+            // Get student ID from current URL or from a hidden field
+            const currentPath = window.location.pathname;
+            const pathParts = currentPath.split('/');
+            
+            // Find student ID in path (format: /mark-sheet/{student_id}/{terminal}/)
+            let studentId = null;
+            for (let i = 0; i < pathParts.length; i++) {
+                if (pathParts[i] === 'mark-sheet' && pathParts[i + 1]) {
+                    studentId = pathParts[i + 1];
+                    break;
+                }
+            }
+            
+            if (studentId) {
+                window.location.href = '/mark-sheet/' + studentId + '/' + terminal + '/';
+            } else {
+                // If no student ID found, go to select page
+                window.location.href = '/mark-sheet/';
+            }
+        }
+
         // Theme Toggle Script
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {

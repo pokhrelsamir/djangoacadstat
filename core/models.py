@@ -70,6 +70,9 @@ class Result(models.Model):
     total_marks = models.FloatField(default=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ['student', 'subject']
+
     def __str__(self):
         return f"{self.student.name} - {self.subject.name}: {self.marks_obtained}/{self.total_marks}"
     

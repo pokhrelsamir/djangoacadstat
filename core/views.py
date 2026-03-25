@@ -10,6 +10,7 @@ import json
 import qrcode
 from io import BytesIO
 import base64
+from django.contrib import messages
 
 
 # 🏠 HOME VIEW (LANDING PAGE)
@@ -77,7 +78,11 @@ def add_marks(request):
         form = ResultForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Marks added successfully!")
             return redirect('/marks-list/')
+        
+        else:
+            messages.error(request, "Please correct the error below. (Perhaps marks for this student/subject already exist?)")
     else:
         form = ResultForm()
 

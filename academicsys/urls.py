@@ -22,6 +22,7 @@ urlpatterns = [
     path('attendance-report/', views.attendance_report, name='attendance_report'),
     # Mark Sheet URLs
     path('mark-sheet/', views.mark_sheet, name='mark_sheet'),
+    path('mark-sheet/<int:student_id>/<str:terminal>/', views.mark_sheet, name='mark_sheet_terminal'),
     path('mark-sheet/<int:student_id>/', views.mark_sheet, name='mark_sheet_student'),
     # Student Analysis URL
     path('student-analysis/', views.student_analysis, name='student_analysis'),

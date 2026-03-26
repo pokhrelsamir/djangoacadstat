@@ -2,11 +2,12 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Marks - Academic System</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Theme detection script - Default to dark theme -->
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
@@ -14,11 +15,232 @@
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
+    
+    <style>
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            max-width: 700px;
+            margin: 0 auto;
+            animation: slideUp 0.4s ease-out;
+            box-sizing: border-box; 
+            height: auto;       
+            overflow: visible; 
+            display: block;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .form-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .form-icon svg { color: white; }
+        .form-header h2 { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .form-header p { color: var(--text-secondary); font-size: 0.95rem; }
+
+        .modern-form .form-group {
+            margin-bottom: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modern-form label {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.6rem;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+        
+        .modern-form label svg { color: #667eea; flex-shrink: 0; }
+        
+        .modern-form input,
+        .modern-form select {
+            width: 100% !important;
+            padding: 0.9rem 1.2rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            box-sizing: border-box; 
+        }
+        
+        .modern-form input:focus,
+        .modern-form select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+        
+        .modern-form select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 18px;
+            padding-right: 3rem;
+        }
+
+        /* FIXED: Better alignment for the row */
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .form-row .form-group {
+            flex: 1; /* Makes "Marks" and "Total" equal width */
+        }
+        
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+        
+        /* TERMINAL SECTION */
+        .terminal-select {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .terminal-select label {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            display: flex;
+        }
+        
+        .terminal-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+        }
+        
+        @media (max-width: 600px) {
+            .terminal-options { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        .terminal-option { position: relative; }
+        .terminal-option input { position: absolute; opacity: 0; cursor: pointer; }
+        
+        .terminal-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0.5rem;
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .terminal-option label:hover { border-color: #667eea; }
+        
+        .terminal-option input:checked + label {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .terminal-option .emoji { font-size: 1.5rem; margin-bottom: 0.3rem; }
+        .terminal-option .label-text { font-size: 0.8rem; font-weight: 600; text-align: center; }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--border-color);
+        }
+        
+        .btn-primary, .btn-secondary {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: 2px solid transparent;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-secondary { background: var(--input-bg); color: var(--text-primary); border-color: var(--border-color); }
+        .btn-secondary:hover { border-color: #667eea; color: #667eea; }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.2rem;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover { border-color: #667eea; transform: translateX(-5px); }
+    </style>
 </head>
 
 <body>
-
-    <!-- Navbar -->
     <nav class="navbar">
         <h2 class="logo">🎓 AcadStat</h2>
         <div class="nav-links">
@@ -75,6 +297,7 @@
 
                 <form method="POST" class="modern-form" id="marksForm">
                     {% csrf_token %}
+                    
                     {% if form.non_field_errors %}
                         <div class="error-banner" style="background-color: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #fecaca;">
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -91,7 +314,40 @@
                         </div>
                     {% endif %}
                     
-                    <div class="form-group">
+                    <div class="terminal-select">
+                        <label>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Select Terminal/Exam
+                        </label>
+                        <div class="terminal-options">
+                            {% for value, label in form.terminal.field.choices %}
+                                {% if value %} 
+                                <div class="terminal-option">
+                                    <input type="radio" 
+                                        id="terminal_{{ value }}" 
+                                        name="{{ form.terminal.html_name }}" 
+                                        value="{{ value }}"
+                                        {% if form.terminal.value == value or forloop.counter == 2 %}checked{% endif %}>
+                                    
+                                    <label for="terminal_{{ value }}">
+                                        <span class="emoji">
+                                            {% if value == '1st' %}📝{% elif value == '2nd' %}📋{% elif value == '3rd' %}📊{% else %}🏆{% endif %}
+                                        </span>
+                                        <span class="label-text">{{ label }}</span>
+                                    </label>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if form.terminal.errors %}
+                            <span class="error-text">{{ form.terminal.errors }}</span>
+                        {% endif %}
+                    </div> <div class="form-group">
                         <label for="id_student">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -101,7 +357,7 @@
                         </label>
                         {{ form.student }}
                         {% if form.student.errors %}
-                        <span class="error-text">{{ form.student.errors }}</span>
+                            <span class="error-text">{{ form.student.errors }}</span>
                         {% endif %}
                     </div>
 
@@ -115,7 +371,7 @@
                         </label>
                         {{ form.subject }}
                         {% if form.subject.errors %}
-                        <span class="error-text">{{ form.subject.errors }}</span>
+                            <span class="error-text">{{ form.subject.errors }}</span>
                         {% endif %}
                     </div>
 
@@ -129,7 +385,7 @@
                             </label>
                             {{ form.marks_obtained }}
                             {% if form.marks_obtained.errors %}
-                            <span class="error-text">{{ form.marks_obtained.errors }}</span>
+                                <span class="error-text">{{ form.marks_obtained.errors }}</span>
                             {% endif %}
                         </div>
 
@@ -144,7 +400,7 @@
                             </label>
                             {{ form.total_marks }}
                             {% if form.total_marks.errors %}
-                            <span class="error-text">{{ form.total_marks.errors }}</span>
+                                <span class="error-text">{{ form.total_marks.errors }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -167,7 +423,6 @@
         </div>
     </div>
 
-    <!-- Theme Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const themeToggle = document.getElementById('themeToggle');

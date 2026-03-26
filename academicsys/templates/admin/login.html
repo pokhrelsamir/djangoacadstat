@@ -3,7 +3,7 @@
 
 {% block extrastyle %}
 {{ block.super }}
-<!-- Theme detection script to prevent flash -->
+
 <script>
     (function() {
         const savedTheme = localStorage.getItem('theme');
@@ -14,7 +14,7 @@
 </script>
 <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 <style>
-    /* Apply theme variables */
+
     body {
         background: var(--primary-gradient) !important;
     }

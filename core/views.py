@@ -190,17 +190,16 @@ def add_marks(request):
     if request.method == "POST":
         form = ResultForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Marks added successfully!")
-
-            # Handle terminal from form data if not in form
+            # Get terminal from form data
             terminal = request.POST.get('terminal', '1st')
+            
+            # Save with terminal
             result = form.save(commit=False)
             result.terminal = terminal
             result.save()
-
+            
+            messages.success(request, "Marks added successfully!")
             return redirect('/marks-list/')
-        
         else:
             messages.error(request, "Please correct the error below. (Perhaps marks for this student/subject already exist?)")
     else:

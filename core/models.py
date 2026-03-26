@@ -62,10 +62,19 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.name} ({self.roll_number})"
 
+# Terminal Exam Choices
+TERMINAL_CHOICES = [
+    ('1st', '1st Terminal'),
+    ('2nd', '2nd Terminal'),
+    ('3rd', '3rd Terminal'),
+    ('Final', 'Final Terminal'),
+]
+
 # Marks / Result Model
 class Result(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    terminal = models.CharField(max_length=10, choices=TERMINAL_CHOICES, default='1st')
     marks_obtained = models.FloatField()
     total_marks = models.FloatField(default=100)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -74,7 +83,7 @@ class Result(models.Model):
         unique_together = ['student', 'subject']
 
     def __str__(self):
-        return f"{self.student.name} - {self.subject.name}: {self.marks_obtained}/{self.total_marks}"
+        return f"{self.student.name} - {self.subject.name}: {self.marks_obtained}/{self.total_marks} ({self.terminal})"
     
     @property
     def percentage(self):

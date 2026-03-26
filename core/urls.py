@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),  # main page after login
+    path('student/<int:student_id>/', views.student_dashboard, name='student_dashboard'),
+    path('my-dashboard/', views.student_dashboard, name='my_dashboard'),
     path('add-marks/', views.add_marks, name='add_marks'),
     path('marks-list/', views.marks_list, name='marks_list'),
     path('edit-marks/<int:mark_id>/', views.edit_marks, name='edit_marks'),
@@ -22,7 +24,8 @@ urlpatterns = [
     path('attendance-report/', views.attendance_report, name='attendance_report'),
     
     # Mark Sheet URLs
-    path('mark-sheet/', views.mark_sheet, name='mark_sheet'),
+    path('mark-sheet/', views.select_mark_sheet, name='select_mark_sheet'),
+    path('mark-sheet/<int:student_id>/<str:terminal>/', views.mark_sheet, name='mark_sheet_terminal'),
     path('mark-sheet/<int:student_id>/', views.mark_sheet, name='mark_sheet_student'),
     
     # Student Analysis URLs

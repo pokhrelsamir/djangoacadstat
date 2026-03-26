@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Marks - Academic System</title>
+    <title>Generate Mark Sheet - Academic System</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Theme detection script - Default to dark theme -->
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
@@ -17,14 +20,22 @@
     </script>
     
     <style>
-        .form-card {
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .selection-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .selection-card {
             background: var(--card-bg);
             border-radius: 20px;
             padding: 2.5rem;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             border: 1px solid var(--border-color);
-            max-width: 700px;
-            margin: 0 auto;
             animation: slideUp 0.4s ease-out;
         }
         
@@ -39,64 +50,62 @@
             }
         }
         
-        .form-header {
+        .selection-header {
             text-align: center;
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
             border-bottom: 2px solid var(--border-color);
         }
         
-        .form-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .selection-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.2rem;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(22, 163, 74, 0.4);
         }
         
-        .form-icon svg {
+        .selection-icon svg {
             color: white;
         }
         
-        .form-header h2 {
+        .selection-header h2 {
             font-size: 1.8rem;
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 0.5rem;
         }
         
-        .form-header p {
+        .selection-header p {
             color: var(--text-secondary);
             font-size: 0.95rem;
         }
         
-        .modern-form .form-group {
+        .form-group {
             margin-bottom: 1.5rem;
         }
         
-        .modern-form label {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-weight: 500;
+        .form-group label {
+            display: block;
+            font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.6rem;
-            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
         }
         
-        .modern-form label svg {
+        .form-group label svg {
             color: #667eea;
-            flex-shrink: 0;
+            vertical-align: middle;
+            margin-right: 8px;
         }
         
-        .modern-form input,
-        .modern-form select {
+        .form-control {
             width: 100%;
-            padding: 0.9rem 1.2rem;
+            padding: 1rem 1.2rem;
             border: 2px solid var(--border-color);
             border-radius: 12px;
             background: var(--input-bg);
@@ -106,58 +115,21 @@
             transition: all 0.3s ease;
         }
         
-        .modern-form input:focus,
-        .modern-form select:focus {
+        .form-control:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
         }
         
-        .modern-form select {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 18px;
-            padding-right: 3rem;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-        
-        @media (max-width: 600px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .terminal-select {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            border: 2px solid #667eea;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .terminal-select label {
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 0.8rem;
-            display: block;
-        }
-        
-        .terminal-options {
+        .terminal-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 0.8rem;
+            gap: 1rem;
+            margin-top: 1rem;
         }
         
         @media (max-width: 600px) {
-            .terminal-options {
+            .terminal-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -176,50 +148,47 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 1rem;
+            padding: 1.2rem 1rem;
             background: var(--input-bg);
             border: 2px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 0;
-        }
-        
-        .terminal-option label:hover {
-            border-color: #667eea;
-        }
-        
-        .terminal-option input:checked + label {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .terminal-option .emoji {
-            font-size: 1.5rem;
-            margin-bottom: 0.3rem;
-        }
-        
-        .terminal-option .label-text {
-            font-size: 0.85rem;
             font-weight: 500;
         }
         
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 2px solid var(--border-color);
+        .terminal-option label:hover {
+            border-color: #16a34a;
+            transform: translateY(-2px);
         }
         
-        .btn-primary,
-        .btn-secondary {
-            flex: 1;
-            padding: 1rem 1.5rem;
+        .terminal-option input:checked + label {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .terminal-option .emoji {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .terminal-option .label-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .btn-generate {
+            width: 100%;
+            padding: 1.1rem 2rem;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            border: none;
             border-radius: 12px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
             font-family: 'Poppins', sans-serif;
             cursor: pointer;
@@ -227,37 +196,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.8rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
         }
         
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-primary:hover {
+        .btn-generate:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.5);
         }
         
-        .btn-secondary {
-            background: var(--input-bg);
-            color: var(--text-primary);
-            border: 2px solid var(--border-color);
-        }
-        
-        .btn-secondary:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
-        
-        .error-text {
-            color: #e74c3c;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            display: block;
+        .btn-generate:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         .back-btn {
@@ -280,10 +233,25 @@
             color: #667eea;
             transform: translateX(-5px);
         }
+        
+        .selection-info {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-left: 4px solid #667eea;
+            padding: 1rem 1.2rem;
+            border-radius: 0 10px 10px 0;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .selection-info strong {
+            color: #667eea;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Navbar -->
     <nav class="navbar">
         <h2 class="logo">🎓 AcadStat</h2>
         <div class="nav-links">
@@ -295,7 +263,6 @@
                 <a href="/login/">Login</a>
             {% endif %}
             
-            <!-- Theme Toggle Button -->
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                 <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5"/>
@@ -317,57 +284,61 @@
 
     <!-- Page Content -->
     <div class="container">
-        <div class="page-wrapper">
-            <!-- Back Button -->
+        <div class="selection-container">
             <a href="/dashboard/" class="back-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
                 Back to Dashboard
             </a>
-
-            <!-- Add Marks Form Container -->
-            <div class="form-card">
-                <div class="form-header">
-                    <div class="form-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            
+            <div class="selection-card">
+                <div class="selection-header">
+                    <div class="selection-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
                         </svg>
                     </div>
-                    <h2>Add Student Marks</h2>
-                    <p>Enter the marks obtained by the student</p>
+                    <h2>Generate Mark Sheet</h2>
+                    <p>Select a student and terminal to generate the mark sheet</p>
                 </div>
-
-                <form method="POST" class="modern-form" id="marksForm">
+                
+                <form id="markSheetForm">
                     {% csrf_token %}
-                    {% if form.non_field_errors %}
-                        <div class="error-banner" style="background-color: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #fecaca;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                                </svg>
-                                <strong style="font-weight: 600;">Record already exists:</strong>
-                            </div>
-                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; list-style-type: disc;">
-                                {% for error in form.non_field_errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
+                    
+                    <!-- Student Selection -->
+                    <div class="form-group">
+                        <label>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Select Student
+                        </label>
+                        <select id="studentSelect" class="form-control" required>
+                            <option value="">-- Choose a Student --</option>
+                            {% for student in students %}
+                            <option value="{{ student.id }}">{{ student.name }} ({{ student.roll_number|default:"No Roll" }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     
                     <!-- Terminal Selection -->
-                    <div class="terminal-select">
+                    <div class="form-group">
                         <label>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                 <line x1="16" y1="2" x2="16" y2="6"/>
                                 <line x1="8" y1="2" x2="8" y2="6"/>
                                 <line x1="3" y1="10" x2="21" y2="10"/>
                             </svg>
-                            Select Terminal/Exam
+                            Select Terminal
                         </label>
-                        <div class="terminal-options">
+                        <div class="terminal-grid">
                             <div class="terminal-option">
                                 <input type="radio" id="terminal_1st" name="terminal" value="1st" checked>
                                 <label for="terminal_1st">
@@ -399,76 +370,18 @@
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="id_student">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                            Student
-                        </label>
-                        {{ form.student }}
-                        {% if form.student.errors %}
-                        <span class="error-text">{{ form.student.errors }}</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="id_subject">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                            </svg>
-                            Subject
-                        </label>
-                        {{ form.subject }}
-                        {% if form.subject.errors %}
-                        <span class="error-text">{{ form.subject.errors }}</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="id_marks_obtained">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                                </svg>
-                                Marks Obtained
-                            </label>
-                            {{ form.marks_obtained }}
-                            {% if form.marks_obtained.errors %}
-                            <span class="error-text">{{ form.marks_obtained.errors }}</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="form-group">
-                            <label for="id_total_marks">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <line x1="12" y1="8" x2="12" y2="16"/>
-                                    <line x1="8" y1="12" x2="16" y2="12"/>
-                                </svg>
-                                Total Marks
-                            </label>
-                            {{ form.total_marks }}
-                            {% if form.total_marks.errors %}
-                            <span class="error-text">{{ form.total_marks.errors }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary" onclick="window.location.href='/dashboard/'">
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                                <polyline points="17 21 17 13 7 13 7 21"/>
-                                <polyline points="7 3 7 8 15 8"/>
-                            </svg>
-                            Save Marks
-                        </button>
+                    <button type="submit" class="btn-generate" id="generateBtn" disabled>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        Generate Mark Sheet
+                    </button>
+                    
+                    <div class="selection-info">
+                        <strong>Note:</strong> The mark sheet will include Pass (P) for marks ≥ 40% and Fail (F) for marks < 40%. Total marks are calculated from all subjects entered for the selected terminal.
                     </div>
                 </form>
             </div>
@@ -504,6 +417,22 @@
                     moonIcon.style.display = 'block';
                 }
             }
+            
+            // Form handling
+            const studentSelect = document.getElementById('studentSelect');
+            const generateBtn = document.getElementById('generateBtn');
+            const markSheetForm = document.getElementById('markSheetForm');
+            
+            studentSelect.addEventListener('change', function() {
+                generateBtn.disabled = !this.value;
+            });
+            
+            markSheetForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const studentId = studentSelect.value;
+                const terminal = document.querySelector('input[name="terminal"]:checked').value;
+                window.location.href = `/mark-sheet/${studentId}/${terminal}/`;
+            });
         });
     </script>
 </body>

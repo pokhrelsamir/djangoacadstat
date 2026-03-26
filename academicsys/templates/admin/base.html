@@ -3,7 +3,7 @@
 
 {% block extrahead %}
 {{ block.super }}
-<!-- Theme detection script - Improved with proper sync -->
+
 <script>
     (function() {
         const savedTheme = localStorage.getItem('adminTheme') || 'dark';
@@ -11,10 +11,9 @@
         document.body.classList.add('theme-' + savedTheme);
     })();
 </script>
-<!-- Flatpickr for better date picker -->
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-<!-- Flatpickr Month Select Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/plugins/monthSelect/index.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/plugins/monthSelect/style.css">
 <link rel="stylesheet" href="{% static 'css/admin.css' %}">
@@ -23,7 +22,6 @@
         background: var(--primary-gradient) !important;
     }
     
-    /* Apply theme variables */
     body {
         background: var(--admin-bg) !important;
         color: var(--text-primary) !important;
@@ -45,7 +43,6 @@
         background: var(--row2-bg) !important;
     }
     
-    /* Table styling with theme */
     thead th {
         background: var(--card-bg) !important;
         color: var(--text-secondary) !important;
@@ -64,7 +61,6 @@
         color: var(--text-primary) !important;
     }
     
-    /* Form elements */
     input[type="text"], input[type="password"], input[type="email"], 
     input[type="number"], input[type="date"], select, textarea {
         background: var(--card-bg) !important;
@@ -72,35 +68,29 @@
         color: var(--text-primary) !important;
     }
     
-    /* Fieldset */
     fieldset {
         background: var(--row2-bg) !important;
         border-color: var(--border-color) !important;
     }
     
-    /* Filter sidebar */
     #changelist-filter {
         background: var(--card-bg) !important;
     }
     
-    /* Breadcrumbs */
     .breadcrumbs a {
         color: var(--primary-color) !important;
     }
     
-    /* Page header */
     .page-header h1 {
         color: var(--text-primary) !important;
     }
     
-    /* Module caption */
     .module caption {
         background: var(--row2-bg) !important;
         color: var(--text-primary) !important;
         border-bottom-color: var(--border-color) !important;
     }
     
-    /* Admin Header Container */
     #header {
         display: flex !important;
         justify-content: space-between !important;
@@ -114,7 +104,6 @@
         gap: 15px !important;
     }
     
-    /* User Tools Container */
     #user-tools {
         display: flex !important;
         align-items: center !important;
@@ -122,7 +111,6 @@
         margin-right: 10px !important;
     }
     
-    /* Theme toggle button - SINGLE INSTANCE */
     .theme-toggle-admin {
         display: flex;
         align-items: center;
@@ -159,7 +147,6 @@
         display: none;
     }
     
-    /* User profile photo - DYNAMIC based on username */
     .user-profile-wrapper {
         display: flex;
         align-items: center;
@@ -201,7 +188,6 @@
         white-space: nowrap;
     }
     
-    /* Collapsible sections styles */
     .module.collapsible {
         position: relative;
     }
@@ -241,7 +227,6 @@
         display: none;
     }
     
-    /* App header collapsible */
     .app-auth > table,
     .app-core > table {
         display: table;
@@ -278,7 +263,6 @@
         transform: translateY(-50%) rotate(-90deg);
     }
     
-    /* Flatpickr Calendar Fix - Full Width */
     .flatpickr-calendar {
         width: 320px !important;
         max-width: 100vw !important;
@@ -371,7 +355,6 @@
         border-radius: 0 0 12px 12px !important;
     }
     
-    /* Dark theme specific calendar adjustments */
     [data-theme="dark"] .flatpickr-calendar {
         background: #1e293b !important;
         border: 1px solid #334155 !important;
@@ -414,7 +397,6 @@
         color: #94a3b8 !important;
     }
     
-    /* Light theme calendar */
     [data-theme="light"] .flatpickr-calendar {
         background: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
@@ -429,13 +411,11 @@
         color: #1e293b !important;
     }
     
-    /* Hide original Django admin theme selector if present */
     .user-tools .theme-toggle,
     #user-tools .user-tools {
         display: none !important;
     }
     
-    /* Responsive adjustments */
     @media (max-width: 768px) {
         .user-profile-name {
             display: none;
@@ -449,39 +429,35 @@
     }
 </style>
 
-<!-- Theme Toggle, Profile Photo and Collapsible Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const header = document.getElementById('header');
         const userTools = document.getElementById('user-tools');
         
-        // Get current user info - extract from Django context
         let userName = 'Admin';
         let userInitial = 'A';
         
-        // Try to get username from various sources
         const userLink = userTools?.querySelector('a');
         if (userLink) {
             const linkText = userLink.textContent.trim();
-            // Extract name before "Welcome" or just get the text
+
             userName = linkText.replace('Welcome, ', '').replace('Welcome', '').trim() || 'Admin';
-            // Get first letter for avatar
+
             userInitial = userName.charAt(0).toUpperCase();
-            // If username is an email, get first letter before @
+
             if (userName.includes('@')) {
                 userName = userName.split('@')[0];
                 userInitial = userName.charAt(0).toUpperCase();
             }
         }
         
-        // Remove any existing theme toggles (prevents duplicates)
+
         const existingToggles = document.querySelectorAll('.theme-toggle-admin');
         existingToggles.forEach(t => t.remove());
         
         const existingProfiles = document.querySelectorAll('.user-profile-wrapper');
         existingProfiles.forEach(p => p.remove());
         
-        // Create user profile wrapper
         const profileWrapper = document.createElement('div');
         profileWrapper.className = 'user-profile-wrapper';
         profileWrapper.innerHTML = `
@@ -491,7 +467,6 @@
             <span class="user-profile-name">${userName}</span>
         `;
         
-        // Create SINGLE theme toggle button
         const themeToggle = document.createElement('button');
         themeToggle.className = 'theme-toggle-admin';
         themeToggle.id = 'adminThemeToggle';
@@ -513,17 +488,14 @@
             </svg>
         `;
         
-        // Add profile and toggle to user tools
         if (userTools) {
             userTools.insertBefore(profileWrapper, userTools.firstChild);
             userTools.insertBefore(themeToggle, userTools.firstChild);
         }
         
-        // Set initial theme based on saved preference
         const savedTheme = localStorage.getItem('adminTheme') || 'dark';
         applyTheme(savedTheme);
         
-        // Add click handler for theme toggle
         themeToggle.addEventListener('click', function() {
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-theme');
@@ -541,7 +513,6 @@
             body.classList.remove('theme-light', 'theme-dark');
             body.classList.add('theme-' + theme);
             
-            // Update toggle icon
             const sunIcon = themeToggle.querySelector('.sun-icon');
             const moonIcon = themeToggle.querySelector('.moon-icon');
             
@@ -554,7 +525,6 @@
             }
         }
         
-        // Initialize Flatpickr for date fields with improved settings
         if (typeof flatpickr !== 'undefined') {
             flatpickr("input[type='date']", {
                 dateFormat: "Y-m-d",
@@ -568,7 +538,6 @@
                 }
             });
             
-            // Also try datetime fields
             flatpickr("input[type='datetime-local']", {
                 dateFormat: "Y-m-d H:i",
                 allowInput: true,
@@ -579,12 +548,10 @@
             });
         }
         
-        // Make app sections collapsible
         const appModules = document.querySelectorAll('.app-auth, .app-core');
         appModules.forEach(function(module) {
             module.classList.add('collapsible');
             
-            // Check for saved state
             const moduleId = module.classList.contains('app-auth') ? 'auth' : 'core';
             const savedState = localStorage.getItem('adminSection_' + moduleId);
             
@@ -595,12 +562,11 @@
             const caption = module.querySelector('caption');
             if (caption) {
                 caption.addEventListener('click', function(e) {
-                    // Don't toggle if clicking on a link
+
                     if (e.target.tagName === 'A') return;
                     
                     module.classList.toggle('collapsed');
                     
-                    // Save state
                     const mId = module.classList.contains('app-auth') ? 'auth' : 'core';
                     if (module.classList.contains('collapsed')) {
                         localStorage.setItem('adminSection_' + mId, 'collapsed');
@@ -612,7 +578,6 @@
         });
     });
     
-    // Listen for storage changes to sync theme across tabs
     window.addEventListener('storage', function(e) {
         if (e.key === 'adminTheme') {
             const newTheme = e.newValue || 'dark';
@@ -620,7 +585,6 @@
             document.body.classList.remove('theme-light', 'theme-dark');
             document.body.classList.add('theme-' + newTheme);
             
-            // Update toggle button
             const toggle = document.getElementById('adminThemeToggle');
             if (toggle) {
                 const sunIcon = toggle.querySelector('.sun-icon');

@@ -21,8 +21,8 @@ class SubjectAdmin(admin.ModelAdmin):
 
 @admin.register(Result)
 class ResultAdmin(admin.ModelAdmin):
-    list_display = ('student', 'subject', 'marks_obtained', 'total_marks', 'created_at')
-    list_filter = ('subject', 'created_at')
+    list_display = ('student', 'subject', 'terminal', 'marks_obtained', 'total_marks', 'created_at')
+    list_filter = ('subject', 'terminal', 'created_at')
     search_fields = ('student__name', 'subject__name')
     ordering = ('-created_at',)
     date_hierarchy = 'created_at'

@@ -4,7 +4,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'dev-secret-key'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'djangoacadstat.vercel.app',
+
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',

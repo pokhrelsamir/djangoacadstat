@@ -6,6 +6,8 @@ SECRET_KEY = 'dev-secret-key'
 DEBUG = True
 ALLOWED_HOSTS = [
     'djangoacadstat.vercel.app',
+    'localhost',
+    '127.0.0.1',
 
 ]
 

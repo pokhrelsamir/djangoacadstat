@@ -498,6 +498,39 @@
                 }
             }
         });
+    </script
+
+    <script>
+        $(document).ready(function() {
+            // Custom matcher function for case-insensitive searching
+            function modelMatcher(params, data) {
+                // If there are no search terms, return all of the data
+                if ($.trim(params.term) === '') {
+                    return data;
+                }
+
+                // Do not display the item if there is no 'text' property
+                if (typeof data.text === 'undefined') {
+                    return null;
+                }
+
+                // Convert both the search term and the data text to lowercase
+                if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                    return data;
+                }
+
+                // Return null if the term doesn't match
+                return null;
+            }
+
+            $('#id_student, #id_subject').select2({
+                placeholder: "Select or type to search...",
+                allowClear: true,
+                width: '100%',
+                matcher: modelMatcher // Apply the custom matcher here
+            });
+        });
     </script>
+
 </body>
 </html>

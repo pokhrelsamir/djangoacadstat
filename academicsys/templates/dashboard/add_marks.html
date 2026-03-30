@@ -6,11 +6,13 @@
     <title>Add Marks - Academic System</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Theme detection script - Default to dark theme -->
+    <!--for type to filter system-->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
@@ -20,7 +22,6 @@
     </script>
     
     <style>
-        /* Enhanced Form Styles */
         .form-card {
             background: var(--card-bg);
             border-radius: 20px;
@@ -30,17 +31,15 @@
             max-width: 700px;
             margin: 0 auto;
             animation: slideUp 0.4s ease-out;
+            box-sizing: border-box; 
+            height: auto;       
+            overflow: visible; 
+            display: block;
         }
         
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .form-header {
@@ -62,24 +61,17 @@
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
         
-        .form-icon svg {
-            color: white;
-        }
-        
-        .form-header h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-header p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-        
+        .form-icon svg { color: white; }
+        .form-header h2 { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .form-header p { color: var(--text-secondary); font-size: 0.95rem; }
+
         .modern-form .form-group {
             margin-bottom: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .modern-form label {
@@ -90,16 +82,14 @@
             color: var(--text-primary);
             margin-bottom: 0.6rem;
             font-size: 0.95rem;
+            width: 100%;
         }
         
-        .modern-form label svg {
-            color: #667eea;
-            flex-shrink: 0;
-        }
+        .modern-form label svg { color: #667eea; flex-shrink: 0; }
         
         .modern-form input,
         .modern-form select {
-            width: 100%;
+            width: 100% !important;
             padding: 0.9rem 1.2rem;
             border: 2px solid var(--border-color);
             border-radius: 12px;
@@ -108,6 +98,7 @@
             font-size: 1rem;
             font-family: 'Poppins', sans-serif;
             transition: all 0.3s ease;
+            box-sizing: border-box; 
         }
         
         .modern-form input:focus,
@@ -126,32 +117,40 @@
             background-size: 18px;
             padding-right: 3rem;
         }
-        
+
         .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             gap: 1.5rem;
+            width: 100%;
+        }
+
+        .form-row .form-group {
+            flex: 1; /* Makes "Marks" and "Total" equal width */
         }
         
         @media (max-width: 600px) {
             .form-row {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+                gap: 0;
             }
         }
         
+        /* TERMINAL SECTION */
         .terminal-select {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
             border: 2px solid #667eea;
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.2rem;
             margin-bottom: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .terminal-select label {
             color: #667eea;
             font-weight: 600;
             margin-bottom: 0.8rem;
-            display: block;
+            display: flex;
         }
         
         .terminal-options {
@@ -161,37 +160,28 @@
         }
         
         @media (max-width: 600px) {
-            .terminal-options {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .terminal-options { grid-template-columns: repeat(2, 1fr); }
         }
         
-        .terminal-option {
-            position: relative;
-        }
-        
-        .terminal-option input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-        }
+        .terminal-option { position: relative; }
+        .terminal-option input { position: absolute; opacity: 0; cursor: pointer; }
         
         .terminal-option label {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 1rem;
+            padding: 1rem 0.5rem;
             background: var(--input-bg);
             border: 2px solid var(--border-color);
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
         }
         
-        .terminal-option label:hover {
-            border-color: #667eea;
-        }
+        .terminal-option label:hover { border-color: #667eea; }
         
         .terminal-option input:checked + label {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -200,15 +190,8 @@
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         
-        .terminal-option .emoji {
-            font-size: 1.5rem;
-            margin-bottom: 0.3rem;
-        }
-        
-        .terminal-option .label-text {
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
+        .terminal-option .emoji { font-size: 1.5rem; margin-bottom: 0.3rem; }
+        .terminal-option .label-text { font-size: 0.8rem; font-weight: 600; text-align: center; }
         
         .form-actions {
             display: flex;
@@ -218,53 +201,31 @@
             border-top: 2px solid var(--border-color);
         }
         
-        .btn-primary,
-        .btn-secondary {
+        .btn-primary, .btn-secondary {
             flex: 1;
-            padding: 1rem 1.5rem;
+            padding: 1rem;
             border-radius: 12px;
             font-size: 1rem;
             font-weight: 600;
-            font-family: 'Poppins', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            border: 2px solid transparent;
         }
         
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-        }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-secondary { background: var(--input-bg); color: var(--text-primary); border-color: var(--border-color); }
+        .btn-secondary:hover { border-color: #667eea; color: #667eea; }
         
-        .btn-secondary {
-            background: var(--input-bg);
-            color: var(--text-primary);
-            border: 2px solid var(--border-color);
-        }
-        
-        .btn-secondary:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
-        
-        .error-text {
-            color: #e74c3c;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            display: block;
-        }
-        
-        /* Enhanced Back Button */
         .back-btn {
             display: inline-flex;
             align-items: center;
@@ -279,18 +240,71 @@
             margin-bottom: 1.5rem;
             transition: all 0.3s ease;
         }
-        
-        .back-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
-            transform: translateX(-5px);
+        .back-btn:hover { border-color: #667eea; transform: translateX(-5px); }
+
+        .select2-container--open .select2-dropdown {
+            background-color: #ffffff !important; 
+            border: 2px solid #667eea !important;
+            border-radius: 12px !important;
+            z-index: 99999 !important; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .select2-search--dropdown {
+            background-color: #ffffff !important;
+            padding: 10px !important;
+        }
+
+        .select2-search--dropdown .select2-search__field {
+            background-color: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+            color: #333 !important;
+        }
+
+        .select2-results {
+            background-color: #ffffff !important;
+        }
+
+        .select2-results__options {
+            background-color: #ffffff !important;
+        }
+
+        .select2-results__option {
+            background-color: #ffffff !important;
+            color: #333 !important;
+            padding: 12px 15px !important;
+        }
+
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: #667eea !important;
+            color: #ffffff !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            background-color: #ffffff !important;
+            border: 2px solid #e2e8f0 !important;
+            border-radius: 12px !important;
+            height: 50px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #333 !important;
+            padding-left: 15px !important;
+        }
+
+        .select2-selection__arrow {
+            display: none !important;
         }
     </style>
 </head>
 
 <body>
-
-    <!-- Navbar -->
     <nav class="navbar">
         <h2 class="logo">🎓 AcadStat</h2>
         <div class="nav-links">
@@ -348,7 +362,22 @@
                 <form method="POST" class="modern-form" id="marksForm">
                     {% csrf_token %}
                     
-                    <!-- Terminal Selection -->
+                    {% if form.non_field_errors %}
+                        <div class="error-banner" style="background-color: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #fecaca;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                <strong style="font-weight: 600;">Record already exists:</strong>
+                            </div>
+                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; list-style-type: disc;">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
                     <div class="terminal-select">
                         <label>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
@@ -360,38 +389,29 @@
                             Select Terminal/Exam
                         </label>
                         <div class="terminal-options">
-                            <div class="terminal-option">
-                                <input type="radio" id="terminal_1st" name="terminal" value="1st" checked>
-                                <label for="terminal_1st">
-                                    <span class="emoji">📝</span>
-                                    <span class="label-text">1st Terminal</span>
-                                </label>
-                            </div>
-                            <div class="terminal-option">
-                                <input type="radio" id="terminal_2nd" name="terminal" value="2nd">
-                                <label for="terminal_2nd">
-                                    <span class="emoji">📋</span>
-                                    <span class="label-text">2nd Terminal</span>
-                                </label>
-                            </div>
-                            <div class="terminal-option">
-                                <input type="radio" id="terminal_3rd" name="terminal" value="3rd">
-                                <label for="terminal_3rd">
-                                    <span class="emoji">📊</span>
-                                    <span class="label-text">3rd Terminal</span>
-                                </label>
-                            </div>
-                            <div class="terminal-option">
-                                <input type="radio" id="terminal_Final" name="terminal" value="Final">
-                                <label for="terminal_Final">
-                                    <span class="emoji">🏆</span>
-                                    <span class="label-text">Final</span>
-                                </label>
-                            </div>
+                            {% for value, label in form.terminal.field.choices %}
+                                {% if value %} 
+                                <div class="terminal-option">
+                                    <input type="radio" 
+                                        id="terminal_{{ value }}" 
+                                        name="{{ form.terminal.html_name }}" 
+                                        value="{{ value }}"
+                                        {% if form.terminal.value == value or forloop.counter == 2 %}checked{% endif %}>
+                                    
+                                    <label for="terminal_{{ value }}">
+                                        <span class="emoji">
+                                            {% if value == '1st' %}📝{% elif value == '2nd' %}📋{% elif value == '3rd' %}📊{% else %}🏆{% endif %}
+                                        </span>
+                                        <span class="label-text">{{ label }}</span>
+                                    </label>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
+                        {% if form.terminal.errors %}
+                            <span class="error-text">{{ form.terminal.errors }}</span>
+                        {% endif %}
+                    </div> <div class="form-group">
                         <label for="id_student">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -401,7 +421,7 @@
                         </label>
                         {{ form.student }}
                         {% if form.student.errors %}
-                        <span class="error-text">{{ form.student.errors }}</span>
+                            <span class="error-text">{{ form.student.errors }}</span>
                         {% endif %}
                     </div>
 
@@ -415,7 +435,7 @@
                         </label>
                         {{ form.subject }}
                         {% if form.subject.errors %}
-                        <span class="error-text">{{ form.subject.errors }}</span>
+                            <span class="error-text">{{ form.subject.errors }}</span>
                         {% endif %}
                     </div>
 
@@ -429,7 +449,7 @@
                             </label>
                             {{ form.marks_obtained }}
                             {% if form.marks_obtained.errors %}
-                            <span class="error-text">{{ form.marks_obtained.errors }}</span>
+                                <span class="error-text">{{ form.marks_obtained.errors }}</span>
                             {% endif %}
                         </div>
 
@@ -444,7 +464,7 @@
                             </label>
                             {{ form.total_marks }}
                             {% if form.total_marks.errors %}
-                            <span class="error-text">{{ form.total_marks.errors }}</span>
+                                <span class="error-text">{{ form.total_marks.errors }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -467,7 +487,6 @@
         </div>
     </div>
 
-    <!-- Theme Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const themeToggle = document.getElementById('themeToggle');
@@ -532,5 +551,36 @@
         });
     </script>
 
+    <script>
+        $(document).ready(function() {
+            // Custom matcher function for case-insensitive searching
+            function modelMatcher(params, data) {
+                // If there are no search terms, return all of the data
+                if ($.trim(params.term) === '') {
+                    return data;
+                }
+
+                // Do not display the item if there is no 'text' property
+                if (typeof data.text === 'undefined') {
+                    return null;
+                }
+
+                // Convert both the search term and the data text to lowercase
+                if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                    return data;
+                }
+
+                // Return null if the term doesn't match
+                return null;
+            }
+
+            $('#id_student, #id_subject').select2({
+                placeholder: "Select or type to search...",
+                allowClear: true,
+                width: '100%',
+                matcher: modelMatcher // Apply the custom matcher here
+            });
+        });
+    </script>
 </body>
 </html>

@@ -3,637 +3,121 @@
 
 {% block extrahead %}
 {{ block.super }}
-<!-- Theme detection script - Improved with proper sync -->
+
 <script>
-    (function() {
-        const savedTheme = localStorage.getItem('adminTheme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.body.classList.add('theme-' + savedTheme);
-    })();
+(function () {
+    const savedTheme = localStorage.getItem("adminTheme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+})();
+
+
 </script>
-<!-- Flatpickr for better date picker -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-<!-- Flatpickr Month Select Plugin -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/plugins/monthSelect/index.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/plugins/monthSelect/style.css">
-<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+<link rel="stylesheet"
+      href="{% static 'css/admin.css' %}">
+
 <style>
+
+body {
+    background: var(--admin-bg);
+    color: var(--text-primary);
+}
+
+#header {
+    background: var(--primary-gradient);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+#content {
+    background: var(--admin-content-bg);
+}
+
+.module {
+    background: var(--module-bg);
+}
+
+.row1 { background: var(--row1-bg); }
+.row2 { background: var(--row2-bg); }
+
+thead th {
+    background: var(--card-bg);
+    color: var(--text-secondary);
+}
+
+tbody tr:hover {
+    background: var(--row2-bg);
+}
+
+input, select, textarea {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.user-profile-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-profile-photo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:bold;
+}
+
+.theme-toggle-admin {
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    border:none;
+    background:rgba(255,255,255,0.2);
+    color:white;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.theme-toggle-admin:hover {
+    background:rgba(255,255,255,0.35);
+    transform:scale(1.1);
+}
+
+.flatpickr-calendar {
+    border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
+
+[data-theme="dark"] .flatpickr-calendar {
+    background:#1e293b;
+}
+
+[data-theme="light"] .flatpickr-calendar {
+    background:#ffffff;
+}
+
+@media (max-width:768px){
     #header {
-        background: var(--primary-gradient) !important;
-    }
-    
-    /* Apply theme variables */
-    body {
-        background: var(--admin-bg) !important;
-        color: var(--text-primary) !important;
-    }
-    
-    #content {
-        background: var(--admin-content-bg) !important;
-    }
-    
-    .module {
-        background: var(--module-bg) !important;
-    }
-    
-    .row1 {
-        background: var(--row1-bg) !important;
-    }
-    
-    .row2 {
-        background: var(--row2-bg) !important;
-    }
-    
-    /* Table styling with theme */
-    thead th {
-        background: var(--card-bg) !important;
-        color: var(--text-secondary) !important;
-        border-bottom-color: var(--border-color) !important;
-    }
-    
-    tbody tr {
-        border-bottom-color: var(--border-color) !important;
-    }
-    
-    tbody tr:hover {
-        background: var(--row2-bg) !important;
-    }
-    
-    tbody td {
-        color: var(--text-primary) !important;
-    }
-    
-    /* Form elements */
-    input[type="text"], input[type="password"], input[type="email"], 
-    input[type="number"], input[type="date"], select, textarea {
-        background: var(--card-bg) !important;
-        border-color: var(--border-color) !important;
-        color: var(--text-primary) !important;
-    }
-    
-    /* Fieldset */
-    fieldset {
-        background: var(--row2-bg) !important;
-        border-color: var(--border-color) !important;
-    }
-    
-    /* Filter sidebar */
-    #changelist-filter {
-        background: var(--card-bg) !important;
-    }
-    
-    /* Breadcrumbs */
-    .breadcrumbs a {
-        color: var(--primary-color) !important;
-    }
-    
-    /* Page header */
-    .page-header h1 {
-        color: var(--text-primary) !important;
-    }
-    
-    /* Module caption */
-    .module caption {
-        background: var(--row2-bg) !important;
-        color: var(--text-primary) !important;
-        border-bottom-color: var(--border-color) !important;
-    }
-    
-    /* Admin Header Container */
-    #header {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        padding: 0 20px !important;
-    }
-    
-    #branding {
-        display: flex !important;
-        align-items: center !important;
-        gap: 15px !important;
-    }
-    
-    /* User Tools Container */
-    #user-tools {
-        display: flex !important;
-        align-items: center !important;
-        gap: 15px !important;
-        margin-right: 10px !important;
-    }
-    
-    /* Theme toggle button - SINGLE INSTANCE */
-    .theme-toggle-admin {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 38px;
-        height: 38px;
-        border: none;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.2);
-        color: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        padding: 0 !important;
-    }
-    
-    .theme-toggle-admin:hover {
-        background: rgba(255,255,255,0.35);
-        transform: scale(1.1);
-    }
-    
-    .theme-toggle-admin .sun-icon {
-        display: none;
-    }
-    
-    .theme-toggle-admin .moon-icon {
-        display: block;
-    }
-    
-    [data-theme="dark"] .theme-toggle-admin .sun-icon {
-        display: block;
-    }
-    
-    [data-theme="dark"] .theme-toggle-admin .moon-icon {
-        display: none;
-    }
-    
-    /* User profile photo - DYNAMIC based on username */
-    .user-profile-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 5px 10px !important;
-        background: rgba(255,255,255,0.1);
-        border-radius: 25px;
-    }
-    
-    .user-profile-photo {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 0.9rem;
-        color: white;
-        border: 2px solid rgba(255,255,255,0.4);
-        transition: all 0.3s;
-        overflow: hidden;
-        text-transform: uppercase;
-    }
-    
-    .user-profile-photo:hover {
-        transform: scale(1.1);
-        border-color: rgba(255,255,255,0.8);
-    }
-    
-    .user-profile-name {
-        color: rgba(255,255,255,0.95);
-        font-size: 0.85rem;
-        font-weight: 500;
-        max-width: 100px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    
-    /* Collapsible sections styles */
-    .module.collapsible {
-        position: relative;
-    }
-    
-    .module.collapsible > caption {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-right: 40px;
-    }
-    
-    .module.collapsible > caption::after {
-        content: '';
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-top: 6px solid var(--text-secondary);
-        transition: transform 0.3s ease;
-    }
-    
-    .module.collapsed > caption::after {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-    
-    .module.collapsible > table,
-    .module.collapsed > table {
-        display: table;
-    }
-    
-    .module.collapsed > table {
-        display: none;
-    }
-    
-    /* App header collapsible */
-    .app-auth > table,
-    .app-core > table {
-        display: table;
-    }
-    
-    .app-auth.collapsed > table,
-    .app-core.collapsed > table {
-        display: none;
-    }
-    
-    .app-auth > caption,
-    .app-core > caption {
-        cursor: pointer;
-        position: relative;
-    }
-    
-    .app-auth > caption::after,
-    .app-core > caption::after {
-        content: '';
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-top: 6px solid white;
-        transition: transform 0.3s ease;
-    }
-    
-    .app-auth.collapsed > caption::after,
-    .app-core.collapsed > caption::after {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-    
-    /* Flatpickr Calendar Fix - Full Width */
-    .flatpickr-calendar {
-        width: 320px !important;
-        max-width: 100vw !important;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
-        border-radius: 12px !important;
-        border: none !important;
-    }
-    
-    .flatpickr-months {
-        padding: 10px 5px !important;
-    }
-    
-    .flatpickr-month {
-        height: 50px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-    
-    .flatpickr-current-month {
-        display: flex !important;
-        align-items: center !important;
-        gap: 5px !important;
-        padding-top: 0 !important;
-    }
-    
-    .flatpickr-current-month input.cur-year {
-        font-size: 1.1rem !important;
-        font-weight: 600 !important;
-        padding: 5px 8px !important;
-        width: auto !important;
-    }
-    
-    .flatpickr-current-month .numInputWrapper {
-        width: 80px !important;
-    }
-    
-    .flatpickr-monthDropdown-months {
-        font-size: 1rem !important;
-        font-weight: 600 !important;
-        padding: 5px 10px !important;
-        min-width: 120px !important;
-    }
-    
-    .flatpickr-weekdays {
-        padding: 8px 0 !important;
-    }
-    
-    .flatpickr-days {
-        padding: 5px !important;
-    }
-    
-    .dayContainer {
-        min-width: 280px !important;
-    }
-    
-    .flatpickr-day {
-        border-radius: 8px !important;
-        height: 36px !important;
-        line-height: 36px !important;
-        font-size: 0.95rem !important;
-        margin: 2px !important;
-    }
-    
-    .flatpickr-day:hover {
-        background: rgba(102, 126, 234, 0.15) !important;
-        border-color: rgba(102, 126, 234, 0.3) !important;
-    }
-    
-    .flatpickr-day.selected {
-        background: var(--primary-color) !important;
-        border-color: var(--primary-color) !important;
-    }
-    
-    .flatpickr-day.today {
-        border-color: var(--info-color) !important;
-        color: var(--info-color) !important;
-    }
-    
-    .flatpickr-next-month, .flatpickr-prev-month {
-        padding: 8px 10px !important;
-        border-radius: 8px !important;
-    }
-    
-    .flatpickr-next-month:hover, .flatpickr-prev-month:hover {
-        background: rgba(255,255,255,0.1) !important;
-    }
-    
-    .flatpickr-time {
-        border-radius: 0 0 12px 12px !important;
-    }
-    
-    /* Dark theme specific calendar adjustments */
-    [data-theme="dark"] .flatpickr-calendar {
-        background: #1e293b !important;
-        border: 1px solid #334155 !important;
-    }
-    
-    [data-theme="dark"] .flatpickr-month,
-    [data-theme="dark"] .flatpickr-current-month {
-        color: #f1f5f9 !important;
-    }
-    
-    [data-theme="dark"] .flatpickr-monthDropdown-months,
-    [data-theme="dark"] .flatpickr-current-month input.cur-year,
-    [data-theme="dark"] .flatpickr-weekday {
-        color: #94a3b8 !important;
-        background: transparent !important;
-    }
-    
-    [data-theme="dark"] .flatpickr-day {
-        color: #f1f5f9 !important;
-    }
-    
-    [data-theme="dark"] .flatpickr-day.inRange,
-    [data-theme="dark"] .flatpickr-day.prevMonthDay.inRange,
-    [data-theme="dark"] .flatpickr-day.nextMonthDay.inRange {
-        background: #334155 !important;
-        border-color: #334155 !important;
-    }
-    
-    [data-theme="dark"] .flatpickr-day.selected:hover,
-    [data-theme="dark"] .flatpickr-day.startRange:hover,
-    [data-theme="dark"] .flatpickr-day.endRange:hover {
-        background: #818cf8 !important;
-    }
-    
-    [data-theme="dark"] .flatpickr-time input {
-        color: #f1f5f9 !important;
-    }
-    
-    [data-theme="dark"] .flatpickr-time .flatpickr-am-pm {
-        color: #94a3b8 !important;
-    }
-    
-    /* Light theme calendar */
-    [data-theme="light"] .flatpickr-calendar {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    
-    [data-theme="light"] .flatpickr-month,
-    [data-theme="light"] .flatpickr-current-month {
-        color: #1e293b !important;
-    }
-    
-    [data-theme="light"] .flatpickr-day {
-        color: #1e293b !important;
-    }
-    
-    /* Hide original Django admin theme selector if present */
-    .user-tools .theme-toggle,
-    #user-tools .user-tools {
-        display: none !important;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .user-profile-name {
-            display: none;
-        }
-        
-        .flatpickr-calendar {
-            width: 300px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-        }
-    }
+        flex-direction: column;
+        gap:10px;
+    }
+}
+
+
+
 </style>
 
-<!-- Theme Toggle, Profile Photo and Collapsible Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const header = document.getElementById('header');
-        const userTools = document.getElementById('user-tools');
-        
-        // Get current user info - extract from Django context
-        let userName = 'Admin';
-        let userInitial = 'A';
-        
-        // Try to get username from various sources
-        const userLink = userTools?.querySelector('a');
-        if (userLink) {
-            const linkText = userLink.textContent.trim();
-            // Extract name before "Welcome" or just get the text
-            userName = linkText.replace('Welcome, ', '').replace('Welcome', '').trim() || 'Admin';
-            // Get first letter for avatar
-            userInitial = userName.charAt(0).toUpperCase();
-            // If username is an email, get first letter before @
-            if (userName.includes('@')) {
-                userName = userName.split('@')[0];
-                userInitial = userName.charAt(0).toUpperCase();
-            }
-        }
-        
-        // Remove any existing theme toggles (prevents duplicates)
-        const existingToggles = document.querySelectorAll('.theme-toggle-admin');
-        existingToggles.forEach(t => t.remove());
-        
-        const existingProfiles = document.querySelectorAll('.user-profile-wrapper');
-        existingProfiles.forEach(p => p.remove());
-        
-        // Create user profile wrapper
-        const profileWrapper = document.createElement('div');
-        profileWrapper.className = 'user-profile-wrapper';
-        profileWrapper.innerHTML = `
-            <div class="user-profile-photo" title="${userName}">
-                ${userInitial}
-            </div>
-            <span class="user-profile-name">${userName}</span>
-        `;
-        
-        // Create SINGLE theme toggle button
-        const themeToggle = document.createElement('button');
-        themeToggle.className = 'theme-toggle-admin';
-        themeToggle.id = 'adminThemeToggle';
-        themeToggle.setAttribute('aria-label', 'Toggle theme');
-        themeToggle.innerHTML = `
-            <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="5"/>
-                <line x1="12" y1="1" x2="12" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="23"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                <line x1="1" y1="12" x2="3" y2="12"/>
-                <line x1="21" y1="12" x2="23" y2="12"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </svg>
-        `;
-        
-        // Add profile and toggle to user tools
-        if (userTools) {
-            userTools.insertBefore(profileWrapper, userTools.firstChild);
-            userTools.insertBefore(themeToggle, userTools.firstChild);
-        }
-        
-        // Set initial theme based on saved preference
-        const savedTheme = localStorage.getItem('adminTheme') || 'dark';
-        applyTheme(savedTheme);
-        
-        // Add click handler for theme toggle
-        themeToggle.addEventListener('click', function() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            
-            applyTheme(newTheme);
-            localStorage.setItem('adminTheme', newTheme);
-        });
-        
-        function applyTheme(theme) {
-            const html = document.documentElement;
-            const body = document.body;
-            
-            html.setAttribute('data-theme', theme);
-            body.classList.remove('theme-light', 'theme-dark');
-            body.classList.add('theme-' + theme);
-            
-            // Update toggle icon
-            const sunIcon = themeToggle.querySelector('.sun-icon');
-            const moonIcon = themeToggle.querySelector('.moon-icon');
-            
-            if (theme === 'dark') {
-                sunIcon.style.display = 'block';
-                moonIcon.style.display = 'none';
-            } else {
-                sunIcon.style.display = 'none';
-                moonIcon.style.display = 'block';
-            }
-        }
-        
-        // Initialize Flatpickr for date fields with improved settings
-        if (typeof flatpickr !== 'undefined') {
-            flatpickr("input[type='date']", {
-                dateFormat: "Y-m-d",
-                allowInput: true,
-                clickOpens: true,
-                maxDate: "today",
-                defaultDate: null,
-                disableMobile: false,
-                "locale": {
-                    "firstDayOfWeek": 1
-                }
-            });
-            
-            // Also try datetime fields
-            flatpickr("input[type='datetime-local']", {
-                dateFormat: "Y-m-d H:i",
-                allowInput: true,
-                clickOpens: true,
-                enableTime: true,
-                time_24hr: true,
-                disableMobile: false
-            });
-        }
-        
-        // Make app sections collapsible
-        const appModules = document.querySelectorAll('.app-auth, .app-core');
-        appModules.forEach(function(module) {
-            module.classList.add('collapsible');
-            
-            // Check for saved state
-            const moduleId = module.classList.contains('app-auth') ? 'auth' : 'core';
-            const savedState = localStorage.getItem('adminSection_' + moduleId);
-            
-            if (savedState === 'collapsed') {
-                module.classList.add('collapsed');
-            }
-            
-            const caption = module.querySelector('caption');
-            if (caption) {
-                caption.addEventListener('click', function(e) {
-                    // Don't toggle if clicking on a link
-                    if (e.target.tagName === 'A') return;
-                    
-                    module.classList.toggle('collapsed');
-                    
-                    // Save state
-                    const mId = module.classList.contains('app-auth') ? 'auth' : 'core';
-                    if (module.classList.contains('collapsed')) {
-                        localStorage.setItem('adminSection_' + mId, 'collapsed');
-                    } else {
-                        localStorage.setItem('adminSection_' + mId, 'expanded');
-                    }
-                });
-            }
-        });
-    });
-    
-    // Listen for storage changes to sync theme across tabs
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'adminTheme') {
-            const newTheme = e.newValue || 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            document.body.classList.remove('theme-light', 'theme-dark');
-            document.body.classList.add('theme-' + newTheme);
-            
-            // Update toggle button
-            const toggle = document.getElementById('adminThemeToggle');
-            if (toggle) {
-                const sunIcon = toggle.querySelector('.sun-icon');
-                const moonIcon = toggle.querySelector('.moon-icon');
-                if (newTheme === 'dark') {
-                    sunIcon.style.display = 'block';
-                    moonIcon.style.display = 'none';
-                } else {
-                    sunIcon.style.display = 'none';
-                    moonIcon.style.display = 'block';
-                }
-            }
-        }
-    });
-</script>
 {% endblock %}

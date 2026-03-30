@@ -79,8 +79,13 @@ class Result(models.Model):
     total_marks = models.FloatField(default=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        # UPDATED: Now allows one record per student, per subject, PER TERMINAL
+        unique_together = ['student', 'subject', 'terminal']
+
     def __str__(self):
-        return f"{self.student.name} - {self.subject.name}: {self.marks_obtained}/{self.total_marks} ({self.terminal})"
+        # I added the terminal name to the string for better clarity in Admin
+        return f"{self.student.name} - {self.subject.name} ({self.get_terminal_display()}): {self.marks_obtained}"
     
     @property
     def percentage(self):

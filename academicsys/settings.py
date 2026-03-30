@@ -51,7 +51,7 @@ WSGI_APPLICATION = 'academicsys.wsgi.application'
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'NAME': 'acadstat',
 #         'USER': 'shreeadhikari',
-#         'PASSWORD': 'password123',
+#         'PASSWORD': 'acadstat',
 #         'HOST': 'localhost',
 #         'PORT': '5432',
 #     }
@@ -60,9 +60,9 @@ WSGI_APPLICATION = 'academicsys.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'acadstatmain',
-        'USER': 'username',
-        'PASSWORD': 'password',
+        'NAME': 'acadstat',
+        'USER': 'sajit',
+        'PASSWORD': 'acadstat',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -72,6 +72,8 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'academicsys/static']
@@ -85,5 +87,6 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

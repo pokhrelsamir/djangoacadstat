@@ -1,5 +1,6 @@
-
+import os
 from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'dev-secret-key'
@@ -18,7 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
+    'core.apps.CoreConfig',
 ]
 
 MIDDLEWARE = [
@@ -28,13 +29,14 @@ MIDDLEWARE = [
 'django.middleware.csrf.CsrfViewMiddleware',
 'django.contrib.auth.middleware.AuthenticationMiddleware',
 'django.contrib.messages.middleware.MessageMiddleware',
+'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'academicsys.urls'
 
 TEMPLATES = [{
 'BACKEND': 'django.template.backends.django.DjangoTemplates',
-'DIRS': [BASE_DIR / 'academicsys/templates'],
+'DIRS': [BASE_DIR / 'templates'],
 'APP_DIRS': True,
 'OPTIONS': {'context_processors': [
 'django.template.context_processors.debug',
@@ -50,8 +52,8 @@ WSGI_APPLICATION = 'academicsys.wsgi.application'
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'NAME': 'acadstat',
-#         'USER': 'shreeadhikari',
-#         'PASSWORD': 'acadstat',
+#         'USER': '',
+#         'PASSWORD': '',
 #         'HOST': 'localhost',
 #         'PORT': '5432',
 #     }
@@ -73,20 +75,18 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'academicsys/static']
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+    ]
 
 # Admin custom settings
 ADMIN_SITE_HEADER = 'Academic System'
 ADMIN_SITE_TITLE = 'Academic Admin'
 ADMIN_INDEX_TITLE = 'Dashboard'
 
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
-
-LOGIN_URL = '/login/'
-LOGOUT_REDIRECT_URL = '/login/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

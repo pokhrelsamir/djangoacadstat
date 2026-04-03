@@ -12,11 +12,9 @@ from io import BytesIO
 import base64
 from django.contrib import messages
 
-
-# 🏠 HOME VIEW (LANDING PAGE)
 def home_view(request):
     """Landing page - accessible without login"""
-    return render(request, 'dashboard/home.html')
+    return render(request, 'core/dashboard/home.html')
 
 
 # 🔐 LOGIN VIEW
@@ -31,11 +29,11 @@ def login_view(request):
             login(request, user)
             return redirect('/dashboard/')  # ✅ go to dashboard
         else:
-            return render(request, 'registration/login.html', {
+            return render(request, 'core/registration/login.html', {
                 'error': 'Invalid username or password'
             })
 
-    return render(request, 'registration/login.html')
+    return render(request, 'core/registration/login.html')
 
 
 # 🚪 LOGOUT VIEW
@@ -84,7 +82,7 @@ def dashboard(request):
         'user': request.user,
         'is_admin': True,
     }
-    return render(request, 'dashboard/dashboard.html', context)
+    return render(request, 'core/dashboard/dashboard.html', context)
 
 
 # 🎓 STUDENT DASHBOARD (Limited Access)
@@ -103,7 +101,7 @@ def student_dashboard(request, student_id=None):
         try:
             student = Student.objects.get(name=request.user.username)
         except Student.DoesNotExist:
-            return render(request, 'dashboard/student_dashboard.html', {
+            return render(request, 'core/dashboard/student_dashboard.html', {
                 'error': 'Student profile not found. Please contact admin.'
             })
     
@@ -181,7 +179,7 @@ def student_dashboard(request, student_id=None):
         'is_student': True,
     }
     
-    return render(request, 'dashboard/student_dashboard.html', context)
+    return render(request, 'core/dashboard/student_dashboard.html', context)
 
 
 # ➕ ADD MARKS
@@ -205,14 +203,14 @@ def add_marks(request):
     else:
         form = ResultForm()
 
-    return render(request, 'dashboard/add_marks.html', {'form': form})
+    return render(request, 'core/dashboard/add_marks.html', {'form': form})
 
 
 # 📋 MARKS LIST
 @login_required
 def marks_list(request):
     all_marks = Result.objects.all().select_related('student', 'subject')
-    return render(request, 'dashboard/marks_list.html', {'result': all_marks})
+    return render(request, 'core/dashboard/marks_list.html', {'result': all_marks})
 
 # ✏️ EDIT MARKS
 @login_required
@@ -244,9 +242,8 @@ def delete_marks(request, mark_id):
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 
-# ============ QR CODE ATTENDANCE SYSTEM ============
+# QR CODE ATTENDANCE SYSTEM 
 
-# 📱 QR CODE LIST - View all students with their QR codes
 @login_required
 def qr_codes(request):
     """Display all students with their QR codes for printing/scanning"""
@@ -282,10 +279,10 @@ def qr_codes(request):
                 'qr_id': student.qr_code_id or 'N/A'
             })
     
-    return render(request, 'dashboard/qr_codes.html', {'qr_codes': qr_codes_list})
+    return render(request, 'core/dashboard/qr_codes.html', {'qr_codes': qr_codes_list})
 
 
-# 📱 SINGLE STUDENT QR CODE - For printing individual QR codes
+#SINGLE STUDENT QR CODE - For printing individual QR codes
 @login_required
 def student_qr_code(request, student_id):
     """Generate QR code for a specific student"""
@@ -315,10 +312,10 @@ def student_qr_code(request, student_id):
 @login_required
 def qr_scanner(request):
     """QR code scanner page with camera access"""
-    return render(request, 'dashboard/qr_scanner.html')
+    return render(request, 'core/dashboard/qr_scanner.html')
 
 
-# 📱 QR SCAN PROCESS - Process scanned QR code data
+#QR SCAN PROCESS - Process scanned QR code data
 @login_required
 @require_http_methods(["POST"])
 def process_qr_scan(request):
@@ -402,12 +399,12 @@ def process_qr_scan(request):
         }, status=400)
 
 
-# 📱 ATTENDANCE LIST - View attendance records
+#ATTENDANCE LIST - View attendance records
 @login_required
 def attendance_list(request):
     """Display attendance records"""
     attendance_records = Attendance.objects.select_related('student').all()[:100]
-    return render(request, 'dashboard/attendance_list.html', {'attendance': attendance_records})
+    return render(request, 'core/dashboard/attendance_list.html', {'attendance': attendance_records})
 
 
 # 📱 ATTENDANCE REPORT - Attendance statistics
@@ -432,16 +429,16 @@ def attendance_report(request):
         'attendance_by_date': list(attendance_by_date),
         'top_attendance': list(top_attendance),
     }
-    return render(request, 'dashboard/attendance_report.html', context)
+    return render(request, 'core/dashboard/attendance_report.html', context)
 
 
-# 📱 MOBILE SCANNER - Standalone mobile-friendly scanner
+#MOBILE SCANNER - Standalone mobile-friendly scanner
 def mobile_scanner(request):
     """Mobile-friendly QR scanner for app integration"""
-    return render(request, 'dashboard/mobile_scanner.html')
+    return render(request, 'core/dashboard/mobile_scanner.html')
 
 
-# 📱 REGENERATE ALL QR CODES
+#REGENERATE ALL QR CODES
 @login_required
 def regenerate_qr_codes(request):
     """Regenerate QR codes for all students"""
@@ -457,7 +454,7 @@ def regenerate_qr_codes(request):
     })
 
 
-# 📊 CHART DATA API
+#CHART DATA API
 @login_required
 def chart_data(request):
     """Get chart data for dashboard visualization"""
@@ -535,7 +532,7 @@ def chart_data(request):
     })
 
 
-# 📄 MARK SHEET VIEW
+# MARK SHEET VIEW
 @login_required
 def mark_sheet(request, student_id=None, terminal=None):
     """Generate official mark sheet for a student with terminal filter"""
@@ -620,10 +617,10 @@ def mark_sheet(request, student_id=None, terminal=None):
         'doc_id': doc_id,
     }
     
-    return render(request, 'dashboard/mark_sheet.html', context)
+    return render(request, 'core/dashboard/mark_sheet.html', context)
 
 
-# 📋 SELECT STUDENT FOR MARK SHEET
+# SELECT STUDENT FOR MARK SHEET
 @login_required
 def select_mark_sheet(request):
     """Student selection page for mark sheet generation"""
@@ -637,7 +634,7 @@ def select_mark_sheet(request):
         'terminals': terminals,
     }
     
-    return render(request, 'dashboard/select_mark_sheet.html', context)
+    return render(request, 'core/dashboard/select_mark_sheet.html', context)
 
 
 #  STUDENT ANALYSIS VIEW
@@ -747,7 +744,7 @@ def student_analysis(request):
         'sort_by': sort_by,
     }
     
-    return render(request, 'dashboard/student_analysis.html', context)
+    return render(request, 'core/dashboard/student_analysis.html', context)
 
 
 def generate_ai_summary(student, results, percentage, weak_subjects):

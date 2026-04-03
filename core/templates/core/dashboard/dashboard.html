@@ -2,112 +2,282 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Academic System</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Theme detection script - Default to dark theme -->
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('theme');
-            const theme = savedTheme || 'dark';
-            document.documentElement.setAttribute('data-theme', theme);
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
         })();
     </script>
     
     <style>
+        :root {
+            --dashboard-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --info-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        [data-theme="dark"] {
+            --dashboard-bg: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+
         .dashboard-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 30px 20px;
+            padding: 30px;
+            background: var(--dashboard-bg);
+            min-height: calc(100vh - 70px);
         }
-        
-        /* Charts Section */
+
+        .dashboard-header {
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .dashboard-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .stat-card:nth-child(1)::before {
+            background: var(--accent-gradient);
+        }
+
+        .stat-card:nth-child(2)::before {
+            background: var(--success-gradient);
+        }
+
+        .stat-card:nth-child(3)::before {
+            background: var(--info-gradient);
+        }
+
+        .stat-card:nth-child(4)::before {
+            background: var(--warning-gradient);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+        }
+
+        .stat-card:nth-child(1) .stat-icon {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .stat-card:nth-child(2) .stat-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .stat-card:nth-child(3) .stat-icon {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .stat-card:nth-child(4) .stat-icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
         .charts-section {
-            margin-top: 30px;
+            margin-bottom: 30px;
         }
-        
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #667eea;
+        }
+
         .charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
         }
-        
+
         .chart-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            padding: 24px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        
+
         .chart-card h3 {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary);
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
-        
-        .chart-card h3 span {
-            font-size: 1.5rem;
-        }
-        
+
         .chart-wrapper {
             position: relative;
-            height: 300px;
+            height: 280px;
         }
-        
-        /* Quick Actions */
-        .quick-actions {
-            background: white;
+
+        .quick-actions-section {
+            background: var(--card-bg);
             border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            margin-top: 25px;
+            padding: 24px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        
-        .quick-actions h2 {
-            font-size: 1.3rem;
+
+        .quick-actions-section h2 {
+            font-size: 1.1rem;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary);
             margin-bottom: 20px;
-        }
-        
-        .action-buttons {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .action-btn {
-            display: inline-flex;
             align-items: center;
             gap: 10px;
-            padding: 15px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-decoration: none;
+        }
+
+        .quick-actions-section h2 i {
+            color: #667eea;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: var(--dashboard-bg);
             border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
         }
-        
-        .action-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+
+        .action-item:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
-        
-        .action-btn span {
-            font-size: 1.3rem;
+
+        .action-item i {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
         }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
+
+        @media (max-width: 1024px) {
             .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 20px 15px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .action-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -115,100 +285,95 @@
 </head>
 
 <body>
-    <!-- Navbar -->
     <nav class="navbar">
-        <h2 class="logo">🎓 AcadStat</h2>
+        <h2 class="logo">
+            <i class="fas fa-graduation-cap"></i> AcadStat
+        </h2>
         <div class="nav-links">
-            <a href="/">Home</a>
+            <a href="/"><i class="fas fa-home"></i> Home</a>
             {% if user.is_authenticated %}
-                <a href="/dashboard/">Dashboard</a>
-                <a href="/logout/">Logout</a>
+                <a href="/dashboard/"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
             {% else %}
-                <a href="/login/">Login</a>
+                <a href="/login/"><i class="fas fa-sign-in-alt"></i> Login</a>
             {% endif %}
             
-            <!-- Theme Toggle Button -->
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="5"/>
-                    <line x1="12" y1="1" x2="12" y2="3"/>
-                    <line x1="12" y1="21" x2="12" y2="23"/>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                    <line x1="1" y1="12" x2="3" y2="12"/>
-                    <line x1="21" y1="12" x2="23" y2="12"/>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                </svg>
-                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                </svg>
+                <i class="fas fa-sun sun-icon"></i>
+                <i class="fas fa-moon moon-icon"></i>
             </button>
         </div>
     </nav>
 
-    <!-- Page Content -->
     <div class="container">
         <div class="dashboard-container">
-            <!-- Welcome Message -->
-            <div class="welcome-message">
-                Welcome back, <strong>{{ user.username }}</strong>! Here's an overview of your academic data.
+            <div class="dashboard-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Welcome back, {{ user.username }}</h1>
+                <p>Here's an overview of your academic performance and activities</p>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="cards">
-                <div class="card">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
                     <h3>Total Students</h3>
-                    <p>{{ total_students }}</p>
+                    <div class="stat-value">{{ total_students }}</div>
                 </div>
 
-                <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
                     <h3>Total Subjects</h3>
-                    <p>{{ total_subjects }}</p>
+                    <div class="stat-value">{{ total_subjects }}</div>
                 </div>
 
-                <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
                     <h3>Average Score</h3>
-                    <p>{{ average_marks }}%</p>
+                    <div class="stat-value">{{ average_marks }}%</div>
                 </div>
 
-                <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
                     <h3>Today's Attendance</h3>
-                    <p>{{ today_attendance }}</p>
+                    <div class="stat-value">{{ today_attendance }}</div>
                 </div>
             </div>
 
-            <!-- Charts Section -->
             <div class="charts-section">
-                <h2 style="margin-bottom: 20px; color: #1e293b;">📊 Performance Analytics</h2>
+                <h2 class="section-title">
+                    <i class="fas fa-chart-bar"></i> Performance Analytics
+                </h2>
                 <div class="charts-grid">
-                    <!-- Marks Distribution Chart -->
                     <div class="chart-card">
-                        <h3><span>📈</span> Marks Distribution</h3>
+                        <h3><i class="fas fa-chart-bar"></i> Marks Distribution</h3>
                         <div class="chart-wrapper">
                             <canvas id="distributionChart"></canvas>
                         </div>
                     </div>
                     
-                    <!-- Subject Performance Chart -->
                     <div class="chart-card">
-                        <h3><span>📚</span> Subject Performance</h3>
+                        <h3><i class="fas fa-chart-line"></i> Subject Performance</h3>
                         <div class="chart-wrapper">
                             <canvas id="subjectChart"></canvas>
                         </div>
                     </div>
                     
-                    <!-- Top Students Chart -->
                     <div class="chart-card">
-                        <h3><span>🏆</span> Top Performing Students</h3>
+                        <h3><i class="fas fa-trophy"></i> Top Performing Students</h3>
                         <div class="chart-wrapper">
                             <canvas id="topStudentsChart"></canvas>
                         </div>
                     </div>
                     
-                    <!-- Attendance Chart -->
                     <div class="chart-card">
-                        <h3><span>📅</span> Weekly Attendance</h3>
+                        <h3><i class="fas fa-calendar-alt"></i> Weekly Attendance</h3>
                         <div class="chart-wrapper">
                             <canvas id="attendanceChart"></canvas>
                         </div>
@@ -216,46 +381,45 @@
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <h2>⚡ Quick Actions</h2>
-                <div class="action-buttons">
-                    <a href="/add-marks/" class="action-btn">
-                        <span>➕</span> Add Marks
+            <div class="quick-actions-section">
+                <h2>
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </h2>
+                <div class="action-grid">
+                    <a href="/add-marks/" class="action-item">
+                        <i class="fas fa-plus-circle"></i> Add Marks
                     </a>
-                    <a href="/marks-list/" class="action-btn">
-                        <span>📋</span> View All Marks
+                    <a href="/marks-list/" class="action-item">
+                        <i class="fas fa-list"></i> View All Marks
                     </a>
-                    <a href="/mark-sheet/" class="action-btn" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);">
-                        <span>📄</span> Generate Mark Sheet
+                    <a href="/mark-sheet/" class="action-item">
+                        <i class="fas fa-file-alt"></i> Generate Mark Sheet
                     </a>
-                    <a href="/student-analysis/" class="action-btn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                        <span>🤖</span> AI Analysis
+                    <a href="/student-analysis/" class="action-item">
+                        <i class="fas fa-robot"></i> AI Analysis
                     </a>
-                    <a href="/qr-codes/" class="action-btn">
-                        <span>📱</span> Student QR Codes
+                    <a href="/qr-codes/" class="action-item">
+                        <i class="fas fa-qrcode"></i> Student QR Codes
                     </a>
-                    <a href="/qr-scanner/" class="action-btn">
-                        <span>📷</span> QR Scanner
+                    <a href="/qr-scanner/" class="action-item">
+                        <i class="fas fa-qrcode"></i> QR Scanner
                     </a>
-                    <a href="/attendance/" class="action-btn">
-                        <span>✅</span> Attendance
+                    <a href="/attendance/" class="action-item">
+                        <i class="fas fa-clipboard-check"></i> Attendance
                     </a>
-                    <a href="/admin/" class="action-btn">
-                        <span>⚙️</span> Admin Panel
+                    <a href="/admin/" class="action-item">
+                        <i class="fas fa-cog"></i> Admin Panel
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Theme Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const themeToggle = document.getElementById('themeToggle');
             const html = document.documentElement;
             
-            // Set initial icon state
             updateThemeIcon(html.getAttribute('data-theme'));
             
             themeToggle.addEventListener('click', function() {
@@ -266,7 +430,6 @@
                 localStorage.setItem('theme', newTheme);
                 updateThemeIcon(newTheme);
                 
-                // Reload charts with new theme
                 loadCharts();
             });
             
@@ -275,15 +438,14 @@
                 const moonIcon = themeToggle.querySelector('.moon-icon');
                 
                 if (theme === 'dark') {
-                    sunIcon.style.display = 'block';
+                    sunIcon.style.display = 'inline';
                     moonIcon.style.display = 'none';
                 } else {
                     sunIcon.style.display = 'none';
-                    moonIcon.style.display = 'block';
+                    moonIcon.style.display = 'inline';
                 }
             }
             
-            // Load charts
             loadCharts();
             
             async function loadCharts() {
@@ -297,11 +459,9 @@
                     const textColor = isDark ? '#f1f5f9' : '#1e293b';
                     const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
                     
-                    // Chart.js defaults
                     Chart.defaults.color = textColor;
                     Chart.defaults.borderColor = gridColor;
                     
-                    // Marks Distribution Chart
                     const distCtx = document.getElementById('distributionChart').getContext('2d');
                     if (window.distChart) window.distChart.destroy();
                     window.distChart = new Chart(distCtx, {
@@ -342,7 +502,6 @@
                         }
                     });
                     
-                    // Subject Performance Chart
                     const subCtx = document.getElementById('subjectChart').getContext('2d');
                     if (window.subChart) window.subChart.destroy();
                     window.subChart = new Chart(subCtx, {
@@ -376,7 +535,6 @@
                         }
                     });
                     
-                    // Top Students Chart
                     const topCtx = document.getElementById('topStudentsChart').getContext('2d');
                     if (window.topChart) window.topChart.destroy();
                     window.topChart = new Chart(topCtx, {
@@ -407,7 +565,6 @@
                         }
                     });
                     
-                    // Attendance Chart
                     const attCtx = document.getElementById('attendanceChart').getContext('2d');
                     if (window.attChart) window.attChart.destroy();
                     window.attChart = new Chart(attCtx, {

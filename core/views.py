@@ -185,25 +185,169 @@ def student_dashboard(request, student_id=None):
 # ➕ ADD MARKS
 @login_required
 def add_marks(request):
+    subjects = Subject.objects.all().values('id', 'name')
+    subject_options = list(subjects)
+    
+    SEMESTER_CHOICES = [
+        ('1', 'Semester 1'),
+        ('2', 'Semester 2'),
+        ('3', 'Semester 3'),
+        ('4', 'Semester 4'),
+        ('5', 'Semester 5'),
+        ('6', 'Semester 6'),
+        ('7', 'Semester 7'),
+        ('8', 'Semester 8'),
+    ]
+    
     if request.method == "POST":
         form = ResultForm(request.POST)
         if form.is_valid():
-            # Get terminal from form data
+            student = form.cleaned_data['student']
+            subject = form.cleaned_data['subject']
             terminal = request.POST.get('terminal', '1st')
+            marks_obtained = form.cleaned_data['marks_obtained']
+            total_marks = form.cleaned_data.get('total_marks', 100)
             
-            # Save with terminal
-            result = form.save(commit=False)
-            result.terminal = terminal
-            result.save()
+            existing = Result.objects.filter(
+                student_id=student.id,
+                subject_id=subject.id,
+                terminal=terminal
+            ).first()
             
-            messages.success(request, "Marks added successfully!")
+            if existing:
+                existing.marks_obtained = marks_obtained
+                existing.total_marks = total_marks
+                existing.save()
+                messages.success(request, f"Marks updated successfully for {student.name}!")
+            else:
+                Result.objects.create(
+                    student=student,
+                    subject=subject,
+                    terminal=terminal,
+                    marks_obtained=marks_obtained,
+                    total_marks=total_marks
+                )
+                messages.success(request, "Marks added successfully!")
+            
             return redirect('/marks-list/')
         else:
-            messages.error(request, "Please correct the error below. (Perhaps marks for this student/subject already exist?)")
+            error_messages = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    field_label = form.fields[field].label if form.fields[field].label else field
+                    error_messages.append(f"{field_label}: {error}")
+            
+            if not error_messages:
+                error_messages = ["Please correct the errors below."]
+            
+            for msg in error_messages:
+                messages.error(request, msg)
     else:
         form = ResultForm()
 
-    return render(request, 'core/dashboard/add_marks.html', {'form': form})
+    return render(request, 'core/dashboard/add_marks.html', {
+        'form': form,
+        'subject_options': subject_options,
+        'semester_choices': SEMESTER_CHOICES
+    })
+
+
+# 📊 API: Bulk Add Marks
+@login_required
+@require_http_methods(["POST"])
+def add_marks_bulk(request):
+    try:
+        data = json.loads(request.body)
+        marks_list = data.get('marks', [])
+        
+        if not marks_list:
+            return JsonResponse({'success': False, 'message': 'No marks data provided'})
+        
+        errors = []
+        success_count = 0
+        updated_count = 0
+        
+        for idx, mark_data in enumerate(marks_list):
+            student_id = mark_data.get('student')
+            subject_id = mark_data.get('subject')
+            terminal = mark_data.get('terminal', '1st')
+            marks_obtained = mark_data.get('marks_obtained')
+            total_marks = mark_data.get('total_marks', 100)
+            
+            if not student_id or not subject_id:
+                errors.append(f"Row {idx + 1}: Student and Subject are required")
+                continue
+            
+            if marks_obtained is None:
+                errors.append(f"Row {idx + 1}: Marks obtained is required")
+                continue
+            
+            existing = Result.objects.filter(
+                student_id=student_id,
+                subject_id=subject_id,
+                terminal=terminal
+            ).first()
+            
+            if existing:
+                existing.marks_obtained = float(marks_obtained)
+                existing.total_marks = float(total_marks)
+                existing.save()
+                updated_count += 1
+            else:
+                Result.objects.create(
+                    student_id=student_id,
+                    subject_id=subject_id,
+                    terminal=terminal,
+                    marks_obtained=float(marks_obtained),
+                    total_marks=float(total_marks)
+                )
+                success_count += 1
+        
+        if errors:
+            return JsonResponse({
+                'success': True,
+                'message': f'{success_count} new marks added, {updated_count} updated. {len(errors)} entries have issues.',
+                'errors': errors
+            })
+        
+        if updated_count > 0:
+            message = f'{success_count} new marks added, {updated_count} updated successfully!'
+        else:
+            message = f'{success_count} marks added successfully!'
+        
+        return JsonResponse({
+            'success': True,
+            'message': message
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON data'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+# 📤 API: Get Student Info
+@login_required
+def student_info(request, student_id):
+    try:
+        student = get_object_or_404(Student, id=student_id)
+        image_url = None
+        if student.image:
+            image_url = student.image.url
+        
+        return JsonResponse({
+            'success': True,
+            'student': {
+                'id': student.id,
+                'name': student.name,
+                'roll_number': student.roll_number,
+                'class': student.student_class,
+                'section': student.section,
+                'image_url': image_url
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=404)
 
 
 # 📋 MARKS LIST

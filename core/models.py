@@ -27,7 +27,9 @@ class Student(models.Model):
     roll_number = models.CharField(max_length=20, unique=True, null=True, blank=True)
     student_class = models.CharField(max_length=20)
     section = models.CharField(max_length=5)
+    semester = models.CharField(max_length=20, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
+    image = models.ImageField(upload_to='student_images/', null=True, blank=True, help_text="Student photo")
     created_at = models.DateTimeField(auto_now_add=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True)
     

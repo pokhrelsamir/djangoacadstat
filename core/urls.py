@@ -36,4 +36,6 @@ urlpatterns = [
 
     # API
     path('chart-data/', views.chart_data, name='chart_data'),
+    path('api/add-marks-bulk/', views.add_marks_bulk, name='add_marks_bulk'),
+    path('api/student-info/<int:student_id>/', views.student_info, name='student_info'),
 ]

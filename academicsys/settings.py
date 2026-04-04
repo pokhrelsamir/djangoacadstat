@@ -80,6 +80,10 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
     ]
 
+# Media files (uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Admin custom settings
 ADMIN_SITE_HEADER = 'Academic System'
 ADMIN_SITE_TITLE = 'Academic Admin'

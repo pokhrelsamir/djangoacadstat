@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!--for type to filter system-->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -22,37 +21,66 @@
     </script>
     
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            max-width: 100%;
+        }
+
+        .page-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
         .form-card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 2.5rem;
+            padding: 2rem;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             border: 1px solid var(--border-color);
-            max-width: 700px;
-            margin: 0 auto;
             animation: slideUp 0.4s ease-out;
-            box-sizing: border-box; 
-            height: auto;       
-            overflow: visible; 
+            box-sizing: border-box;
+            overflow: visible;
             display: block;
         }
-        
+
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .form-header {
             text-align: center;
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
             border-bottom: 2px solid var(--border-color);
         }
-        
+
         .form-icon {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -60,20 +88,173 @@
             margin: 0 auto 1.2rem;
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
-        
+
         .form-icon svg { color: white; }
         .form-header h2 { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
         .form-header p { color: var(--text-secondary); font-size: 0.95rem; }
+
+        .student-info-header {
+            text-align: center;
+        }
+
+        .student-image-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 1.2rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .student-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .student-image-container svg {
+            color: #667eea;
+        }
+
+        .student-image-container.has-image {
+            border-color: var(--success-color);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            .form-card {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+        }
+
+        .terminal-select {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .terminal-select label {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .terminal-select .terminal-label-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .terminal-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .terminal-options { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        }
+
+        @media (max-width: 480px) {
+            .terminal-options { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        }
+
+        .terminal-option { position: relative; }
+        .terminal-option input { position: absolute; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+        .terminal-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem 0.75rem;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 90px;
+        }
+
+        .terminal-option label:hover { 
+            border-color: #667eea; 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .terminal-option label:active {
+            transform: translateY(0);
+        }
+
+        .terminal-option input:checked + label {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .terminal-option input:checked + label .terminal-emoji {
+            transform: scale(1.1);
+        }
+
+        .terminal-option .terminal-emoji { 
+            font-size: 1.75rem; 
+            margin-bottom: 0.4rem;
+            transition: transform 0.25s ease;
+        }
+        
+        .terminal-option .terminal-label-text { 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+        
+        .terminal-option .terminal-sublabel {
+            font-size: 0.7rem;
+            opacity: 0.75;
+            margin-top: 0.2rem;
+        }
 
         .modern-form .form-group {
             margin-bottom: 1.5rem;
             width: 100%;
             box-sizing: border-box;
-            width: 100%;
             display: flex;
             flex-direction: column;
         }
-        
+
         .modern-form label {
             display: flex;
             align-items: center;
@@ -82,11 +263,10 @@
             color: var(--text-primary);
             margin-bottom: 0.6rem;
             font-size: 0.95rem;
-            width: 100%;
         }
-        
+
         .modern-form label svg { color: #667eea; flex-shrink: 0; }
-        
+
         .modern-form input,
         .modern-form select {
             width: 100% !important;
@@ -98,101 +278,244 @@
             font-size: 1rem;
             font-family: 'Poppins', sans-serif;
             transition: all 0.3s ease;
-            box-sizing: border-box; 
+            box-sizing: border-box;
         }
-        
+
         .modern-form input:focus,
         .modern-form select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
         }
-        
-        .modern-form select {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 18px;
-            padding-right: 3rem;
+
+        .modern-form input.error,
+        .modern-form select.error {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
         }
 
-        .form-row {
-            display: flex;
-            gap: 1.5rem;
-            width: 100%;
+        .error-text {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 0.4rem;
+            display: none;
         }
 
-        .form-row .form-group {
-            flex: 1; /* Makes "Marks" and "Total" equal width */
+        .error-text.visible {
+            display: block;
         }
-        
-        @media (max-width: 600px) {
-            .form-row {
-                flex-direction: column;
-                gap: 0;
-            }
-        }
-        
-        /* TERMINAL SECTION */
-        .terminal-select {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            border: 2px solid #667eea;
-            border-radius: 12px;
-            padding: 1.2rem;
-            margin-bottom: 1.5rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .terminal-select label {
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 0.8rem;
-            display: flex;
-        }
-        
-        .terminal-options {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.8rem;
-        }
-        
-        @media (max-width: 600px) {
-            .terminal-options { grid-template-columns: repeat(2, 1fr); }
-        }
-        
-        .terminal-option { position: relative; }
-        .terminal-option input { position: absolute; opacity: 0; cursor: pointer; }
-        
-        .terminal-option label {
-            display: flex;
-            flex-direction: column;
+
+        .back-btn {
+            display: inline-flex;
             align-items: center;
-            padding: 1rem 0.5rem;
-            background: var(--input-bg);
+            gap: 0.5rem;
+            padding: 0.7rem 1.2rem;
+            background: var(--card-bg);
             border: 2px solid var(--border-color);
             border-radius: 10px;
-            cursor: pointer;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
             transition: all 0.3s ease;
-            margin-bottom: 0;
+            width: fit-content;
+        }
+        .back-btn:hover { border-color: #667eea; transform: translateX(-5px); }
+
+        .marks-table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+        }
+
+        .marks-table {
             width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        .marks-table thead {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .marks-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .marks-table th:first-child {
+            border-top-left-radius: 10px;
+        }
+
+        .marks-table th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+        .marks-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .marks-table tbody tr {
+            background: var(--card-bg);
+            transition: background 0.2s ease;
+        }
+
+        .marks-table tbody tr:hover {
+            background: var(--input-bg);
+        }
+
+        .marks-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .subject-select {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .subject-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .marks-input {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+        }
+
+        .marks-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .marks-input.error {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+
+        .marks-input.valid {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        .total-cell {
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--error-color);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .add-row-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.9rem 1.5rem;
+            background: var(--card-bg);
+            border: 2px dashed rgba(102, 126, 234, 0.4);
+            border-radius: 12px;
+            color: #667eea;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            margin-top: 1rem;
             box-sizing: border-box;
         }
-        
-        .terminal-option label:hover { border-color: #667eea; }
-        
-        .terminal-option input:checked + label {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+
+        .add-row-btn:hover {
+            border-style: solid;
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
         }
-        
-        .terminal-option .emoji { font-size: 1.5rem; margin-bottom: 0.3rem; }
-        .terminal-option .label-text { font-size: 0.8rem; font-weight: 600; text-align: center; }
-        
+
+        .add-row-btn:active {
+            transform: translateY(0);
+        }
+
+        .add-row-btn svg {
+            transition: transform 0.3s ease;
+        }
+
+        .add-row-btn:hover svg {
+            transform: rotate(90deg);
+        }
+
+        .grand-total-card {
+            background: var(--primary-gradient);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .grand-total-label {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .grand-total-value {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        @media (max-width: 600px) {
+            .grand-total-card {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+                padding: 1.25rem;
+            }
+            .grand-total-value {
+                font-size: 1.75rem;
+            }
+        }
+
         .form-actions {
             display: flex;
             gap: 1rem;
@@ -200,7 +523,7 @@
             padding-top: 1.5rem;
             border-top: 2px solid var(--border-color);
         }
-        
+
         .btn-primary, .btn-secondary {
             flex: 1;
             padding: 1rem;
@@ -215,78 +538,84 @@
             gap: 0.5rem;
             border: 2px solid transparent;
         }
-        
+
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             color: white;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-        
-        .btn-primary:hover { transform: translateY(-2px); }
-        .btn-secondary { background: var(--input-bg); color: var(--text-primary); border-color: var(--border-color); }
-        .btn-secondary:hover { border-color: #667eea; color: #667eea; }
-        
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.7rem 1.2rem;
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-primary);
-            text-decoration: none;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-        .back-btn:hover { border-color: #667eea; transform: translateX(-5px); }
 
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .btn-calculate {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid var(--success-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .error-banner {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--error-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--error-color);
+        }
+
+        /* Select2 Overrides */
         .select2-container--open .select2-dropdown {
-            background-color: #ffffff !important; 
+            background-color: var(--card-bg) !important;
             border: 2px solid #667eea !important;
             border-radius: 12px !important;
-            z-index: 99999 !important; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-
-        .select2-search--dropdown {
-            background-color: #ffffff !important;
-            padding: 10px !important;
-        }
-
-        .select2-search--dropdown .select2-search__field {
-            background-color: #f8fafc !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 8px !important;
-            padding: 8px !important;
-            color: #333 !important;
-        }
-
-        .select2-results {
-            background-color: #ffffff !important;
-        }
-
-        .select2-results__options {
-            background-color: #ffffff !important;
+            z-index: 99999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
         .select2-results__option {
-            background-color: #ffffff !important;
-            color: #333 !important;
+            background-color: var(--card-bg) !important;
+            color: var(--text-primary) !important;
             padding: 12px 15px !important;
         }
 
         .select2-results__option--highlighted[aria-selected] {
             background-color: #667eea !important;
-            color: #ffffff !important;
+            color: white !important;
         }
 
         .select2-container--default .select2-selection--single {
-            background-color: #ffffff !important;
-            border: 2px solid #e2e8f0 !important;
+            background-color: var(--input-bg) !important;
+            border: 2px solid var(--border-color) !important;
             border-radius: 12px !important;
             height: 50px !important;
             display: flex !important;
@@ -294,12 +623,35 @@
         }
 
         .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #333 !important;
+            color: var(--text-primary) !important;
             padding-left: 15px !important;
         }
 
         .select2-selection__arrow {
             display: none !important;
+        }
+
+        /* Row animation */
+        @keyframes rowFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .table-row-new {
+            animation: rowFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes rowFadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(-15px);
+                background: rgba(102, 126, 234, 0.1);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+                background: transparent;
+            }
         }
     </style>
 </head>
@@ -316,7 +668,6 @@
                 <a href="/login/">Login</a>
             {% endif %}
             
-            <!-- Theme Toggle Button -->
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                 <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5"/>
@@ -336,10 +687,8 @@
         </div>
     </nav>
 
-    <!-- Page Content -->
     <div class="container">
         <div class="page-wrapper">
-            <!-- Back Button -->
             <a href="/dashboard/" class="back-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -347,131 +696,143 @@
                 Back to Dashboard
             </a>
 
-            <!-- Add Marks Form Container -->
             <div class="form-card">
                 <div class="form-header">
-                    <div class="form-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                        </svg>
+                    <div class="student-info-header">
+                        <div class="student-image-container" id="studentImageContainer">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <h2>Add Student Marks</h2>
+                        <p id="selectedStudentName">Select a student to begin</p>
                     </div>
-                    <h2>Add Student Marks</h2>
-                    <p>Enter the marks obtained by the student</p>
                 </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                        <div class="success-message">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            {{ message }}
+                        </div>
+                        {% else %}
+                        <div class="error-banner">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            {{ message }}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
 
                 <form method="POST" class="modern-form" id="marksForm">
                     {% csrf_token %}
                     
-                    {% if form.non_field_errors %}
-                        <div class="error-banner" style="background-color: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #fecaca;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                                </svg>
-                                <strong style="font-weight: 600;">Record already exists:</strong>
-                            </div>
-                            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; list-style-type: disc;">
-                                {% for error in form.non_field_errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
-                    
-                    <div class="terminal-select">
-                        <label>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/>
-                                <line x1="8" y1="2" x2="8" y2="6"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                            Select Terminal/Exam
-                        </label>
-                        <div class="terminal-options">
-                            {% for value, label in form.terminal.field.choices %}
-                                {% if value %} 
-                                <div class="terminal-option">
-                                    <input type="radio" 
-                                        id="terminal_{{ value }}" 
-                                        name="{{ form.terminal.html_name }}" 
-                                        value="{{ value }}"
-                                        {% if form.terminal.value == value or forloop.counter == 2 %}checked{% endif %}>
-                                    
-                                    <label for="terminal_{{ value }}">
-                                        <span class="emoji">
-                                            {% if value == '1st' %}📝{% elif value == '2nd' %}📋{% elif value == '3rd' %}📊{% else %}🏆{% endif %}
-                                        </span>
-                                        <span class="label-text">{{ label }}</span>
-                                    </label>
-                                </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                        {% if form.terminal.errors %}
-                            <span class="error-text">{{ form.terminal.errors }}</span>
-                        {% endif %}
-                    </div> <div class="form-group">
-                        <label for="id_student">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                            Student
-                        </label>
-                        {{ form.student }}
-                        {% if form.student.errors %}
-                            <span class="error-text">{{ form.student.errors }}</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="id_subject">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                            </svg>
-                            Subject
-                        </label>
-                        {{ form.subject }}
-                        {% if form.subject.errors %}
-                            <span class="error-text">{{ form.subject.errors }}</span>
-                        {% endif %}
-                    </div>
-
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="id_marks_obtained">
+                            <label for="id_student">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
                                 </svg>
-                                Marks Obtained
+                                Student
                             </label>
-                            {{ form.marks_obtained }}
-                            {% if form.marks_obtained.errors %}
-                                <span class="error-text">{{ form.marks_obtained.errors }}</span>
-                            {% endif %}
+                            {{ form.student }}
+                            <span class="error-text" id="student-error">Please select a student</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="id_total_marks">
+                            <label for="id_semester">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <line x1="12" y1="8" x2="12" y2="16"/>
-                                    <line x1="8" y1="12" x2="16" y2="12"/>
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
                                 </svg>
-                                Total Marks
+                                Semester
                             </label>
-                            {{ form.total_marks }}
-                            {% if form.total_marks.errors %}
-                                <span class="error-text">{{ form.total_marks.errors }}</span>
-                            {% endif %}
+                            <select name="semester" id="id_semester" class="marks-input">
+                                <option value="">Select Semester</option>
+                                {% for value, label in semester_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
+                    </div>
+
+                    <div class="form-row" style="margin-top: 1.5rem;">
+                        <div class="form-group" style="flex: 2;">
+                            <label for="id_terminal">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                Terminal/Exam
+                            </label>
+                            {{ form.terminal }}
+                        </div>
+                    </div>
+
+                    <div class="marks-entry-section" style="background: var(--input-bg); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; border: 2px solid var(--border-color);">
+                        <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Add Marks for Subject
+                        </h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <select id="subjectSelect" class="marks-input">
+                                    <option value="">Select Subject</option>
+                                    {% for s in subject_options %}
+                                    <option value="{{ s.id }}">{{ s.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Marks Obtained</label>
+                                <input type="number" id="marksObtained" class="marks-input" placeholder="Enter marks" min="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Total Marks</label>
+                                <input type="number" id="totalMarks" class="marks-input" value="100" min="1" step="0.01">
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end;">
+                                <button type="button" class="btn-primary" onclick="addSubjectMarks()" style="width: 100%; padding: 0.9rem;">
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="added-marks-list" id="addedMarksList" style="margin-top: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Added Marks</h3>
+                        <div id="marksListContent">
+                            <p style="color: var(--text-secondary); font-style: italic;" id="emptyMarksMsg">No marks added yet. Select a subject above and click Add.</p>
+                        </div>
+                    </div>
+
+                    <div class="grand-total-card" id="grandTotalCard" style="display: none;">
+                        <span class="grand-total-label">Grand Total</span>
+                        <span class="grand-total-value" id="grandTotalValue">0 / 0</span>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-secondary" onclick="window.location.href='/dashboard/'">
-                            Cancel
+                        <button type="button" class="btn-secondary" onclick="clearAllMarks()" style="background: var(--error-color);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Clear All
                         </button>
                         <button type="submit" class="btn-primary">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -479,7 +840,7 @@
                                 <polyline points="17 21 17 13 7 13 7 21"/>
                                 <polyline points="7 3 7 8 15 8"/>
                             </svg>
-                            Save Marks
+                            Save All Marks
                         </button>
                     </div>
                 </form>
@@ -488,97 +849,474 @@
     </div>
 
     <script>
+        let rowCount = 0;
+        const subjectOptions = {{ subject_options|safe }};
+
         document.addEventListener('DOMContentLoaded', function() {
             const themeToggle = document.getElementById('themeToggle');
             const html = document.documentElement;
             
-            // Set initial icon state
             updateThemeIcon(html.getAttribute('data-theme'));
             
             themeToggle.addEventListener('click', function() {
                 const currentTheme = html.getAttribute('data-theme');
                 const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateThemeIcon(newTheme);
             });
+
+            for (let i = 0; i < 3; i++) {
+                addNewRow();
+            }
+        });
+
+        function updateThemeIcon(theme) {
+            const sunIcon = themeToggle.querySelector('.sun-icon');
+            const moonIcon = themeToggle.querySelector('.moon-icon');
+            if (theme === 'dark') {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+
+        function addNewRow() {
+            rowCount++;
+            const tbody = document.getElementById('marksTableBody');
+            const defaultTotal = document.getElementById('id_total_marks_default').value || 100;
             
-            function updateThemeIcon(theme) {
-                const sunIcon = themeToggle.querySelector('.sun-icon');
-                const moonIcon = themeToggle.querySelector('.moon-icon');
-                
-                if (theme === 'dark') {
-                    sunIcon.style.display = 'block';
-                    moonIcon.style.display = 'none';
-                } else {
-                    sunIcon.style.display = 'none';
-                    moonIcon.style.display = 'block';
-                }
-            }
-        });
-    </script
+            const row = document.createElement('tr');
+            row.className = 'table-row-new';
+            row.id = `row-${rowCount}`;
+            row.innerHTML = `
+                <td>
+                    <select name="subjects" class="subject-select" data-row="${rowCount}" onchange="validateRow(${rowCount})">
+                        <option value="">Select Subject</option>
+                        ${subjectOptions.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="marks_obtained" class="marks-input" data-row="${rowCount}" 
+                        placeholder="0" min="0" step="0.01" oninput="validateMarksInput(this, ${rowCount})" onblur="calculateRowPercentage(${rowCount})">
+                </td>
+                <td>
+                    <input type="number" name="total_marks" class="marks-input" data-row="${rowCount}" 
+                        value="${defaultTotal}" min="1" step="0.01" oninput="validateMarksInput(this, ${rowCount})" onblur="calculateRowPercentage(${rowCount})">
+                </td>
+                <td>
+                    <span class="total-cell" id="percentage-${rowCount}">-</span>
+                </td>
+                <td>
+                    <button type="button" class="delete-btn" onclick="deleteRow(${rowCount})" title="Delete row">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
 
-    <script>
-        $(document).ready(function() {
-            // Custom matcher function for case-insensitive searching
-            function modelMatcher(params, data) {
-                // If there are no search terms, return all of the data
-                if ($.trim(params.term) === '') {
-                    return data;
-                }
+            setTimeout(() => row.classList.remove('table-row-new'), 300);
 
-                // Do not display the item if there is no 'text' property
-                if (typeof data.text === 'undefined') {
-                    return null;
-                }
-
-                // Convert both the search term and the data text to lowercase
-                if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
-                    return data;
-                }
-
-                // Return null if the term doesn't match
-                return null;
-            }
-
-            $('#id_student, #id_subject').select2({
-                placeholder: "Select or type to search...",
-                allowClear: true,
-                width: '100%',
-                matcher: modelMatcher // Apply the custom matcher here
+            const totalInputs = tbody.querySelectorAll('input[name="total_marks"]');
+            totalInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    calculateRowPercentage(this.closest('tr').id.split('-')[1]);
+                });
             });
+        }
+
+        function deleteRow(rowId) {
+            const tbody = document.getElementById('marksTableBody');
+            if (tbody.children.length > 1) {
+                const row = document.getElementById(`row-${rowId}`);
+                row.style.animation = 'rowFadeIn 0.2s ease-out reverse';
+                setTimeout(() => {
+                    row.remove();
+                    calculateGrandTotal();
+                }, 200);
+            }
+        }
+
+        function validateMarksInput(input, rowId) {
+            const value = parseFloat(input.value);
+            const row = input.closest('tr');
+            const marksObtained = row.querySelector('input[name="marks_obtained"]');
+            const totalMarks = row.querySelector('input[name="total_marks"]');
+
+            input.classList.remove('error', 'valid');
+
+            if (input.value === '') {
+                return;
+            }
+
+            if (isNaN(value) {
+                input.classList.add('error');
+                return false;
+            }
+
+            if (marksObtained && totalMarks && marksObtained.value && totalMarks.value) {
+                const obtained = parseFloat(marksObtained.value);
+                const total = parseFloat(totalMarks.value);
+                if (!isNaN(obtained) && !isNaN(total) && obtained <= total) {
+                    marksObtained.classList.remove('error');
+                    marksObtained.classList.add('valid');
+                }
+            }
+
+            calculateRowPercentage(rowId);
+            return true;
+        }
+
+        function validateRow(rowId) {
+            const row = document.getElementById(`row-${rowId}`);
+            const subject = row.querySelector('.subject-select');
+            
+            subject.classList.remove('error', 'valid');
+            
+            if (subject.value) {
+                subject.classList.add('valid');
+            }
+        }
+
+        function calculateRowPercentage(rowId) {
+            const row = document.getElementById(`row-${rowId}`);
+            if (!row) return;
+
+            const marksObtained = parseFloat(row.querySelector('input[name="marks_obtained"]').value) || 0;
+            const totalMarks = parseFloat(row.querySelector('input[name="total_marks"]').value) || 0;
+            const percentageSpan = document.getElementById(`percentage-${rowId}`);
+
+            if (totalMarks > 0 && marksObtained >= 0) {
+                const percentage = ((marksObtained / totalMarks) * 100).toFixed(1);
+                percentageSpan.textContent = `${percentage}%`;
+            } else {
+                percentageSpan.textContent = '-';
+            }
+
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            const tbody = document.getElementById('marksTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            let totalObtained = 0;
+            let totalMarks = 0;
+
+            rows.forEach(row => {
+                const obtained = parseFloat(row.querySelector('input[name="marks_obtained"]').value) || 0;
+                const total = parseFloat(row.querySelector('input[name="total_marks"]').value) || 0;
+                
+                if (row.querySelector('.subject-select').value) {
+                    totalObtained += obtained;
+                    totalMarks += total;
+                }
+            });
+
+            const grandTotalCard = document.getElementById('grandTotalCard');
+            const grandTotalValue = document.getElementById('grandTotalValue');
+            
+            if (totalMarks > 0) {
+                grandTotalCard.style.display = 'flex';
+                grandTotalValue.textContent = `${totalObtained} / ${totalMarks}`;
+            } else {
+                grandTotalCard.style.display = 'none';
+            }
+        }
+
+        function calculateTotal() {
+            calculateGrandTotal();
+            
+            const tbody = document.getElementById('marksTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const rowId = row.id.split('-')[1];
+                calculateRowPercentage(rowId);
+            });
+        }
+
+        let addedMarks = [];
+        let marksIdCounter = 0;
+
+        function addSubjectMarks() {
+            const subjectSelect = document.getElementById('subjectSelect');
+            const marksObtained = document.getElementById('marksObtained');
+            const totalMarks = document.getElementById('totalMarks');
+            
+            if (!subjectSelect.value) {
+                alert('Please select a subject');
+                return;
+            }
+            if (!marksObtained.value || parseFloat(marksObtained.value) < 0) {
+                alert('Please enter marks obtained');
+                return;
+            }
+            if (!totalMarks.value || parseFloat(totalMarks.value) <= 0) {
+                alert('Please enter valid total marks');
+                return;
+            }
+            
+            const subjectName = subjectSelect.options[subjectSelect.selectedIndex].text;
+            const obtained = parseFloat(marksObtained.value);
+            const total = parseFloat(totalMarks.value);
+            const percentage = ((obtained / total) * 100).toFixed(1);
+            
+            const existingIndex = addedMarks.findIndex(m => m.subjectId == subjectSelect.value);
+            if (existingIndex >= 0) {
+                addedMarks[existingIndex] = {
+                    id: marksIdCounter++,
+                    subjectId: subjectSelect.value,
+                    subjectName: subjectName,
+                    marksObtained: obtained,
+                    totalMarks: total,
+                    percentage: percentage
+                };
+            } else {
+                addedMarks.push({
+                    id: marksIdCounter++,
+                    subjectId: subjectSelect.value,
+                    subjectName: subjectName,
+                    marksObtained: obtained,
+                    totalMarks: total,
+                    percentage: percentage
+                });
+            }
+            
+            renderMarksList();
+            
+            subjectSelect.value = '';
+            marksObtained.value = '';
+            totalMarks.value = '100';
+        }
+
+        function deleteMark(id) {
+            addedMarks = addedMarks.filter(m => m.id !== id);
+            renderMarksList();
+        }
+
+        function clearAllMarks() {
+            if (addedMarks.length === 0) return;
+            if (confirm('Clear all added marks?')) {
+                addedMarks = [];
+                renderMarksList();
+            }
+        }
+
+        function renderMarksList() {
+            const container = document.getElementById('marksListContent');
+            const emptyMsg = document.getElementById('emptyMarksMsg');
+            const grandCard = document.getElementById('grandTotalCard');
+            const grandValue = document.getElementById('grandTotalValue');
+            
+            if (addedMarks.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;" id="emptyMarksMsg">No marks added yet. Select a subject above and click Add.</p>';
+                grandCard.style.display = 'none';
+                return;
+            }
+            
+            let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse; min-width: 400px;"><thead style="background: var(--primary-gradient); color: white;"><tr><th style="padding: 0.75rem; text-align: left;">Subject</th><th style="padding: 0.75rem; text-align: center;">Marks</th><th style="padding: 0.75rem; text-align: center;">Total</th><th style="padding: 0.75rem; text-align: center;">%</th><th style="padding: 0.75rem; text-align: center;"></th></tr></thead><tbody>';
+            
+            let totalObtained = 0;
+            let totalMarks = 0;
+            
+            addedMarks.forEach(m => {
+                totalObtained += m.marksObtained;
+                totalMarks += m.totalMarks;
+                html += `<tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 0.75rem;">${m.subjectName}</td><td style="padding: 0.75rem; text-align: center;">${m.marksObtained}</td><td style="padding: 0.75rem; text-align: center;">${m.totalMarks}</td><td style="padding: 0.75rem; text-align: center; font-weight: 600;">${m.percentage}%</td><td style="padding: 0.75rem; text-align: center;"><button type="button" onclick="deleteMark(${m.id})" style="background: transparent; border: none; color: var(--error-color); cursor: pointer; padding: 0.5rem;" title="Delete"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            
+            const overallPercentage = totalMarks > 0 ? ((totalObtained / totalMarks) * 100).toFixed(1) : 0;
+            html += '<div style="margin-top: 1rem; padding: 1rem; background: var(--primary-gradient); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: 600;"><span>Grand Total</span><span style="font-size: 1.25rem;">' + totalObtained + ' / ' + totalMarks + ' (' + overallPercentage + '%)</span></div>';
+            
+            container.innerHTML = html;
+            grandCard.style.display = 'none';
+        }
+
+        document.getElementById('marksForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const studentSelect = document.getElementById('id_student');
+            const studentError = document.getElementById('student-error');
+            const terminal = document.getElementById('id_terminal');
+            
+            let hasErrors = false;
+
+            studentSelect.classList.remove('error', 'valid');
+            studentError.classList.remove('visible');
+            
+            if (!studentSelect.value) {
+                studentSelect.classList.add('error');
+                studentError.classList.add('visible');
+                hasErrors = true;
+            } else {
+                studentSelect.classList.add('valid');
+            }
+
+            if (!terminal.value) {
+                alert('Please select a terminal/exam');
+                hasErrors = true;
+            }
+
+            if (addedMarks.length === 0) {
+                alert('Please add at least one subject with marks');
+                hasErrors = true;
+            }
+
+            if (!hasErrors) {
+                submitMarks();
+            }
         });
+
+        function submitMarks() {
+            const studentId = document.getElementById('id_student').value;
+            const terminal = document.getElementById('id_terminal').value;
+            
+            const marksData = addedMarks.map(m => ({
+                student: studentId,
+                subject: m.subjectId,
+                terminal: terminal,
+                marks_obtained: m.marksObtained,
+                total_marks: m.totalMarks
+            }));
+
+            fetch('/api/add-marks-bulk/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ marks: marksData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const formCard = document.querySelector('.form-card');
+                    const formHeader = document.querySelector('.form-header');
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'success-message';
+                    successMessage.innerHTML = `
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        ${data.message || 'Marks added successfully!'}
+                    `;
+                    formHeader.parentNode.insertBefore(successMessage, formHeader.nextSibling);
+
+                    setTimeout(() => {
+                        window.location.href = '/marks-list/';
+                    }, 1500);
+                } else {
+                    showErrors(data.errors || [data.message]);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrors(['An error occurred. Please try again.']);
+            });
+        }
+
+        function showErrors(errors) {
+            const formCard = document.querySelector('.form-card');
+            const formHeader = document.querySelector('.form-header');
+            const existingError = formCard.querySelector('.error-banner');
+            
+            if (existingError) {
+                existingError.remove();
+            }
+
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-banner';
+            errorDiv.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <div style="margin-top: 0.5rem;">
+                    <ul style="margin-left: 1.5rem; list-style-type: disc;">
+                        ${errors.map(e => `<li>${e}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            formHeader.parentNode.insertBefore(errorDiv, formHeader.nextSibling);
+        }
     </script>
 
     <script>
         $(document).ready(function() {
-            // Custom matcher function for case-insensitive searching
             function modelMatcher(params, data) {
-                // If there are no search terms, return all of the data
                 if ($.trim(params.term) === '') {
                     return data;
                 }
-
-                // Do not display the item if there is no 'text' property
                 if (typeof data.text === 'undefined') {
                     return null;
                 }
-
-                // Convert both the search term and the data text to lowercase
                 if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
                     return data;
                 }
-
-                // Return null if the term doesn't match
                 return null;
             }
 
-            $('#id_student, #id_subject').select2({
+            $('#id_student').select2({
                 placeholder: "Select or type to search...",
                 allowClear: true,
                 width: '100%',
-                matcher: modelMatcher // Apply the custom matcher here
+                matcher: modelMatcher
+            });
+
+            $('#id_student').on('change', function() {
+                const studentId = $(this).val();
+                const imageContainer = document.getElementById('studentImageContainer');
+                const studentNameDisplay = document.getElementById('selectedStudentName');
+                
+                if (studentId) {
+                    fetch(`/api/student-info/${studentId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.student) {
+                                const student = data.student;
+                                if (student.image_url) {
+                                    imageContainer.innerHTML = `<img src="${student.image_url}" alt="${student.name}" onload="this.parentElement.classList.add('has-image')" onerror="this.parentElement.classList.remove('has-image'); this.parentElement.innerHTML='<svg width=\\'32\\' height=\\'32\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\'><path d=\\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/><circle cx=\\'12\\' cy=\\'7\\' r=\\'4\\'/></svg>'">`;
+                                } else {
+                                    imageContainer.innerHTML = `
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="12" cy="7" r="4"/>
+                                        </svg>
+                                    `;
+                                    imageContainer.classList.remove('has-image');
+                                }
+                                studentNameDisplay.textContent = `${student.name} - ${student.class} ${student.section} (${student.roll_number || 'No Roll'})`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching student info:', error);
+                            imageContainer.innerHTML = `
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            `;
+                            imageContainer.classList.remove('has-image');
+                            studentNameDisplay.textContent = 'Select a student to begin';
+                        });
+                } else {
+                    imageContainer.innerHTML = `
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    `;
+                    imageContainer.classList.remove('has-image');
+                    studentNameDisplay.textContent = 'Select a student to begin';
+                }
             });
         });
     </script>

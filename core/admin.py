@@ -5,9 +5,9 @@ from .models import Student, Subject, Result, Teacher, Attendance
 # Simple Admin Configuration
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'roll_number', 'student_class', 'section', 'teacher', 'qr_code_id')
+    list_display = ('name', 'roll_number', 'student_class', 'section', 'semester', 'teacher', 'qr_code_id')
     search_fields = ('name', 'roll_number', 'qr_code_id')
-    list_filter = ('student_class', 'section')
+    list_filter = ('student_class', 'section', 'semester')
     ordering = ('name',)
     readonly_fields = ('qr_code_id', 'qr_code_data')
 

@@ -96,7 +96,7 @@ LOGOUT_REDIRECT_URL = '/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '') 
-OPENROUTER_API_KEY = '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'
+OPENROUTER_API_KEY = 'YOUR API KEY'
 
 OPENROUTER_SITE_URL = os.environ.get('OPENROUTER_SITE_URL', 'http://localhost:8000')
 OPENROUTER_SITE_NAME = os.environ.get('OPENROUTER_SITE_NAME', 'AcadStat')

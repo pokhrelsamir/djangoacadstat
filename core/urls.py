@@ -14,6 +14,8 @@ urlpatterns = [
 
     path('add-marks/', views.add_marks, name='add_marks'),
     path('marks-list/', views.marks_list, name='marks_list'),
+    path('edit-marks/<int:mark_id>/', views.edit_marks, name='edit_marks'),
+    path('delete-marks/<int:mark_id>/', views.delete_marks, name='delete_marks'),
 
     # QR & Attendance
     path('qr-codes/', views.qr_codes, name='qr_codes'),
@@ -38,4 +40,13 @@ urlpatterns = [
     path('chart-data/', views.chart_data, name='chart_data'),
     path('api/add-marks-bulk/', views.add_marks_bulk, name='add_marks_bulk'),
     path('api/student-info/<int:student_id>/', views.student_info, name='student_info'),
+    
+    # AI & Automation
+    path('api/ai-analyze/<int:student_id>/', views.ai_analyze_student, name='ai_analyze'),
+    path('api/send-notification/<int:student_id>/', views.send_student_notification, name='send_notification'),
+    path('api/notify-all/', views.notify_all_students, name='notify_all'),
+    path('api/daily-report/', views.daily_report, name='daily_report'),
+    
+    # Student Password Change
+    path('change-password/', views.change_password, name='change_password'),
 ]

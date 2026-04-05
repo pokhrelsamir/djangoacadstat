@@ -33,6 +33,10 @@ class Student(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True)
     
+    # Contact information
+    email = models.EmailField(null=True, blank=True, help_text="Student email for notifications")
+    phone = models.CharField(max_length=20, null=True, blank=True, help_text="Student phone number")
+    
     qr_code_id = models.CharField(max_length=100, unique=True, blank=True)
     qr_code_data = models.TextField(blank=True, help_text="Unique QR code data for scanning")
     

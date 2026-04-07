@@ -11,7 +11,6 @@
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
-            // Default to dark theme if no saved preference
             const theme = savedTheme || 'dark';
             document.documentElement.setAttribute('data-theme', theme);
         })();
@@ -34,19 +33,23 @@
             font-size: 1.8rem;
         }
         
-        .login-container input {
+        .login-container input[type="text"],
+        .password-wrapper input {
             width: 100%;
             padding: 15px;
-            margin-bottom: 20px;
             border: 2px solid var(--input-border);
             border-radius: 12px;
             font-size: 1rem;
             background: var(--input-bg);
             color: var(--text-primary);
             transition: all 0.3s;
+            box-sizing: border-box;
+            height: 54px;
+            margin-bottom: 20px;
         }
         
-        .login-container input:focus {
+        .login-container input[type="text"]:focus,
+        .password-wrapper input:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
@@ -95,9 +98,12 @@
             text-align: center;
             font-weight: 500;
         }
+        
+        .password-wrapper {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
-
 <body>
 
     <!-- Navbar -->
@@ -109,7 +115,7 @@
             
             <!-- Theme Toggle Button -->
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5"/>
                     <line x1="12" y1="1" x2="12" y2="3"/>
                     <line x1="12" y1="21" x2="12" y2="23"/>
@@ -120,7 +126,7 @@
                     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                 </svg>
-                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                 </svg>
             </button>
@@ -139,7 +145,9 @@
             <form method="POST"> 
                 {% csrf_token %}
                 <input type="text" name="username" placeholder="Username" required> 
-                <input type="password" name="password" placeholder="Password" required> 
+                <div class="password-wrapper">
+                    <input type="password" name="password" placeholder="Password" required> 
+                </div>
                 <button type="submit">Login</button> 
             </form> 
             <p>
@@ -157,7 +165,6 @@
             const themeToggle = document.getElementById('themeToggle');
             const html = document.documentElement;
             
-            // Set initial icon state
             updateThemeIcon(html.getAttribute('data-theme'));
             
             themeToggle.addEventListener('click', function() {

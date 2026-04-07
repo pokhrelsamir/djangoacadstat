@@ -5,6 +5,7 @@
     <title>Marks List - Academic System</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Theme detection script - Default to dark theme -->
     <script>
@@ -1028,6 +1029,46 @@
             min-width: 700px;
         }
     }
+    
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 24px;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 9999;
+        font-weight: 500;
+    }
+    
+    .toast-notification.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    .toast-notification.toast-success {
+        border-left: 4px solid #10b981;
+    }
+    
+    .toast-notification.toast-success svg {
+        color: #10b981;
+    }
+    
+    .toast-notification.toast-error {
+        border-left: 4px solid #ef4444;
+    }
+    
+    .toast-notification.toast-error svg {
+        color: #ef4444;
+    }
 </style>
 
 <script>
@@ -1132,8 +1173,9 @@
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-            if (response.ok) {
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
                 // Remove row with animation
                 const row = document.querySelector(`tr[data-id="${id}"]`);
                 if (row) {
@@ -1147,14 +1189,35 @@
                     }, 300);
                 }
                 closeDeleteModal();
+                // Show success message
+                showToast(data.message || 'Marks deleted successfully', 'success');
             } else {
-                alert('Error deleting record');
+                showToast(data.message || 'Error deleting record', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error deleting record');
+            showToast('Error deleting record. Please try again.', 'error');
         });
+    }
+    
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                ${type === 'success' ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}
+            </svg>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 
     // Handle Edit Form Submit

@@ -380,8 +380,10 @@ def delete_marks(request, mark_id):
     """API endpoint to delete marks"""
     try:
         result = get_object_or_404(Result, id=mark_id)
+        student_name = result.student.name
+        subject_name = result.subject.name
         result.delete()
-        return JsonResponse({'success': True, 'message': 'Marks deleted successfully'})
+        return JsonResponse({'success': True, 'message': f'Marks for {student_name} in {subject_name} deleted successfully'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
@@ -996,3 +998,123 @@ def generate_recommendations(student, results, percentage, weak_subjects):
     })
     
     return recommendations[:5]  # Return top 5 recommendations
+
+
+# AI INTEGRATION VIEWS
+
+@login_required
+def ai_analyze_student(request, student_id):
+    """API endpoint for real-time AI analysis of a student"""
+    from core.ai_integration import ai_integration
+    from core.models import Attendance
+    
+    student = get_object_or_404(Student, id=student_id)
+    results = student.result_set.all()
+    attendance_count = Attendance.objects.filter(student=student).count()
+    
+    analysis = ai_integration.analyze_student_performance(student, results, attendance_count)
+    
+    return JsonResponse({
+        'success': True,
+        'student': {
+            'id': student.id,
+            'name': student.name,
+            'roll_number': student.roll_number,
+            'class': student.student_class
+        },
+        'analysis': analysis
+    })
+
+
+@login_required
+def send_student_notification(request, student_id):
+    """Send AI analysis notification to a specific student"""
+    from core.ai_integration import ai_integration
+    from core.models import Attendance
+    from django.views.decorators.http import require_http_methods
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Only POST method allowed'}, status=405)
+    
+    student = get_object_or_404(Student, id=student_id)
+    results = student.result_set.all()
+    attendance_count = Attendance.objects.filter(student=student).count()
+    
+    analysis = ai_integration.analyze_student_performance(student, results, attendance_count)
+    
+    method = request.POST.get('method', 'email')
+    sent = ai_integration.send_student_notification(student, analysis, method=method)
+    
+    if sent:
+        return JsonResponse({'success': True, 'message': f'Notification sent to {student.name}'})
+    else:
+        return JsonResponse({'success': False, 'message': 'Failed to send notification. Check email configuration.'})
+
+
+@login_required
+def notify_all_students(request):
+    """Notify all students who need attention (below threshold)"""
+    from core.ai_integration import automation
+    from django.views.decorators.http import require_http_methods
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Only POST method allowed'}, status=405)
+    
+    threshold = float(request.POST.get('threshold', 60))
+    notified = automation.notify_students_needing_attention(threshold=threshold)
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'Notifications sent to {len(notified)} students',
+        'notified': notified
+    })
+
+
+@login_required
+def daily_report(request):
+    """Get daily summary report"""
+    from core.ai_integration import automation
+    
+    report = automation.generate_daily_report()
+    
+    return JsonResponse({
+        'success': True,
+        'report': report
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def change_password(request):
+    """Allow students to change their password"""
+    try:
+        data = json.loads(request.body)
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+        
+        if not current_password or not new_password:
+            return JsonResponse({'success': False, 'message': 'Both passwords are required'}, status=400)
+        
+        if len(new_password) < 4:
+            return JsonResponse({'success': False, 'message': 'Password must be at least 4 characters'}, status=400)
+        
+        user = request.user
+        
+        # Verify current password
+        if not user.check_password(current_password):
+            return JsonResponse({'success': False, 'message': 'Current password is incorrect'}, status=400)
+        
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+        
+        # Re-login the user with new password
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+        
+        return JsonResponse({'success': True, 'message': 'Password changed successfully!'})
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid request data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)

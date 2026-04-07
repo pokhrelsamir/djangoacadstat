@@ -94,3 +94,18 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '') 
+OPENROUTER_API_KEY = 'YOUR API KEY'
+
+OPENROUTER_SITE_URL = os.environ.get('OPENROUTER_SITE_URL', 'http://localhost:8000')
+OPENROUTER_SITE_NAME = os.environ.get('OPENROUTER_SITE_NAME', 'AcadStat')
+
+# Email Settings for notifications
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'AcadStat <noreply@acadstat.com>'
+
+# Optional: Twilio for SMS (set these in environment)
+# TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
+# TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
+# TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')

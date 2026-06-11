@@ -9,7 +9,117 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
+<<<<<<< HEAD
 # 2. TEACHER MODEL
+=======
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. EDUCATION LEVEL MODEL
+# ─────────────────────────────────────────────────────────────────────────────
+class EducationLevel(models.Model):
+    SCHOOL = 'school'
+    COLLEGE = 'college'
+    BACHELOR = 'bachelor'
+    LEVEL_CHOICES = [
+        (SCHOOL, 'School Level (1-10)'),
+        (COLLEGE, 'College Level (XI-XII)'),
+        (BACHELOR, 'Bachelor Level'),
+    ]
+    code = models.CharField(max_length=20, primary_key=True, choices=LEVEL_CHOICES)
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        ordering = ['code']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def display_name(self):
+        return dict(self.LEVEL_CHOICES).get(self.code, self.name)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. SEMESTER MODEL
+# ─────────────────────────────────────────────────────────────────────────────
+class Semester(models.Model):
+    SEMESTER_CHOICES = [(i, f'Semester {i}') for i in range(1, 9)]
+    number = models.PositiveSmallIntegerField(primary_key=True, choices=SEMESTER_CHOICES)
+    label = models.CharField(max_length=20, default='')
+
+    class Meta:
+        ordering = ['number']
+
+    def __str__(self):
+        return f'Semester {self.number}'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. ACADEMIC YEAR MODEL
+# ─────────────────────────────────────────────────────────────────────────────
+class AcademicYear(models.Model):
+    name = models.CharField(max_length=20, unique=True, help_text="e.g. 2025-2026")
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_current = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if self.is_current:
+            AcademicYear.objects.exclude(id=self.id).update(is_current=False)
+        super().save(*args, **kwargs)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. DEPARTMENT MODEL
+# ─────────────────────────────────────────────────────────────────────────────
+class Department(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True)
+    head = models.ForeignKey('Teacher', on_delete=models.SET_NULL, null=True, blank=True, related_name='headed_departments')
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. GRADE SCALE MODEL
+# ─────────────────────────────────────────────────────────────────────────────
+class GradeScale(models.Model):
+    name = models.CharField(max_length=50, unique=True, help_text="e.g. Standard, Division, GPA 4.0")
+    pass_mark_percent = models.FloatField(default=40.0, help_text="Minimum % to pass")
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def get_grade(self, percentage):
+        from core.grading_utils import grade_info_for_percentage
+        return grade_info_for_percentage(percentage)['grade']
+
+    def get_grade_point(self, percentage):
+        from core.grading_utils import grade_info_for_percentage
+        return grade_info_for_percentage(percentage)['subject_gpa']
+
+    @property
+    def grade_labels(self):
+        return ['A+', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'F']
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. TEACHER MODEL
+# ─────────────────────────────────────────────────────────────────────────────
+>>>>>>> 801959c (Latest Commit)
 class Teacher(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)

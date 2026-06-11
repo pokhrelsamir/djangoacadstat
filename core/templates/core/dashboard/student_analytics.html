@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="My Analytics — AcadStat" %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-filter-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.85rem;
+        }
+        @media (min-width: 640px) {
+            .analytics-filter-row { grid-template-columns: 1fr 1fr auto; }
+        }
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            min-height: 260px;
+        }
+        .chart-wrap canvas { max-height: 320px; }
+        .chart-wrap--tall { min-height: 300px; }
+        .chart-wrap--hero {
+            min-height: 320px;
+            padding: 0.5rem 0;
+            background: linear-gradient(180deg, var(--ds-accent-soft) 0%, transparent 100%);
+            border-radius: var(--ds-radius-sm);
+        }
+        .insight-pill {
+            padding: 0.6rem 0.85rem;
+            border-radius: var(--ds-radius-sm);
+            margin-bottom: 0.5rem;
+            font-size: var(--ds-text-sm);
+            line-height: 1.45;
+            background: var(--ds-accent-soft);
+            border-left: 3px solid var(--ds-accent);
+            color: var(--text-primary);
+        }
+        .section-label {
+            font-size: var(--ds-text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin: 0 0 0.35rem;
+        }
+        .regression-note {
+            font-size: var(--ds-text-xs);
+            color: var(--text-muted);
+            margin-top: 0.65rem;
+        }
+        .chart-color-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-top: 0.85rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .color-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.55rem;
+            border-radius: 999px;
+            font-size: var(--ds-text-xs);
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .color-chip .swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+        }
+        .analytics-stats .stat-card { border-top: 3px solid transparent; }
+        .analytics-stats .stat-card:nth-child(1) { border-top-color: #6366f1; }
+        .analytics-stats .stat-card:nth-child(1) .stat-icon-wrap { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .analytics-stats .stat-card:nth-child(2) { border-top-color: #10b981; }
+        .analytics-stats .stat-card:nth-child(2) .stat-icon-wrap { background: linear-gradient(135deg, #10b981, #059669); }
+        .analytics-stats .stat-card:nth-child(3) { border-top-color: #f59e0b; }
+        .analytics-stats .stat-card:nth-child(3) .stat-icon-wrap { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .analytics-stats .stat-card:nth-child(4) { border-top-color: #3b82f6; }
+        .analytics-stats .stat-card:nth-child(4) .stat-icon-wrap { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .trend-up { color: var(--ds-success); font-weight: 700; }
+        .trend-down { color: var(--ds-danger); font-weight: 700; }
+        .trend-same { color: var(--text-muted); font-weight: 700; }
+        .nav-links a.is-active {
+            color: var(--ds-accent);
+            background: var(--ds-accent-soft);
+            border-radius: 8px;
+            padding: 0.35rem 0.65rem;
+        }
+        .highlight-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            border-radius: var(--ds-radius-sm);
+            background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(16,185,129,0.08));
+            border: 1px solid rgba(99,102,241,0.25);
+            margin-bottom: 1rem;
+            font-size: var(--ds-text-sm);
+            line-height: 1.5;
+        }
+        .highlight-banner i { color: var(--ds-accent); font-size: 1.15rem; margin-top: 0.1rem; }
+    </style>
+</head>
+<body class="app-page">
+    <nav class="navbar app-nav-style">
+        <h2 class="logo">🎓 AcadStat</h2>
+        <div class="nav-links">
+            <a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="{% url 'core:student_analytics' %}" class="is-active"><i class="fas fa-chart-line"></i> Analytics</a>
+            <a href="{% url 'core:gpa_forecasting' %}"><i class="fas fa-bullseye"></i> GPA Forecast</a>
+            <a href="/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <button class="theme-toggle ds-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <main class="app-shell app-shell--wide">
+        <a href="/dashboard/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+
+        <div class="page-hero fade-in">
+            <h1 class="page-title"><i class="fas fa-chart-line" style="color:var(--ds-accent);"></i> My Analytics</h1>
+            <p class="page-subtitle">{{ student.name }} · Class {{ student.student_class }} — Section {{ student.section }} · Detailed marks analysis &amp; trends</p>
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">1</span>
+                <div>
+                    <h2 class="section-title">Filters</h2>
+                    <p class="card-subtitle">Narrow charts by subject or terminal</p>
+                </div>
+            </div>
+            <form method="get">
+                <div class="analytics-filter-row">
+                    <div class="form-group ds">
+                        <label for="subjectFilter">Subject</label>
+                        <select name="subject" id="subjectFilter">
+                            <option value="">All subjects</option>
+                            {% for s in available_subjects %}
+                            <option value="{{ s.id }}" {% if subject_id == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}{% if s.code %} ({{ s.code }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group ds">
+                        <label for="terminalFilter">Terminal</label>
+                        <select name="terminal" id="terminalFilter">
+                            <option value="all" {% if terminal == "all" %}selected{% endif %}>All terminals</option>
+                            {% for t in terminals %}
+                            <option value="{{ t }}" {% if terminal == t %}selected{% endif %}>{{ t }} Terminal</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group ds" style="display:flex;align-items:flex-end;">
+                        <button type="submit" class="btn ds ds-primary ds-block"><i class="fas fa-filter"></i> Apply</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        {% if total > 0 %}
+
+        <div class="stats-grid analytics-stats fade-in">
+            <div class="stat-card">
+                <div class="stat-icon-wrap accent"><i class="fas fa-percentage"></i></div>
+                <div class="stat-label">Your Average</div>
+                <div class="stat-value">{{ avg_pct }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap success"><i class="fas fa-arrow-up"></i></div>
+                <div class="stat-label">Highest Score</div>
+                <div class="stat-value">{{ highest_pct }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap warning"><i class="fas fa-arrow-down"></i></div>
+                <div class="stat-label">Lowest Score</div>
+                <div class="stat-value">{{ lowest_pct }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap info"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-label">Pass Rate</div>
+                <div class="stat-value">{{ pass_rate }}%</div>
+                <p class="text-muted" style="margin:0.25rem 0 0;">{{ pass_count }} / {{ total }} passed</p>
+            </div>
+        </div>
+
+        {% if insight_lines %}
+        <section class="section-card fade-in">
+            <p class="section-label">Insights &amp; Alerts</p>
+            <h2 class="section-title" style="margin-bottom:0.75rem;">Rule-based recommendations</h2>
+            {% for line in insight_lines %}
+            <div class="insight-pill"><i class="fas fa-lightbulb" style="margin-right:0.35rem;opacity:0.7;"></i>{{ line }}</div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">2</span>
+                <div>
+                    <h2 class="section-title">Subject Trend Overlap</h2>
+                    <p class="card-subtitle">Terminals vs percentage — each subject plotted on the same axes so you can compare progress side by side</p>
+                </div>
+            </div>
+            <div class="highlight-banner">
+                <i class="fas fa-layer-group"></i>
+                <div>When you have multiple subjects, their lines overlap on one chart. Follow each coloured line across terminals to spot which subjects are improving or falling behind.</div>
+            </div>
+            <div class="chart-wrap chart-wrap--hero">
+                <canvas id="terminalWiseChart" aria-label="Subject trend overlap line chart"></canvas>
+            </div>
+            {% if chart_color_legend.subjects %}
+            <div class="chart-color-legend" aria-label="Subject colour key">
+                {% for item in chart_color_legend.subjects %}
+                <span class="color-chip"><span class="swatch" style="background:{{ item.color }};"></span>{{ item.name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">3</span>
+                    <div>
+                        <h2 class="section-title">Terminal-wise Performance</h2>
+                        <p class="card-subtitle">Your average % per terminal across subjects</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="terminalAvgChart" aria-label="Terminal-wise average chart"></canvas>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">4</span>
+                    <div>
+                        <h2 class="section-title">Subject-wise Performance</h2>
+                        <p class="card-subtitle">Your % per subject — coloured by terminal</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="subjectWiseChart" aria-label="Subject-wise performance line chart"></canvas>
+                </div>
+                {% if chart_color_legend.terminals %}
+                <div class="chart-color-legend" aria-label="Terminal colour key">
+                    {% for item in chart_color_legend.terminals %}
+                    <span class="color-chip"><span class="swatch" style="background:{{ item.color }};"></span>{{ item.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">5</span>
+                    <div>
+                        <h2 class="section-title">Score Distribution</h2>
+                        <p class="card-subtitle">How your results are spread across grade bands</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="distributionChart" aria-label="Score distribution bar chart"></canvas>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">6</span>
+                    <div>
+                        <h2 class="section-title">Pass / Fail Ratio</h2>
+                        <p class="card-subtitle">Results at or above 40% pass threshold</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="passFailChart" aria-label="Pass fail doughnut chart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">7</span>
+                <div>
+                    <h2 class="section-title">Regression Trend Analysis</h2>
+                    <p class="card-subtitle">{{ regression_chart.title }} — linear fit across terminals</p>
+                </div>
+            </div>
+            <div class="chart-wrap chart-wrap--tall">
+                <canvas id="regressionChart" aria-label="Regression scatter and trend line chart"></canvas>
+            </div>
+            {% if regression_chart.slope is not None %}
+            <p class="regression-note">
+                <i class="fas fa-chart-line"></i>
+                Slope: <strong>{{ regression_chart.slope }}</strong> % per terminal
+                {% if regression_chart.slope > 0.5 %}— upward trend, performance improving over time.
+                {% elif regression_chart.slope < -0.5 %}— downward trend, review your study plan.
+                {% else %}— relatively stable performance across terminals.{% endif %}
+            </p>
+            {% endif %}
+        </section>
+
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">8</span>
+                    <div>
+                        <h2 class="section-title">Subject Breakdown</h2>
+                        <p class="card-subtitle">Per-subject performance snapshot</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="subjectBreakdownChart" aria-label="Subject breakdown bar chart"></canvas>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">9</span>
+                    <div>
+                        <h2 class="section-title">You vs Section Average</h2>
+                        <p class="card-subtitle">Compare your progress against classmates in your section</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="sectionCompareChart" aria-label="Student vs section comparison chart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">10</span>
+                <div>
+                    <h2 class="section-title">Subject Trends Table</h2>
+                    <p class="card-subtitle">Your percentage marks by terminal — track improvement at a glance</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="ds-table">
+                    <colgroup>
+                        <col class="student-col">
+                        {% for t in run_terminals %}<col class="num">{% endfor %}
+                        <col class="trend-col">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="student-col">Subject</th>
+                            {% for t in run_terminals %}
+                            <th class="num">{{ t }}</th>
+                            {% endfor %}
+                            <th class="trend-col">Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in trend_rows %}
+                        <tr>
+                            <td class="student-col"><strong>{{ row.subject.name }}</strong></td>
+                            {% for t, mark in row.mark_tuples %}
+                            <td class="num">
+                                {% if mark is not None %}<span class="cell-value">{{ mark }}%</span>{% else %}<span class="cell-empty">—</span>{% endif %}
+                            </td>
+                            {% endfor %}
+                            <td class="trend-col">
+                                {% if row.arrow == "up" %}<span class="trend-up" title="Improving">↑</span>
+                                {% elif row.arrow == "down" %}<span class="trend-down" title="Declining">↓</span>
+                                {% else %}<span class="trend-same" title="Stable">→</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{{ run_terminals|length|add:2 }}" class="empty-state">
+                                <i class="fas fa-table"></i> No trend data for current filters.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        {{ terminal_wise_chart|json_script:"terminal-chart-data" }}
+        {{ subject_wise_chart|json_script:"subject-chart-data" }}
+        {{ distribution_chart|json_script:"distribution-chart-data" }}
+        {{ pass_fail_chart|json_script:"pass-fail-chart-data" }}
+        {{ regression_chart|json_script:"regression-chart-data" }}
+        {{ subject_breakdown_chart|json_script:"subject-breakdown-chart-data" }}
+        {{ student_terminal_chart|json_script:"student-terminal-chart-data" }}
+        {{ comparison_chart|json_script:"comparison-chart-data" }}
+
+        <script>
+        (function() {
+            const charts = {};
+
+            function cssVar(name, fallback) {
+                return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+            }
+
+            function chartTheme() {
+                return {
+                    text: cssVar('--text-secondary', '#94a3b8'),
+                    grid: cssVar('--border-color', 'rgba(148,163,184,0.2)'),
+                    title: cssVar('--text-primary', '#e2e8f0'),
+                    card: cssVar('--bg-card', '#1e293b'),
+                };
+            }
+
+            function basePlugins() {
+                const theme = chartTheme();
+                return {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: theme.text,
+                            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
+                            boxWidth: 12,
+                            padding: 14,
+                        },
+                    },
+                    tooltip: {
+                        backgroundColor: theme.card,
+                        titleColor: theme.title,
+                        bodyColor: theme.text,
+                        borderColor: theme.grid,
+                        borderWidth: 1,
+                    },
+                };
+            }
+
+            function scaleOpts(yLabel, opts) {
+                opts = opts || {};
+                const theme = chartTheme();
+                const isPercent = opts.isPercent !== false;
+                return {
+                    x: {
+                        ticks: { color: theme.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } },
+                        grid: { color: theme.grid },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: opts.max !== undefined ? opts.max : (isPercent ? 100 : undefined),
+                        title: yLabel ? { display: true, text: yLabel, color: theme.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } } : undefined,
+                        ticks: {
+                            color: theme.text,
+                            callback: function(v) { return isPercent ? v + '%' : v; },
+                            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
+                            stepSize: opts.stepSize,
+                        },
+                        grid: { color: theme.grid },
+                    },
+                };
+            }
+
+            function buildLineChart(id, dataId, yLabel) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const data = JSON.parse(document.getElementById(dataId).textContent);
+                data.datasets = data.datasets.map(function(ds) {
+                    return Object.assign({
+                        borderWidth: 2.5,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        spanGaps: true,
+                        tension: 0.35,
+                        fill: ds.fill !== undefined ? ds.fill : false,
+                    }, ds);
+                });
+                return new Chart(el, {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: Object.assign({}, basePlugins(), {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        const v = ctx.parsed.y;
+                                        return ' ' + ctx.dataset.label + ': ' + (v != null ? v + '%' : '—');
+                                    },
+                                },
+                            },
+                        }),
+                        scales: scaleOpts(yLabel),
+                    },
+                });
+            }
+
+            function buildBarChart(id, dataId, yLabel, scaleOptions) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const data = JSON.parse(document.getElementById(dataId).textContent);
+                return new Chart(el, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: basePlugins(),
+                        scales: scaleOpts(yLabel, scaleOptions),
+                    },
+                });
+            }
+
+            function buildDoughnutChart(id, dataId) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const data = JSON.parse(document.getElementById(dataId).textContent);
+                return new Chart(el, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: Object.assign({}, basePlugins(), {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        const total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                        const pct = total ? Math.round(ctx.parsed / total * 100) : 0;
+                                        return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                                    },
+                                },
+                            },
+                        }),
+                    },
+                });
+            }
+
+            function buildRegressionChart(id, dataId) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const raw = JSON.parse(document.getElementById(dataId).textContent);
+                const theme = chartTheme();
+                const regData = raw.labels.map(function(label, i) {
+                    return { x: i + 1, y: raw.regression[i] };
+                }).filter(function(p) { return p.y != null; });
+
+                return new Chart(el, {
+                    data: {
+                        datasets: [
+                            {
+                                type: 'scatter',
+                                label: 'Your average %',
+                                data: raw.scatter,
+                                backgroundColor: '#6366f1',
+                                borderColor: '#6366f1',
+                                pointRadius: 7,
+                                pointHoverRadius: 9,
+                            },
+                            {
+                                type: 'line',
+                                label: 'Linear regression',
+                                data: regData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2.5,
+                                borderDash: [6, 4],
+                                pointRadius: 0,
+                                tension: 0,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: Object.assign({}, basePlugins(), {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        return ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + '%';
+                                    },
+                                },
+                            },
+                        }),
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                min: 0.5,
+                                max: raw.labels.length + 0.5,
+                                ticks: {
+                                    color: theme.text,
+                                    stepSize: 1,
+                                    callback: function(v) { return raw.labels[v - 1] || ''; },
+                                },
+                                grid: { color: theme.grid },
+                                title: { display: true, text: 'Terminal', color: theme.text },
+                            },
+                            y: Object.assign({}, scaleOpts('Percentage %').y, { max: 100 }),
+                        },
+                    },
+                });
+            }
+
+            function initCharts() {
+                charts.terminal = buildLineChart('terminalWiseChart', 'terminal-chart-data', 'Your %');
+                charts.subject = buildLineChart('subjectWiseChart', 'subject-chart-data', 'Your %');
+                charts.distribution = buildBarChart('distributionChart', 'distribution-chart-data', 'Count', { isPercent: false, stepSize: 1 });
+                charts.passFail = buildDoughnutChart('passFailChart', 'pass-fail-chart-data');
+                charts.regression = buildRegressionChart('regressionChart', 'regression-chart-data');
+                charts.breakdown = buildBarChart('subjectBreakdownChart', 'subject-breakdown-chart-data', 'Your %');
+                charts.terminalAvg = buildBarChart('terminalAvgChart', 'student-terminal-chart-data', 'Your %');
+                charts.sectionCompare = buildBarChart('sectionCompareChart', 'comparison-chart-data', 'Average %');
+            }
+
+            function destroyCharts() {
+                Object.keys(charts).forEach(function(k) {
+                    if (charts[k]) { charts[k].destroy(); charts[k] = null; }
+                });
+            }
+
+            initCharts();
+            window.onThemeChange = function() { destroyCharts(); initCharts(); };
+        })();
+        </script>
+
+        {% else %}
+
+        <section class="section-card fade-in">
+            <div class="empty-state" style="padding:3rem 1rem;">
+                <i class="fas fa-chart-line"></i>
+                <p style="margin:0 0 0.5rem;font-size:var(--ds-text-md);color:var(--text-primary);font-weight:600;">No marks to analyse yet</p>
+                <p style="margin:0 0 1.25rem;">Your teachers haven't entered marks yet. Check back after results are published.</p>
+                <a href="/dashboard/" class="btn ds ds-primary"><i class="fas fa-th-large"></i> Back to Dashboard</a>
+            </div>
+        </section>
+
+        {% endif %}
+    </main>
+
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

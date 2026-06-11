@@ -11,6 +11,12 @@ urlpatterns = [
 
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+<<<<<<< HEAD
+=======
+    path('change-password/', views.change_password, name='change_password'),
+    path('gpa-forecasting/', views.student_gpa_forecasting, name='gpa_forecasting'),
+    path('student-analytics/', views.student_analytics, name='student_analytics'),
+>>>>>>> 801959c (Latest Commit)
 
     path('add-marks/', views.add_marks, name='add_marks'),
     path('marks-list/', views.marks_list, name='marks_list'),
@@ -32,6 +38,13 @@ urlpatterns = [
     path('mark-sheet/', views.mark_sheet, name='mark_sheet'),
     path('mark-sheet/<int:student_id>/<str:terminal>/', views.mark_sheet, name='mark_sheet_terminal'),
     path('mark-sheet/<int:student_id>/', views.mark_sheet, name='mark_sheet_student'),
+<<<<<<< HEAD
+=======
+    path('mark-sheet/pdf/<int:student_id>/<str:terminal>/', views.export_mark_sheet_pdf, name='export_mark_sheet_pdf'),
+    path('select-mark-sheet/', views.select_mark_sheet, name='select_mark_sheet'),
+    path('marksheet-verify/<str:doc_id>/', views.marksheet_verify, name='marksheet_verify'),
+    path('api/marksheet-verify/<str:doc_id>/', views.marksheet_verify_api, name='marksheet_verify_api'),
+>>>>>>> 801959c (Latest Commit)
 
     # Analysis
     path('student-analysis/', views.student_analysis, name='student_analysis'),

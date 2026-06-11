@@ -5,48 +5,48 @@
     box-sizing: border-box;
 }
 
-/* CSS Variables for Dark Theme (Default - White Text) */
-:root, [data-theme="dark"] {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-card: #1e293b;
-    --bg-card-hover: #334155;
-    --text-primary: #ffffff;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --border-color: #334155;
-    --border-light: #1e293b;
+/* CSS Variables for Dark Theme (white text) — do NOT use :root here (breaks light toggle) */
+[data-theme="dark"] {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #18181b;
+    --bg-card: #18181b;
+    --bg-card-hover: #27272a;
+    --text-primary: #fafafa;
+    --text-secondary: #d4d4d8;
+    --text-muted: #a1a1aa;
+    --border-color: #27272a;
+    --border-light: #3f3f46;
     --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
-    --shadow-md: 0 4px 15px rgba(0,0,0,0.5);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.6);
-    --input-bg: #1e293b;
-    --input-border: #475569;
-    --table-hover: #334155;
-    --navbar-bg: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-    --btn-primary: #667eea;
-    --btn-hover: #5a67d8;
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
+    --input-bg: #18181b;
+    --input-border: #3f3f46;
+    --table-hover: #27272a;
+    --navbar-bg: rgba(10, 10, 10, 0.92);
+    --btn-primary: #0a0a0a;
+    --btn-hover: #27272a;
 }
 
 /* CSS Variables for Light Theme (Black Text) */
 [data-theme="light"] {
-    --bg-primary: #f4f7f8;
+    --bg-primary: #fafafa;
     --bg-secondary: #ffffff;
     --bg-card: #ffffff;
-    --bg-card-hover: #f8fafc;
-    --text-primary: #1a202c;
-    --text-secondary: #4a5568;
-    --text-muted: #718096;
-    --border-color: #e2e8f0;
-    --border-light: #edf2f7;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-    --shadow-md: 0 4px 15px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+    --bg-card-hover: #f4f4f5;
+    --text-primary: #0a0a0a;
+    --text-secondary: #52525b;
+    --text-muted: #71717a;
+    --border-color: #e4e4e7;
+    --border-light: #f4f4f5;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
     --input-bg: #ffffff;
-    --input-border: #e2e8f0;
-    --table-hover: #f7fafc;
-    --navbar-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --btn-primary: #667eea;
-    --btn-hover: #5a67d8;
+    --input-border: #e4e4e7;
+    --table-hover: #f4f4f5;
+    --navbar-bg: rgba(255, 255, 255, 0.92);
+    --btn-primary: #0a0a0a;
+    --btn-hover: #27272a;
 }
 
 body {
@@ -57,8 +57,12 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+body.app-page:not(.login-page-wrapper) {
+    background-color: transparent !important;
+}
+
 /* Logo Background for Professional Look - More Blurry and Larger */
-body::before {
+body:not(.login-page-wrapper):not(.app-page):not(.landing-page)::before {
     content: '';
     position: fixed;
     top: 0;
@@ -287,10 +291,26 @@ a {
     display: flex;
     justify-content: space-between;
     align-items: center;
+<<<<<<< HEAD
     padding: 15px 50px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+=======
+    padding: 0.75rem 1.25rem;
+    color: var(--text-primary);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+>>>>>>> 801959c (Latest Commit)
+}
+
+/* Solid fallback for pages outside app-page (glass applied via liquid-glass-nav.css) */
+body:not(.app-page):not(.landing-page) .navbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .navbar .logo {

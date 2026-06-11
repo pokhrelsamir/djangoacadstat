@@ -1,0 +1,420 @@
+/**
+ * AcadStat — shared motion & interaction animations
+ */
+
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes checkDraw {
+    0% { stroke-dashoffset: 48; }
+    100% { stroke-dashoffset: 0; }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes navSlideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Scroll reveal */
+.reveal,
+.fade-in-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible,
+.fade-in-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* Hover lift utility */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Modal overlay & dialog */
+.acad-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-overlay-bg, rgba(0, 0, 0, 0.6));
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.acad-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.acad-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.85) translateY(20px);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.acad-modal-overlay.active .acad-modal {
+    transform: scale(1) translateY(0);
+}
+
+.acad-modal-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    position: relative;
+}
+
+.acad-modal-icon.success {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.acad-modal-icon.error {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+.acad-modal-icon.warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+.acad-modal-icon .pulse-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    animation: pulse-ring 1.5s ease-out infinite;
+}
+
+.acad-modal-icon svg.check-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.acad-modal-icon svg.check-icon path {
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: checkDraw 0.6s ease 0.2s forwards;
+}
+
+.acad-modal h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+}
+
+.acad-modal p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+}
+
+.acad-modal-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.acad-modal-stat {
+    text-align: center;
+}
+
+.acad-modal-stat .num {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.acad-modal-stat .lbl {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+.acad-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.acad-modal-actions .btn { min-width: 120px; }
+
+/* Toast notifications */
+.acad-toast-container {
+    position: fixed;
+    top: 80px;
+    right: 1rem;
+    z-index: 9998;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.acad-toast {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.85rem 1.15rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    pointer-events: auto;
+    animation: slideInRight 0.4s ease;
+    max-width: 360px;
+}
+
+.acad-toast.success { border-left: 4px solid #10b981; }
+.acad-toast.error { border-left: 4px solid #ef4444; }
+.acad-toast.warning { border-left: 4px solid #f59e0b; }
+
+.acad-toast.fade-out {
+    animation: fadeIn 0.3s ease reverse forwards;
+}
+
+/* Button loading spinner */
+.btn.loading {
+    pointer-events: none;
+    opacity: 0.75;
+    position: relative;
+}
+
+.btn.loading::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 0.5rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Table row highlight on add */
+@keyframes rowHighlight {
+    0% { background: rgba(16, 185, 129, 0.2); }
+    100% { background: transparent; }
+}
+
+.marks-table tbody tr.just-added {
+    animation: rowHighlight 1.2s ease;
+}
+
+/* Form modal (password change, etc.) */
+.acad-form-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-overlay-bg, rgba(0, 0, 0, 0.6));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.32s ease, visibility 0.32s ease;
+}
+
+.acad-form-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.acad-form-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.88) translateY(24px);
+    opacity: 0;
+    transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.28s ease;
+}
+
+.acad-form-modal-overlay.active .acad-form-modal {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.acad-form-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.acad-form-modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.acad-form-modal-close {
+    background: none;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 1.35rem;
+    line-height: 1;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.acad-form-modal-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transform: rotate(90deg);
+}
+
+.acad-form-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+.acad-form-modal-actions .btn {
+    flex: 1;
+}
+
+/* Page enter — app shells */
+.app-page .app-shell {
+    animation: fadeSlideUp 0.55s ease both;
+}
+
+.app-page .page-hero {
+    animation: fadeSlideUp 0.5s ease 0.05s both;
+}
+
+.app-page .stats-grid .stat-card,
+.app-page .section-card,
+.app-page .chart-card {
+    animation: fadeSlideUp 0.5s ease both;
+}
+
+.app-page .stats-grid .stat-card:nth-child(2) { animation-delay: 0.08s; }
+.app-page .stats-grid .stat-card:nth-child(3) { animation-delay: 0.16s; }
+.app-page .stats-grid .stat-card:nth-child(4) { animation-delay: 0.24s; }
+
+/* Staggered fade-in utility */
+.fade-in-stagger > * {
+    opacity: 0;
+    animation: fadeSlideUp 0.45s ease forwards;
+}
+
+.fade-in-stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.fade-in-stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.fade-in-stagger > *:nth-child(3) { animation-delay: 0.16s; }
+.fade-in-stagger > *:nth-child(4) { animation-delay: 0.22s; }
+.fade-in-stagger > *:nth-child(5) { animation-delay: 0.28s; }
+.fade-in-stagger > *:nth-child(6) { animation-delay: 0.34s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .acad-modal,
+    .acad-form-modal,
+    .acad-toast,
+    .app-page .app-shell,
+    .app-page .page-hero,
+    .app-page .stats-grid .stat-card,
+    .app-page .section-card,
+    .app-page .chart-card,
+    .fade-in-stagger > * {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}

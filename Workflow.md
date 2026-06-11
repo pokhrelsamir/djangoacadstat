@@ -4,6 +4,12 @@
 
 ```
 djangoacadstat/
+├── environment/             # Python venv, dependencies, env config
+│   ├── requirements.txt
+│   ├── setup_venv.bat       # Windows venv setup
+│   ├── setup_venv.sh        # Linux/macOS venv setup
+│   ├── .env.example
+│   └── venv/                # Virtual environment (local only, gitignored)
 ├── academicsys/
 │   ├── __init__.py
 │   ├── settings.py          # Django settings, AI config, email config
@@ -41,10 +47,28 @@ djangoacadstat/
 │   └── student_images/
 ├── static/
 │   └── css/style.css
+<<<<<<< HEAD:Workflow.md
 ├── manage.py
 ├── requirements.txt
 ├── Workflow.md
 └── venv/
+=======
+├── docs/
+│   ├── Workflow.md
+│   ├── TEACHER_SYSTEM_README.md
+│   └── commands/            # Django, PostgreSQL, Git reference notes
+├── scripts/
+│   ├── setup/               # One-off setup scripts
+│   ├── debug/               # Development/debug utilities
+│   ├── patches/             # One-off code patch scripts
+│   └── migrate_design_system.py
+├── data/
+│   └── backups/             # JSON backup files
+├── samples/
+│   └── bulk_marks_upload/   # Excel upload templates
+├── manage.py
+└── README.md
+>>>>>>> 801959c (Latest Commit):docs/Workflow.md
 ```
 
 ## Project Overview
@@ -238,12 +262,15 @@ export OPENROUTER_API_KEY="your-api-key"
 # Clone and setup
 cd djangoacadstat
 
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate  # Windows
+# Create virtual environment (see environment/README.md)
+environment\setup_venv.bat          # Windows
+# bash environment/setup_venv.sh    # Linux/macOS
+
+environment\venv\Scripts\activate   # Windows
+# source environment/venv/bin/activate  # Linux/macOS
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r environment\requirements.txt
 
 # Run migrations
 python manage.py migrate

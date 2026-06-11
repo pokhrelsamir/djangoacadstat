@@ -1,0 +1,22 @@
+{% load static %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<title>{{ page_title|default:"Academic System" }}</title>
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+<link rel="stylesheet" href="{% static 'css/acadstat-theme.css' %}">
+<link rel="stylesheet" href="{% static 'css/animations.css' %}">
+<link rel="stylesheet" href="{% static 'css/theme-toggle.css' %}">
+<link rel="stylesheet" href="{% static 'css/liquid-glass-nav.css' %}">
+<meta name="theme-color" content="#0a0a0a">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="{% static 'js/ui.js' %}" defer></script>
+<script src="{% static 'js/liquid-glass.js' %}" defer></script>
+<script>
+(function() {
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+    window.ACADSTAT_CAMPUS_BG = "{% static 'images/tu/tu-6-web.jpg' %}";
+})();
+</script>

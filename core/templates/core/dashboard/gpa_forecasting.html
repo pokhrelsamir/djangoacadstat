@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="GPA Forecasting — AcadStat" %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gpa-hero-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.85rem; }
+        .chart-wrap { position: relative; width: 100%; min-height: 260px; }
+        .chart-wrap canvas { max-height: 300px; }
+        .risk-banner {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            padding: 0.85rem 1rem; border-radius: var(--ds-radius-sm);
+            font-size: var(--ds-text-sm); line-height: 1.45; margin-bottom: 1rem;
+        }
+        .risk-banner.critical { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); color: var(--text-primary); }
+        .risk-banner.high { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35); }
+        .risk-banner.medium { background: var(--ds-accent-soft); border: 1px solid rgba(102,126,234,0.25); }
+        .risk-banner.low { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); }
+        .risk-banner i { font-size: 1.1rem; margin-top: 0.1rem; }
+        .risk-banner.critical i { color: var(--ds-danger); }
+        .risk-banner.high i { color: var(--ds-warning); }
+        .risk-banner.low i { color: var(--ds-success); }
+        .risk-banner.medium i { color: var(--ds-accent); }
+        .formula-box {
+            font-family: ui-monospace, monospace;
+            font-size: var(--ds-text-xs);
+            padding: 0.75rem 0.85rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--ds-radius-sm);
+            color: var(--text-secondary);
+            margin: 0.75rem 0;
+            line-height: 1.5;
+        }
+        .output-pill {
+            padding: 0.65rem 0.85rem;
+            border-radius: var(--ds-radius-sm);
+            background: var(--ds-accent-soft);
+            border-left: 3px solid var(--ds-accent);
+            font-size: var(--ds-text-sm);
+            color: var(--text-primary);
+            margin-top: 0.75rem;
+        }
+        .strength-item {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 0.75rem; padding: 0.65rem 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: var(--ds-text-sm);
+        }
+        .strength-item:last-child { border-bottom: none; }
+        .strength-badge {
+            font-size: var(--ds-text-xs); font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.05em; padding: 0.25rem 0.55rem; border-radius: 999px;
+        }
+        .strength-badge.strong { background: rgba(16,185,129,0.15); color: var(--ds-success); }
+        .strength-badge.average { background: rgba(245,158,11,0.15); color: var(--ds-warning); }
+        .strength-badge.weak { background: rgba(239,68,68,0.12); color: var(--ds-danger); }
+        .metric-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: var(--ds-text-sm); }
+        .metric-row .lbl { color: var(--text-muted); }
+        .metric-row .val { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+        @media (max-width: 480px) {
+            .gpa-hero-actions .btn.ds { width: 100%; }
+        }
+    </style>
+</head>
+<body class="app-page">
+    <nav class="navbar app-nav-style">
+        <h2 class="logo"><i class="fas fa-graduation-cap"></i> AcadStat</h2>
+        <div class="nav-links">
+            <a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="{% url 'core:student_analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a>
+            <a href="/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <button class="theme-toggle ds-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <main class="app-shell app-shell--wide">
+        <a href="/dashboard/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+
+        <div class="page-hero fade-in">
+            <h1 class="page-title"><i class="fas fa-chart-line" style="color:var(--ds-accent);"></i> GPA Forecasting</h1>
+            <p class="page-subtitle">CGPA engine, goals, and recovery planning from your entered marks</p>
+            <div class="student-chip visible">
+                <i class="fas fa-user-graduate"></i>
+                <span>{{ student.name }} · Sem {{ current_semester }} of {{ total_semesters }}</span>
+            </div>
+        </div>
+
+        <div class="risk-banner {{ risk.level }} fade-in">
+            <i class="fas {{ risk.icon }}"></i>
+            <div>
+                <strong style="display:block;margin-bottom:0.2rem;">{{ risk.title }}</strong>
+                {{ risk.message }}
+            </div>
+        </div>
+
+        <div class="stats-grid fade-in">
+            <div class="stat-card">
+                <div class="stat-icon-wrap accent"><i class="fas fa-graduation-cap"></i></div>
+                <div class="stat-label">Current CGPA</div>
+                <div class="stat-value">{{ current_cgpa }}</div>
+                <p class="text-muted" style="margin:0.25rem 0 0;">/ 4.0 scale</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap success"><i class="fas fa-bullseye"></i></div>
+                <div class="stat-label">Target CGPA</div>
+                <div class="stat-value">{{ target_cgpa }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap info"><i class="fas fa-calendar-alt"></i></div>
+                <div class="stat-label">Remaining Semesters</div>
+                <div class="stat-value">{{ remaining_semesters }}</div>
+            </div>
+            {% if required_gpa %}
+            <div class="stat-card">
+                <div class="stat-icon-wrap warning"><i class="fas fa-calculator"></i></div>
+                <div class="stat-label">Required GPA</div>
+                <div class="stat-value">{{ required_gpa }}</div>
+                <p class="text-muted" style="margin:0.25rem 0 0;">avg. needed</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">1</span>
+                <div>
+                    <h2 class="section-title">Goal System</h2>
+                    <p class="card-subtitle">Set your target CGPA</p>
+                </div>
+            </div>
+            <form method="get" class="form-row ds" style="max-width:480px;">
+                <div class="form-group ds">
+                    <label for="targetCgpa">Target CGPA (0 – 4.0)</label>
+                    <input type="number" id="targetCgpa" name="target" value="{{ target_cgpa }}" min="0" max="4" step="0.01" required>
+                </div>
+                <div class="form-group ds" style="display:flex;align-items:flex-end;">
+                    <button type="submit" class="btn ds ds-primary ds-block"><i class="fas fa-sync"></i> Update</button>
+                </div>
+            </form>
+            <div class="metric-row" style="margin-top:0.75rem;border-top:1px solid var(--border-color);padding-top:0.75rem;">
+                <span class="lbl">Completed credits</span><span class="val">{{ completed_credits }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="lbl">Quality points earned</span><span class="val">{{ completed_quality_points }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="lbl">Remaining credits (est.)</span><span class="val">{{ remaining_credits }}</span>
+            </div>
+        </section>
+
+        {% if has_data %}
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">2</span>
+                    <div>
+                        <h2 class="section-title">Semester GPA Trend</h2>
+                        <p class="card-subtitle">GPA by terminal period (from your marks)</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="semesterGpaChart"></canvas>
+                </div>
+            </section>
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">3</span>
+                    <div>
+                        <h2 class="section-title">CGPA Growth Curve</h2>
+                        <p class="card-subtitle">Cumulative GPA over completed periods</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="cgpaGrowthChart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">4</span>
+                    <div>
+                        <h2 class="section-title">Required GPA Calculator</h2>
+                        <p class="card-subtitle">What you need in remaining semesters</p>
+                    </div>
+                </div>
+                <div class="formula-box">
+                    Required GPA = (Target CGPA × Total Credits − Completed QP) / Remaining Credits
+                </div>
+                <div class="output-pill">
+                    <i class="fas fa-lightbulb" style="color:var(--ds-accent);"></i>
+                    {{ required_message }}
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">5</span>
+                    <div>
+                        <h2 class="section-title">Recovery Planner</h2>
+                        <p class="card-subtitle">If performance is below target</p>
+                    </div>
+                </div>
+                {% if recovery %}
+                <div class="metric-row">
+                    <span class="lbl">Expected CGPA</span><span class="val">{{ recovery.expected_cgpa }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="lbl">Actual CGPA</span><span class="val">{{ recovery.actual_cgpa }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="lbl">Gap</span><span class="val" style="color:var(--ds-danger);">−{{ recovery.gap }}</span>
+                </div>
+                <div class="output-pill" style="margin-top:0.75rem;">
+                    {{ recovery.message }}
+                </div>
+                <p class="form-hint" style="margin-top:0.65rem;">{{ recovery.recovery_message }}</p>
+                {% else %}
+                <div class="empty-state" style="padding:1.5rem 0;">
+                    <i class="fas fa-check-circle" style="color:var(--ds-success);"></i>
+                    <p style="margin:0;">On track or at target — no recovery plan needed.</p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">6</span>
+                <div>
+                    <h2 class="section-title">CGPA Engine — Period Breakdown</h2>
+                    <p class="card-subtitle">Semester-wise GPA aggregation from teacher-entered marks</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="ds-table">
+                    <thead>
+                        <tr>
+                            <th class="student-col">Period</th>
+                            <th class="num">Terminal</th>
+                            <th class="num">Subjects</th>
+                            <th class="num">Credits</th>
+                            <th class="num">GPA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in periods %}
+                        <tr>
+                            <td class="student-col"><strong>{{ p.semester_label }}</strong></td>
+                            <td class="num">{{ p.terminal }}</td>
+                            <td class="num">{{ p.subject_count }}</td>
+                            <td class="num">{{ p.credits }}</td>
+                            <td class="num"><span class="cell-value">{{ p.gpa }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">7</span>
+                <div>
+                    <h2 class="section-title">Subject Strength Analyzer</h2>
+                    <p class="card-subtitle">≥70% strong · 50–69% average · &lt;50% weak</p>
+                </div>
+            </div>
+            {% if strengths %}
+            <div>
+                {% for s in strengths %}
+                <div class="strength-item">
+                    <div>
+                        <strong>{{ s.subject }}</strong>
+                        <span class="text-muted" style="margin-left:0.35rem;">{{ s.average_pct }}%</span>
+                    </div>
+                    <span class="strength-badge {{ s.level }}">{{ s.label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state"><i class="fas fa-book"></i><p style="margin:0;">No subject marks yet.</p></div>
+            {% endif %}
+        </section>
+
+        {{ semester_gpa_chart|json_script:"semester-gpa-chart" }}
+        {{ cgpa_growth_chart|json_script:"cgpa-growth-chart" }}
+
+        <script>
+        (function() {
+            function cssVar(n, fb) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || fb; }
+            function chartTheme() {
+                return { text: cssVar('--text-secondary', '#94a3b8'), grid: cssVar('--border-color', 'rgba(148,163,184,0.2)'), title: cssVar('--text-primary', '#e2e8f0') };
+            }
+            function lineOpts(yl) {
+                const t = chartTheme();
+                return {
+                    responsive: true, maintainAspectRatio: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: t.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 }, boxWidth: 12 } },
+                        tooltip: { backgroundColor: cssVar('--bg-card', '#1e293b'), titleColor: t.title, bodyColor: t.text, borderColor: t.grid, borderWidth: 1 }
+                    },
+                    scales: {
+                        x: { ticks: { color: t.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } }, grid: { color: t.grid } },
+                        y: { beginAtZero: true, max: 4, title: { display: true, text: yl, color: t.text }, ticks: { color: t.text }, grid: { color: t.grid } }
+                    }
+                };
+            }
+            function build(id, dataId, yl) {
+                const el = document.getElementById(id), dEl = document.getElementById(dataId);
+                if (!el || !dEl) return null;
+                const data = JSON.parse(dEl.textContent);
+                data.datasets = data.datasets.map(ds => Object.assign({ borderWidth: 2.5, pointRadius: 4, spanGaps: true }, ds));
+                return new Chart(el, { type: 'line', data, options: lineOpts(yl) });
+            }
+            let c1 = build('semesterGpaChart', 'semester-gpa-chart', 'GPA');
+            let c2 = build('cgpaGrowthChart', 'cgpa-growth-chart', 'CGPA');
+            window.onThemeChange = function() {
+                if (c1) c1.destroy(); if (c2) c2.destroy();
+                c1 = build('semesterGpaChart', 'semester-gpa-chart', 'GPA');
+                c2 = build('cgpaGrowthChart', 'cgpa-growth-chart', 'CGPA');
+            };
+        })();
+        </script>
+
+        {% else %}
+        <section class="section-card fade-in">
+            <div class="empty-state" style="padding:2.5rem 1rem;">
+                <i class="fas fa-chart-line"></i>
+                <p style="margin:0 0 0.5rem;font-weight:600;color:var(--text-primary);">No marks for GPA calculation yet</p>
+                <p style="margin:0;">Once teachers enter your marks, CGPA forecasting will appear here.</p>
+                <div class="actions-bar" style="justify-content:center;border:none;padding-top:1rem;">
+                    <a href="/dashboard/" class="btn ds ds-primary">Back to Dashboard</a>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

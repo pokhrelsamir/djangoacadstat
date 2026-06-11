@@ -1,10 +1,19 @@
 /* Modern Admin Theme - Minimal & Clean */
 
+#content {
+    animation: adminFadeSlideUp 0.45s ease both;
+}
+
+@keyframes adminFadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===== CSS Variables - Light Theme ===== */
-:root, [data-theme="light"] {
-    --primary-color: #667eea;
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --secondary-color: #764ba2;
+[data-theme="light"] {
+    --primary-color: #0a0a0a;
+    --primary-gradient: linear-gradient(135deg, #0a0a0a 0%, #27272a 100%);
+    --secondary-color: #27272a;
     --bg-color: #f8fafc;
     --card-bg: #ffffff;
     --text-primary: #1e293b;
@@ -29,9 +38,9 @@
 
 /* ===== CSS Variables - Dark Theme ===== */
 [data-theme="dark"] {
-    --primary-color: #818cf8;
-    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    --secondary-color: #7c3aed;
+    --primary-color: #fafafa;
+    --primary-gradient: linear-gradient(135deg, #0a0a0a 0%, #27272a 100%);
+    --secondary-color: #d4d4d8;
     --bg-color: #0f172a;
     --card-bg: #1e293b;
     --text-primary: #f1f5f9;
@@ -67,6 +76,15 @@
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
+}
+
+#branding::before {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background: url('../images/logo.png') center/contain no-repeat;
+    filter: brightness(0) invert(1);
 }
 
 #site-name {

@@ -1,0 +1,97 @@
+/**
+ * Theme toggle — icon visibility & adaptive logo
+ * Sun = switch to light | Moon = switch to dark
+ */
+
+html {
+    color-scheme: dark;
+    transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+html[data-theme],
+html[data-theme] body {
+    transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
+html[data-theme="light"] {
+    color-scheme: light;
+}
+
+/* Adaptive logo: prefer src swap via data-logo-light / data-logo-dark */
+.logo-adaptive,
+.brand-logo-img {
+    transition: filter 0.3s ease, opacity 0.3s ease;
+    object-fit: contain;
+}
+
+.logo-adaptive[data-logo-light],
+.brand-logo-img[data-logo-light] {
+    filter: none !important;
+}
+
+/* Fallback for legacy logos without src swap */
+html[data-theme="dark"] .logo-adaptive:not([data-logo-light]),
+html[data-theme="dark"] .brand-logo-img.logo-inverted:not([data-logo-light]),
+html[data-theme="dark"] .brand img.logo-adaptive:not([data-logo-light]) {
+    filter: brightness(0) invert(1);
+}
+
+html[data-theme="light"] .logo-adaptive:not([data-logo-light]),
+html[data-theme="light"] .brand-logo-img:not([data-logo-light]) {
+    filter: none;
+}
+
+/* Theme toggle icons — show what you'll switch TO (sun = light, moon = dark) */
+.theme-toggle .sun-icon,
+.theme-toggle.ds-toggle .sun-icon,
+.landing-theme-toggle .sun-icon {
+    display: none;
+}
+
+.theme-toggle .moon-icon,
+.theme-toggle.ds-toggle .moon-icon,
+.landing-theme-toggle .moon-icon {
+    display: block;
+}
+
+html[data-theme="dark"] .theme-toggle .sun-icon,
+html[data-theme="dark"] .theme-toggle.ds-toggle .sun-icon,
+html[data-theme="dark"] .landing-theme-toggle .sun-icon {
+    display: block;
+}
+
+html[data-theme="dark"] .theme-toggle .moon-icon,
+html[data-theme="dark"] .theme-toggle.ds-toggle .moon-icon,
+html[data-theme="dark"] .landing-theme-toggle .moon-icon {
+    display: none;
+}
+
+/* Landing hero text always white on photo backgrounds */
+.landing-hero-content,
+.landing-hero-content h1,
+.landing-hero-content p,
+.landing-hero-badge {
+    color: #ffffff !important;
+}
+
+.landing-hero-content .landing-hero-desc {
+    color: rgba(255, 255, 255, 0.88) !important;
+}
+
+[data-theme="light"] .landing-hero h1 span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: none !important;
+}
+
+/* Footer always light text on black bar */
+.landing-footer,
+.landing-footer a,
+.landing-footer p {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.landing-footer a:hover {
+    color: #ffffff !important;
+}
+

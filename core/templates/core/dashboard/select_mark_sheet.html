@@ -1,4 +1,7 @@
+{% load static %}
+
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
@@ -281,159 +284,403 @@
             </button>
         </div>
     </nav>
+=======
 
-    <!-- Page Content -->
-    <div class="container">
-        <div class="selection-container">
-            <a href="/dashboard/" class="back-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-                Back to Dashboard
-            </a>
-            
-            <div class="selection-card">
-                <div class="selection-header">
-                    <div class="selection-icon">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                            <polyline points="10 9 9 9 8 9"/>
-                        </svg>
-                    </div>
-                    <h2>Generate Mark Sheet</h2>
-                    <p>Select a student and terminal to generate the mark sheet</p>
-                </div>
-                
-                <form id="markSheetForm">
-                    {% csrf_token %}
-                    
-                    <!-- Student Selection -->
-                    <div class="form-group">
-                        <label>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                            Select Student
-                        </label>
-                        <select id="studentSelect" class="form-control" required>
-                            <option value="">-- Choose a Student --</option>
-                            {% for student in students %}
-                            <option value="{{ student.id }}">{{ student.name }} ({{ student.roll_number|default:"No Roll" }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <!-- Terminal Selection -->
-                    <div class="form-group">
-                        <label>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/>
-                                <line x1="8" y1="2" x2="8" y2="6"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                            Select Terminal
-                        </label>
-                        <div class="terminal-grid">
-                            <div class="terminal-option">
-                                <input type="radio" id="terminal_1st" name="terminal" value="1st" checked>
-                                <label for="terminal_1st">
-                                    <span class="emoji">📝</span>
-                                    <span class="label-text">1st Terminal</span>
-                                </label>
-                            </div>
-                            <div class="terminal-option">
-                                <input type="radio" id="terminal_2nd" name="terminal" value="2nd">
-                                <label for="terminal_2nd">
-                                    <span class="emoji">📋</span>
-                                    <span class="label-text">2nd Terminal</span>
-                                </label>
-                            </div>
-                            <div class="terminal-option">
-                                <input type="radio" id="terminal_3rd" name="terminal" value="3rd">
-                                <label for="terminal_3rd">
-                                    <span class="emoji">📊</span>
-                                    <span class="label-text">3rd Terminal</span>
-                                </label>
-                            </div>
-                            <div class="terminal-option">
-                                <input type="radio" id="terminal_Final" name="terminal" value="Final">
-                                <label for="terminal_Final">
-                                    <span class="emoji">🏆</span>
-                                    <span class="label-text">Final</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn-generate" id="generateBtn" disabled>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                        </svg>
-                        Generate Mark Sheet
-                    </button>
-                    
-                    <div class="selection-info">
-                        <strong>Note:</strong> The mark sheet will include Pass (P) for marks ≥ 40% and Fail (F) for marks < 40%. Total marks are calculated from all subjects entered for the selected terminal.
-                    </div>
-                </form>
+<html lang="en">
+
+<head>
+
+    {% include 'core/partials/design_head.html' with page_title="Generate Mark Sheet — AcadStat" %}
+
+    <link rel="stylesheet" href="{% static 'css/marksheet.css' %}">
+
+</head>
+
+<body class="app-page">
+>>>>>>> 801959c (Latest Commit)
+
+    {% with nav_links='<a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a><a href="/marks-list/"><i class="fas fa-list"></i> Marks</a><a href="/select-mark-sheet/"><i class="fas fa-file-alt"></i> Mark Sheet</a>' %}
+
+    {% include 'core/partials/app_navbar.html' %}
+
+    {% endwith %}
+
+
+
+    <main class="app-shell app-shell--narrow">
+
+        <a href="/dashboard/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+
+
+
+        <div class="page-hero">
+
+            <h1 class="page-title"><i class="fas fa-file-alt" style="color:var(--ds-accent);"></i> Generate Mark Sheet</h1>
+
+            <p class="page-subtitle">Filter by terminal, class, and section — then select a student to produce an official marksheet.</p>
+
+            <div class="student-chip" id="studentChip">
+
+                <i class="fas fa-user-graduate"></i>
+
+                <span id="studentChipText">No student selected</span>
+
             </div>
+
         </div>
-    </div>
+
+
+
+        <section class="section-card fade-in">
+
+            <div class="card-head">
+
+                <span class="step-badge">1</span>
+
+                <div>
+
+                    <h2 class="section-title">Terminal &amp; Class Filters</h2>
+
+                    <p class="card-subtitle">Narrow the student list before selection</p>
+
+                </div>
+
+            </div>
+
+
+
+            <form id="markSheetForm" class="marksheet-select-grid">
+
+                <div class="form-group ds form-group--full">
+
+                    <label>Terminal Selection</label>
+
+                    <div class="terminal-pills">
+
+                        {% for t in terminals %}
+
+                        <div class="terminal-pill">
+
+                            <input type="radio" id="term_{{ t }}" name="terminal" value="{{ t }}" {% if forloop.first %}checked{% endif %}>
+
+                            <label for="term_{{ t }}">
+
+                                <span class="pill-num">{{ forloop.counter }}</span>
+
+                                <span>{{ t }}{% if t != "Final" %} Terminal{% endif %}</span>
+
+                            </label>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="form-group ds">
+
+                    <label for="classSelect">Class Selection</label>
+
+                    <select id="classSelect">
+
+                        <option value="">All classes</option>
+
+                        {% for cls in classes %}
+
+                        <option value="{{ cls }}">Class {{ cls }}</option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="form-group ds">
+
+                    <label for="sectionSelect">Section Selection</label>
+
+                    <select id="sectionSelect" disabled>
+
+                        <option value="">All sections</option>
+
+                    </select>
+
+                    <p class="form-hint">Select a class first to load sections.</p>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+
+        <section class="section-card fade-in">
+
+            <div class="card-head">
+
+                <span class="step-badge">2</span>
+
+                <div>
+
+                    <h2 class="section-title">Individual Student Selection</h2>
+
+                    <p class="card-subtitle">Choose the student for this marksheet</p>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="form-group ds">
+
+                <label for="studentSelect">Student</label>
+
+                <select id="studentSelect" required disabled>
+
+                    <option value="">— Select class filters or choose student —</option>
+
+                </select>
+
+            </div>
+
+
+
+            <div class="info-note">
+
+                <i class="fas fa-info-circle"></i>
+
+                <span>Pass (P) = ≥ 40% per subject. Data is pulled from marks stored in <strong>View All Marks</strong>.</span>
+
+            </div>
+
+
+
+            <div class="actions-bar" style="border-top:none;padding-top:1rem;margin-top:0.5rem;">
+
+                <button type="button" class="btn ds ds-primary ds-block" id="generateBtn" disabled>
+
+                    <i class="fas fa-file-export"></i> Generate Mark Sheet
+
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    {{ student_rows|json_script:"marksheet-students-data" }}
+
+    {{ sections_by_class|json_script:"marksheet-sections-data" }}
+
+
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('themeToggle');
-            const html = document.documentElement;
-            
-            // Set initial icon state
-            updateThemeIcon(html.getAttribute('data-theme'));
-            
-            themeToggle.addEventListener('click', function() {
-                const currentTheme = html.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                
-                html.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateThemeIcon(newTheme);
+
+    (function() {
+
+        const students = JSON.parse(document.getElementById('marksheet-students-data').textContent);
+
+        const sectionsByClass = JSON.parse(document.getElementById('marksheet-sections-data').textContent);
+
+        const classSelect = document.getElementById('classSelect');
+
+        const sectionSelect = document.getElementById('sectionSelect');
+
+        const studentSelect = document.getElementById('studentSelect');
+
+        const generateBtn = document.getElementById('generateBtn');
+
+        const studentChip = document.getElementById('studentChip');
+
+        const studentChipText = document.getElementById('studentChipText');
+
+
+
+        function filteredStudents() {
+
+            const cls = classSelect.value;
+
+            const sec = sectionSelect.value;
+
+            return students.filter(function(s) {
+
+                if (cls && s.student_class !== cls) return false;
+
+                if (sec && s.section !== sec) return false;
+
+                return true;
+
             });
-            
-            function updateThemeIcon(theme) {
-                const sunIcon = themeToggle.querySelector('.sun-icon');
-                const moonIcon = themeToggle.querySelector('.moon-icon');
-                
-                if (theme === 'dark') {
-                    sunIcon.style.display = 'block';
-                    moonIcon.style.display = 'none';
-                } else {
-                    sunIcon.style.display = 'none';
-                    moonIcon.style.display = 'block';
-                }
+
+        }
+
+
+
+        function rebuildStudentOptions() {
+
+            const list = filteredStudents();
+
+            const prev = studentSelect.value;
+
+            studentSelect.innerHTML = '<option value="">— Choose a student —</option>';
+
+            list.forEach(function(s) {
+
+                const opt = document.createElement('option');
+
+                opt.value = s.id;
+
+                opt.textContent = s.name + (s.roll_number ? ' (' + s.roll_number + ')' : '') + ' — ' + s.student_class + '-' + s.section;
+
+                studentSelect.appendChild(opt);
+
+            });
+
+            studentSelect.disabled = list.length === 0;
+
+            if (prev && list.some(function(s) { return String(s.id) === prev; })) {
+
+                studentSelect.value = prev;
+
             }
-            
-            // Form handling
-            const studentSelect = document.getElementById('studentSelect');
-            const generateBtn = document.getElementById('generateBtn');
-            const markSheetForm = document.getElementById('markSheetForm');
-            
-            studentSelect.addEventListener('change', function() {
-                generateBtn.disabled = !this.value;
+
+            syncGenerate();
+
+        }
+
+
+
+        function syncSections() {
+
+            const cls = classSelect.value;
+
+            sectionSelect.innerHTML = '<option value="">All sections</option>';
+
+            if (!cls) {
+
+                sectionSelect.disabled = true;
+
+                rebuildStudentOptions();
+
+                return;
+
+            }
+
+            sectionSelect.disabled = false;
+
+            (sectionsByClass[cls] || []).forEach(function(sec) {
+
+                const opt = document.createElement('option');
+
+                opt.value = sec;
+
+                opt.textContent = 'Section ' + sec;
+
+                sectionSelect.appendChild(opt);
+
             });
-            
-            markSheetForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const studentId = studentSelect.value;
-                const terminal = document.querySelector('input[name="terminal"]:checked').value;
-                window.location.href = `/mark-sheet/${studentId}/${terminal}/`;
-            });
+
+            rebuildStudentOptions();
+
+        }
+
+
+
+        function syncGenerate() {
+
+            const id = studentSelect.value;
+
+            generateBtn.disabled = !id;
+
+            if (id) {
+
+                const st = students.find(function(s) { return String(s.id) === id; });
+
+                studentChip.classList.add('visible');
+
+                studentChipText.textContent = st ? st.name + ' · Class ' + st.student_class + '-' + st.section : '';
+
+            } else {
+
+                studentChip.classList.remove('visible');
+
+                studentChipText.textContent = 'No student selected';
+
+            }
+
+        }
+
+
+
+        classSelect.addEventListener('change', function() {
+
+            sectionSelect.value = '';
+
+            syncSections();
+
         });
+
+        sectionSelect.addEventListener('change', rebuildStudentOptions);
+
+        studentSelect.addEventListener('change', syncGenerate);
+
+
+
+        generateBtn.addEventListener('click', function() {
+
+            const studentId = studentSelect.value;
+
+            const terminal = document.querySelector('input[name="terminal"]:checked').value;
+
+            if (studentId) {
+
+                window.location.href = '/mark-sheet/' + studentId + '/' + terminal + '/';
+
+            }
+
+        });
+
+
+
+        syncSections();
+
+        if (students.length === 1) {
+
+            classSelect.value = students[0].student_class;
+
+            syncSections();
+
+            sectionSelect.value = students[0].section;
+
+            rebuildStudentOptions();
+
+            studentSelect.value = String(students[0].id);
+
+            syncGenerate();
+
+        }
+
+    })();
+
     </script>
+<<<<<<< HEAD
+=======
+
+    {% include 'core/partials/theme_script.html' %}
+
+>>>>>>> 801959c (Latest Commit)
 </body>
+
 </html>
+

@@ -1,0 +1,65 @@
+<script>
+(function() {
+    const STORAGE_KEY = 'theme';
+
+    function getTheme() {
+        return document.documentElement.getAttribute('data-theme') || 'dark';
+    }
+
+    function applyLogos(theme) {
+        document.querySelectorAll('.brand-logo-img, .logo-adaptive, .login-hero-logo').forEach(function(img) {
+            var lightSrc = img.getAttribute('data-logo-light');
+            var darkSrc = img.getAttribute('data-logo-dark');
+            if (lightSrc && darkSrc) {
+                var nav = img.closest('.landing-nav');
+                var onHero = nav && !nav.classList.contains('scrolled');
+                img.src = (onHero || theme === 'dark') ? darkSrc : lightSrc;
+                img.classList.remove('logo-inverted');
+            } else {
+                img.classList.toggle('logo-inverted', theme === 'dark');
+            }
+        });
+    }
+
+    function applyTheme(theme) {
+        const html = document.documentElement;
+        const body = document.body;
+        html.setAttribute('data-theme', theme);
+        if (body) body.setAttribute('data-theme', theme);
+        localStorage.setItem(STORAGE_KEY, theme);
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'light' ? '#fafafa' : '#0a0a0a');
+        applyLogos(theme);
+        if (typeof window.onThemeChange === 'function') window.onThemeChange(theme);
+        window.dispatchEvent(new CustomEvent('acadstat:theme', { detail: { theme: theme } }));
+    }
+
+    function toggleTheme() {
+        applyTheme(getTheme() === 'light' ? 'dark' : 'light');
+    }
+
+    function initLandingNavLogos() {
+        var nav = document.getElementById('mainNav');
+        if (!nav) return;
+        var sync = function() { applyLogos(getTheme()); };
+        window.addEventListener('scroll', sync, { passive: true });
+        sync();
+    }
+
+    applyTheme(localStorage.getItem(STORAGE_KEY) || 'dark');
+
+    /* Event delegation — works even if navbar renders after script */
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#themeToggle, .theme-toggle, .landing-theme-toggle')) {
+            e.preventDefault();
+            toggleTheme();
+        }
+    });
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initLandingNavLogos);
+    } else {
+        initLandingNavLogos();
+    }
+})();
+</script>

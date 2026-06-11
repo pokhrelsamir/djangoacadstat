@@ -1,4 +1,9 @@
+{% load static %}
+
+
+
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
@@ -422,98 +427,30 @@
             transform: translateX(-5px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
+=======
 
-        /* Terminal Selector */
-        .terminal-selector {
-            display: flex;
-            align-items: center;
-        }
 
-        .terminal-dropdown {
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 2px solid #e2e8f0;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            background: white;
-            color: #1e293b;
-            transition: all 0.3s;
-        }
 
-        .terminal-dropdown:hover {
-            border-color: #667eea;
-        }
+<html lang="en">
 
-        .terminal-dropdown:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
 
-        .action-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        /* OCR Optimized Elements */
-        .ocr-readable {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            letter-spacing: 0.5px;
-        }
-        
-        .qr-section::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 0;
-            height: 0;
-            border-style: solid;
-            border-width: 0 40px 40px 0;
-            border-color: transparent #764ba2 transparent transparent;
-        }
-        
-        .grade-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 1rem;
-            text-align: center;
-            min-width: 40px;
-        }
-        
-        .grade-badge.pass {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #28a745;
-        }
-        
-        .grade-badge.fail {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #dc3545;
-        }
-        
-        /* Terminal Selection Badge in Header */
-        .document-type {
-            position: absolute;
-            top: 15px;
-            right: 150px;
-            background: #e74c3c;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-    </style>
+
+<head>
+>>>>>>> 801959c (Latest Commit)
+
+
+
+    {% include 'core/partials/design_head.html' with page_title="Mark Sheet — AcadStat" %}
+
+
+
+    <link rel="stylesheet" href="{% static 'css/marksheet.css' %}">
+
+
+
 </head>
 
+<<<<<<< HEAD
 <body>
     <!-- Navbar -->
     <nav class="navbar">
@@ -546,281 +483,901 @@
             </button>
         </div>
     </nav>
+=======
+>>>>>>> 801959c (Latest Commit)
 
-    <!-- Page Content -->
-    <div class="container">
-        <div class="mark-sheet-container">
-            
-            <!-- Action Buttons -->
-            <div class="mark-sheet-actions no-print">
-                <a href="/marks-list/" class="back-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 12H5M12 19l-7-7 7-7"/>
-                    </svg>
-                    Back to List
-                </a>
-                <div class="action-group" style="display: flex; align-items: center; gap: 10px;">
-                    <!-- Terminal Selection Dropdown -->
-                    <div class="terminal-selector">
-                        <label for="terminalSelect" style="font-size: 0.85rem; color: #64748b; margin-right: 5px;">Terminal:</label>
-                        <select id="terminalSelect" class="terminal-dropdown" onchange="changeTerminal(this.value)" style="padding: 8px 12px; border-radius: 8px; border: 2px solid #e2e8f0; font-size: 0.9rem; font-weight: 600; cursor: pointer; background: white;">
-                            <option value="1st" {% if selected_terminal == '1st' %}selected{% endif %}>1st Terminal</option>
-                            <option value="2nd" {% if selected_terminal == '2nd' %}selected{% endif %}>2nd Terminal</option>
-                            <option value="3rd" {% if selected_terminal == '3rd' %}selected{% endif %}>3rd Terminal</option>
-                            <option value="Final" {% if selected_terminal == 'Final' %}selected{% endif %}>Final</option>
-                        </select>
-                    </div>
-                    <button onclick="window.print()" class="btn-print">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="6 9 6 2 18 2 18 9"/>
-                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                            <rect x="6" y="14" width="12" height="8"/>
-                        </svg>
-                        Print
-                    </button>
-                </div>
-            </div>
-            
-            {% if student_results %}
-            {% with selected_student as student %}
-            <!-- Mark Sheet Document -->
-            <div class="mark-sheet-wrapper ocr-readable">
-                
-                <!-- Header Section -->
-                <div class="mark-sheet-header">
-                    <div class="college-info">
-                        <h1 class="college-name"> Soch College of IT </h1>
-                        <p class="college-address">📍 Ranipauwa - 12, Pokhara</p>
-                        <p class="college-contact">📞 +977-61-12342 <br>
-                        📩 info@sochcollege.edu.np</p>
-                    </div>
-                    <div class="qr-section">
-                        <div class="qr-code-box">
-                            <img src="data:image/png;base64,{{ college_qr_code }}" alt="College QR Code">
-                        </div>
-                        <p class="qr-label">Scan for Verification</p>
-                    </div>
-                    <span class="document-type">{{ selected_terminal }} Terminal Mark Sheet</span>
-                </div>
-                
-                <!-- Student Information -->
-                <div class="student-info-section">
-                    <div class="section-title">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        Student Information
-                    </div>
-                    <div class="student-details">
-                        <div class="detail-item">
-                            <span class="detail-label">Student Name:</span>
-                            <span class="detail-value">{{ student.name }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Roll Number:</span>
-                            <span class="detail-value">{{ student.roll_number|default:"N/A" }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Class:</span>
-                            <span class="detail-value">{{ student.student_class }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Section:</span>
-                            <span class="detail-value">{{ student.section }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Date of Birth:</span>
-                            <span class="detail-value">{{ student.date_of_birth|default:"N/A" }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Academic Year:</span>
-                            <span class="detail-value">{{ academic_year }}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Marks Table -->
-                <div class="marks-section">
-                    <div class="section-title">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                        </svg>
-                        {{ selected_terminal }} Terminal - Academic Performance
-                    </div>
-                    <table class="marks-table">
-                        <thead>
-                            <tr>
-                                <th>S.N.</th>
-                                <th>Subject Code</th>
-                                <th>Subject Name</th>
-                                <th>Marks Obtained</th>
-                                <th>Total Marks</th>
-                                <th>Percentage</th>
-                                <th>Grade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in student_results %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td class="subject-code">{{ item.result.subject.code }}</td>
-                                <td>{{ item.result.subject.name }}</td>
-                                <td class="marks-obtained">{{ item.result.marks_obtained|floatformat:1 }}</td>
-                                <td class="marks-total">{{ item.result.total_marks|floatformat:1 }}</td>
-                                <td>{{ item.percentage|floatformat:1 }}%</td>
-                                <td>
-                                    <span class="grade-badge {% if item.grade == 'P' %}pass{% else %}fail{% endif %}">
-                                        {{ item.grade }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Summary Section -->
-                <div class="summary-section">
-                    <div class="summary-grid">
-                        <div class="summary-item">
-                            <div class="summary-label">Total Subjects</div>
-                            <div class="summary-value">{{ total_subjects }}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">Total Marks</div>
-                            <div class="summary-value">{{ total_marks_obtained|floatformat:1 }}/{{ total_marks|floatformat:1 }}</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">Overall %</div>
-                            <div class="summary-value {% if overall_percentage >= 40 %}pass{% else %}fail{% endif %}">
-                                {{ overall_percentage|floatformat:1 }}%
-                            </div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="summary-label">Result</div>
-                            <div class="summary-value {% if all_passed %}pass{% else %}fail{% endif %}">
-                                {% if all_passed %}PASS{% else %}FAIL{% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div style="text-align: center;">
-                        <span class="result-badge {% if all_passed %}pass{% else %}fail{% endif %}">
-                            {% if all_passed %}✓ PASSED{% else %}✗ FAILED{% endif %}
-                        </span>
-                    </div>
-                    <div style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: #6c757d;">
-                        <strong>Grading System:</strong> P (Pass) = ≥ 40% | F (Fail) = < 40%
-                    </div>
+
+<body class="app-page marksheet-page">
+
+
+
+    {% with nav_links='<a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a><a href="/marks-list/"><i class="fas fa-list"></i> Marks</a><a href="/select-mark-sheet/"><i class="fas fa-file-alt"></i> Mark Sheet</a>' %}
+
+
+
+    {% include 'core/partials/app_navbar.html' %}
+
+
+
+    {% endwith %}
+
+
+
+
+
+
+
+    <main class="app-shell app-shell--narrow">
+
+
+
+        <div class="marksheet-toolbar no-print">
+
+
+
+            <a href="/select-mark-sheet/" class="back-link"><i class="fas fa-arrow-left"></i> Back</a>
+
+
+
+            <div class="toolbar-group">
+
+
+
+                {% if selected_student %}
+
+
+
+                <div class="form-group ds" style="margin:0;">
+
+
+
+                    <label for="terminalSelect" style="margin-bottom:0.25rem;">Terminal</label>
+
+
+
+                    <select id="terminalSelect" class="ds" style="padding:0.45rem 0.65rem;font-size:var(--ds-text-sm);" onchange="changeTerminal(this.value)">
+
+
+
+                        <option value="1st" {% if selected_terminal == '1st' %}selected{% endif %}>1st Terminal</option>
+
+
+
+                        <option value="2nd" {% if selected_terminal == '2nd' %}selected{% endif %}>2nd Terminal</option>
+
+
+
+                        <option value="3rd" {% if selected_terminal == '3rd' %}selected{% endif %}>3rd Terminal</option>
+
+
+
+                        <option value="Final" {% if selected_terminal == 'Final' %}selected{% endif %}>Final</option>
+
+
+
+                    </select>
+
+
+
                 </div>
 
-                <!-- Marks Validation Section - Shows entered marks for error checking -->
-                <div class="validation-section" style="padding: 20px 30px; background: #fffbeb; border-top: 2px solid #fcd34d;">
-                    <div class="section-title" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); margin: -20px -30px 15px -30px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 11l3 3L22 4"/>
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                        </svg>
-                        Marks Entered for {{ selected_terminal }} Terminal (Verification)
-                    </div>
-                    <div class="validation-info" style="margin-bottom: 15px;">
-                        <p style="font-size: 0.85rem; color: #92400e; margin: 0;">
-                            <strong>Note:</strong> Please verify the marks below. If there are errors, go to <a href="/marks-list/" style="color: #d97706; text-decoration: underline;">Marks List</a> to edit them.
-                        </p>
-                    </div>
-                    <div class="validation-table" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
-                        {% for item in student_results %}
-                        <div class="subject-mark-card" style="background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                            <div style="font-weight: 600; color: #374151; font-size: 0.9rem; margin-bottom: 5px;">{{ item.result.subject.name }}</div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 1rem; font-weight: 700; color: #1a1a2e;">{{ item.result.marks_obtained|floatformat:1 }} / {{ item.result.total_marks|floatformat:1 }}</span>
-                                <span class="grade-badge {% if item.grade == 'P' %}pass{% else %}fail{% endif %}" style="font-size: 0.75rem; padding: 3px 10px;">{{ item.grade }}</span>
-                            </div>
-                            <div style="font-size: 0.8rem; color: #6b7280; margin-top: 5px;">{{ item.percentage|floatformat:1 }}%</div>
-                        </div>
-                        {% empty %}
-                        <div style="text-align: center; padding: 20px; color: #92400e; grid-column: 1 / -1;">
-                            No marks entered for this terminal yet.
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                
-                <!-- Footer Section -->
-                <div class="mark-sheet-footer">
-                    <div class="signature-section">
-                        <div class="signature-box">
-                            <div class="signature-line">Class Teacher</div>
-                        </div>
-                        <div class="signature-box">
-                            <div class="signature-line">Principal</div>
-                        </div>
-                        <div class="signature-box">
-                            <div class="signature-line">Controller of Examination</div>
-                        </div>
-                    </div>
-                    <div class="footer-info">
-                        <span>Document ID: {{ doc_id }}</span>
-                        <span>Generated on: {% now "d M Y" %}</span>
-                        <span>Page 1 of 1</span>
-                    </div>
-                </div>
+
+
+                <button type="button" class="btn ds ds-ghost" onclick="window.print()">
+
+
+
+                    <i class="fas fa-print"></i> Print
+
+
+
+                </button>
+
+
+
+                {% endif %}
+
+
+
             </div>
-            {% endwith %}
-            {% else %}
-            <div style="text-align: center; padding: 60px 20px;">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <h3 style="color: #64748b; margin-top: 20px;">No Results Found</h3>
-                <p style="color: #94a3b8; margin-top: 10px;">No marks records found for this student.</p>
-                <a href="/marks-list/" style="display: inline-block; margin-top: 20px; color: #667eea;">← Back to Marks List</a>
-            </div>
-            {% endif %}
-            
+
+
+
         </div>
-    </div>
+
+
+
+
+
+
+
+        {% if selected_student and student_results %}
+
+
+
+        <div class="student-chip visible fade-in no-print" style="margin-bottom:1rem;">
+
+
+
+            <i class="fas fa-user-graduate"></i>
+
+
+
+            <span>{{ selected_student.name }} · Class {{ selected_student.student_class }}-{{ selected_student.section }} · {{ selected_terminal }} Terminal</span>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <article class="marksheet-doc fade-in ocr-readable" id="marksheetDocument">
+
+
+
+            <header class="marksheet-doc-header">
+
+
+
+                <span class="marksheet-terminal-badge">{{ selected_terminal }} Terminal</span>
+
+
+
+                <div class="college-brand">
+
+
+
+                    <h1>Soch College of IT</h1>
+
+
+
+                    <p class="college-meta">
+
+
+
+                        Ranipauwa, Pokhara · TU Affiliated<br>
+
+
+
+                        sochcollege.edu.np · +977-61574096 / 543120 · info@sochcollege.edu.np
+
+
+
+                    </p>
+
+
+
+                </div>
+
+
+
+                <div class="marksheet-qr">
+
+
+
+                    <div class="marksheet-qr-box" id="marksheetQrBox">
+
+
+
+                        {% if college_qr_code %}
+
+
+
+                        <img src="data:image/png;base64,{{ college_qr_code }}" alt="Verification QR code" id="marksheetQrFallback">
+
+
+
+                        {% endif %}
+
+
+
+                        <canvas id="marksheetQrCanvas" aria-label="Verification QR code"{% if college_qr_code %} hidden{% endif %}></canvas>
+
+
+
+                    </div>
+
+
+
+                    <p class="marksheet-qr-caption no-print">Scan to verify</p>
+
+
+
+                </div>
+
+
+
+            </header>
+
+
+
+
+
+
+
+            <section class="marksheet-section marksheet-section--student">
+
+
+
+                <h2 class="marksheet-section-title"><i class="fas fa-user"></i> Student Information</h2>
+
+
+
+                <dl class="marksheet-details">
+
+
+
+                    <div class="marksheet-detail-row">
+
+
+
+                        <dt>Name</dt>
+
+
+
+                        <dd>{{ selected_student.name }}</dd>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-detail-row">
+
+
+
+                        <dt>Roll No.</dt>
+
+
+
+                        <dd>{{ selected_student.roll_number|default:"N/A" }}</dd>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-detail-row">
+
+
+
+                        <dt>Class</dt>
+
+
+
+                        <dd>{{ selected_student.student_class }}</dd>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-detail-row">
+
+
+
+                        <dt>Section</dt>
+
+
+
+                        <dd>{{ selected_student.section }}</dd>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-detail-row">
+
+
+
+                        <dt>Academic Year</dt>
+
+
+
+                        <dd>{{ academic_year }}</dd>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-detail-row">
+
+
+
+                        <dt>Terminal</dt>
+
+
+
+                        <dd>{{ selected_terminal }}</dd>
+
+
+
+                    </div>
+
+
+
+                </dl>
+
+
+
+            </section>
+
+
+
+
+
+
+
+            <section class="marksheet-section marksheet-section--performance">
+
+
+
+                <h2 class="marksheet-section-title"><i class="fas fa-table"></i> Academic Performance</h2>
+
+
+
+                <div class="table-wrap">
+
+
+
+                    <table class="marksheet-table">
+
+
+
+                        <thead>
+
+
+
+                            <tr>
+
+
+
+                                <th class="col-sn">S.N.</th>
+
+
+
+                                <th class="col-code">Code</th>
+
+
+
+                                <th class="col-subject">Subject</th>
+
+
+
+                                <th class="num col-obt">Obtained</th>
+
+
+
+                                <th class="num col-tot">Total</th>
+
+
+
+                                <th class="num col-pct">%</th>
+
+
+
+                                <th class="num col-grade">Grade</th>
+
+
+
+                            </tr>
+
+
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+
+                            {% for item in student_results %}
+
+
+
+                            <tr>
+
+
+
+                                <td>{{ forloop.counter }}</td>
+
+
+
+                                <td><strong>{{ item.result.subject.code }}</strong></td>
+
+
+
+                                <td>{{ item.result.subject.name }}</td>
+
+
+
+                                <td class="num">{{ item.result.marks_obtained|floatformat:1 }}</td>
+
+
+
+                                <td class="num">{{ item.result.total_marks|floatformat:1 }}</td>
+
+
+
+                                <td class="num">{{ item.percentage|floatformat:1 }}%</td>
+
+
+
+                                <td class="num">
+
+
+
+                                    <span class="marksheet-grade {% if item.grade == 'F' %}fail{% else %}pass{% endif %}">{{ item.grade }}</span>
+
+
+
+                                </td>
+
+
+
+                            </tr>
+
+
+
+                            {% endfor %}
+
+
+
+                        </tbody>
+
+
+
+                        <tfoot>
+
+
+
+                            <tr class="marksheet-tfoot-total">
+
+
+
+                                <td colspan="3"><strong>Total Percentage/GPA</strong></td>
+
+
+
+                                <td class="num"><strong>{{ total_marks_obtained|floatformat:1 }}</strong></td>
+
+
+
+                                <td class="num"><strong>{{ total_marks|floatformat:1 }}</strong></td>
+
+
+
+                                <td class="num"><strong>{{ overall_percentage|floatformat:1 }}%</strong></td>
+
+
+
+                                <td class="num marksheet-tfoot-gpa-val"><strong>{% if all_passed %}{{ gpa|floatformat:2 }}{% else %}—{% endif %}</strong></td>
+
+
+
+                            </tr>
+
+
+
+                        </tfoot>
+
+
+
+                    </table>
+
+
+
+                </div>
+
+
+
+            </section>
+
+
+
+
+
+
+
+            <section class="marksheet-section marksheet-section--summary">
+
+
+
+                <h2 class="marksheet-section-title"><i class="fas fa-chart-pie"></i> Summary</h2>
+
+
+
+                <div class="marksheet-summary marksheet-summary--compact">
+
+
+
+                    <div class="marksheet-summary-item">
+
+
+
+                        <span class="lbl">Subjects</span>
+
+
+
+                        <span class="val">{{ total_subjects }}</span>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-summary-item">
+
+
+
+                        <span class="lbl">Total Marks</span>
+
+
+
+                        <span class="val">{{ total_marks_obtained|floatformat:1 }}/{{ total_marks|floatformat:1 }}</span>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-summary-item">
+
+
+
+                        <span class="lbl">Overall %</span>
+
+
+
+                        <span class="val {% if overall_percentage >= 40 %}pass{% else %}fail{% endif %}">{{ overall_percentage|floatformat:1 }}%</span>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-summary-item">
+
+
+
+                        <span class="lbl">GPA</span>
+
+
+
+                        <span class="val">{% if all_passed %}{{ gpa|floatformat:2 }}{% else %}—{% endif %}</span>
+
+
+
+                    </div>
+
+
+
+                    <div class="marksheet-summary-item">
+
+
+
+                        <span class="lbl">Result</span>
+
+
+
+                        <span class="val {% if all_passed %}pass{% else %}fail{% endif %}">{% if all_passed %}PASS{% else %}FAIL{% endif %}</span>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </section>
+
+
+
+
+
+
+
+            <footer class="marksheet-section marksheet-section--footer">
+
+
+
+                <div class="marksheet-signatures">
+
+
+
+                    <div class="marksheet-sig-line">Class Teacher</div>
+
+
+
+                    <div class="marksheet-sig-line">Principal</div>
+
+
+
+                    <div class="marksheet-sig-line">Controller of Examination</div>
+
+
+
+                </div>
+
+
+
+                <div class="marksheet-footer-meta">
+
+
+
+                    <span>ID: {{ doc_id }}</span>
+
+
+
+                    <span>Generated: {% now "d M Y" %}</span>
+
+
+
+                    <span>Page 1 of 1</span>
+
+
+
+                </div>
+
+
+
+            </footer>
+
+
+
+        </article>
+
+
+
+
+
+
+
+        {% elif selected_student %}
+
+
+
+        <section class="section-card fade-in">
+
+
+
+            <div class="empty-state" style="padding:2.5rem 1rem;">
+
+
+
+                <i class="fas fa-file-alt"></i>
+
+
+
+                <p style="font-weight:600;color:var(--text-primary);margin:0.5rem 0 0.25rem;">No marks for {{ selected_terminal }} Terminal</p>
+
+
+
+                <p class="text-muted" style="margin:0 0 1rem;">Add marks from View All Marks, then regenerate this sheet.</p>
+
+
+
+                <div class="actions-bar" style="justify-content:center;border-top:none;padding-top:0;">
+
+
+
+                    <a href="/add-marks/" class="btn ds ds-primary"><i class="fas fa-plus"></i> Add Marks</a>
+
+
+
+                    <a href="/select-mark-sheet/" class="btn ds ds-ghost"><i class="fas fa-redo"></i> Change Selection</a>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+        </section>
+
+
+
+        {% else %}
+
+
+
+        <section class="section-card fade-in">
+
+
+
+            <div class="empty-state" style="padding:2.5rem 1rem;">
+
+
+
+                <i class="fas fa-file-alt"></i>
+
+
+
+                <p style="font-weight:600;color:var(--text-primary);">Select a student to generate a marksheet</p>
+
+
+
+                <a href="/select-mark-sheet/" class="btn ds ds-primary" style="margin-top:1rem;"><i class="fas fa-arrow-right"></i> Go to Selection</a>
+
+
+
+            </div>
+
+
+
+        </section>
+
+
+
+        {% endif %}
+
+
+
+    </main>
+
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+
+
 
     <script>
-        // Change Terminal Function
-        function changeTerminal(terminal) {
-            // Get student ID from current URL or from a hidden field
-            const currentPath = window.location.pathname;
-            const pathParts = currentPath.split('/');
-            
-            // Find student ID in path (format: /mark-sheet/{student_id}/{terminal}/)
-            let studentId = null;
-            for (let i = 0; i < pathParts.length; i++) {
-                if (pathParts[i] === 'mark-sheet' && pathParts[i + 1]) {
-                    studentId = pathParts[i + 1];
-                    break;
-                }
-            }
-            
-            if (studentId) {
-                window.location.href = '/mark-sheet/' + studentId + '/' + terminal + '/';
-            } else {
-                // If no student ID found, go to select page
-                window.location.href = '/mark-sheet/';
-            }
+
+
+
+    function changeTerminal(terminal) {
+
+
+
+        var parts = window.location.pathname.split('/').filter(Boolean);
+
+
+
+        var idx = parts.indexOf('mark-sheet');
+
+
+
+        if (idx !== -1 && parts[idx + 1]) {
+
+
+
+            window.location.href = '/mark-sheet/' + parts[idx + 1] + '/' + terminal + '/';
+
+
+
+        } else {
+
+
+
+            window.location.href = '/select-mark-sheet/';
+
+
+
         }
 
-        // Theme Toggle Script
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', function() {
-                const html = document.documentElement;
-                const currentTheme = html.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                
-                html.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-            });
-        }
+
+
+    }
+
+
+
+
+
+
+
+    (function() {
+
+
+
+        var verifyUrl = "{{ verify_url|escapejs }}";
+
+
+
+        var canvas = document.getElementById('marksheetQrCanvas');
+
+
+
+        var fallback = document.getElementById('marksheetQrFallback');
+
+
+
+        if (!canvas || typeof QRCode === 'undefined') return;
+
+
+
+        QRCode.toCanvas(canvas, verifyUrl, {
+
+
+
+            width: 88,
+
+
+
+            margin: 1,
+
+
+
+            color: { dark: '#0a0a0a', light: '#ffffff' }
+
+
+
+        }, function(err) {
+
+
+
+            if (!err) {
+
+
+
+                canvas.width = 88;
+
+
+
+                canvas.height = 88;
+
+
+
+                canvas.hidden = false;
+
+
+
+                if (fallback) fallback.hidden = true;
+
+
+
+            }
+
+
+
+        });
+
+
+
+    })();
+
+
+
     </script>
+<<<<<<< HEAD
+=======
+
+
+
+    {% include 'core/partials/theme_script.html' %}
+
+
+
+>>>>>>> 801959c (Latest Commit)
 </body>
+
+
+
 </html>
+
+

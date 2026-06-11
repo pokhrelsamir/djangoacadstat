@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 
 # For workflow hover to the file named "Workflow.md" 
  # Django Academic Statistics System

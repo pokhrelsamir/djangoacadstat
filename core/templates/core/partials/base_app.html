@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    {% include 'core/partials/design_head.html' with page_title=page_title|default:"Academic System" %}
+    {% endblock %}
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="app-page {% block body_class %}{% endblock %}">
+    {% block navbar %}
+    {% include 'core/partials/app_navbar.html' %}
+    {% endblock %}
+
+    <main class="app-shell {% block shell_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_scripts %}{% endblock %}
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

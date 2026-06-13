@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="My Analytics — AcadStat" %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-filter-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.85rem;
+        }
+        @media (min-width: 640px) {
+            .analytics-filter-row { grid-template-columns: 1fr 1fr auto; }
+        }
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            min-height: 260px;
+        }
+        .chart-wrap canvas { max-height: 320px; }
+        .chart-wrap--tall { min-height: 300px; }
+        .chart-wrap--hero {
+            min-height: 320px;
+            padding: 0.5rem 0;
+            background: linear-gradient(180deg, var(--ds-accent-soft) 0%, transparent 100%);
+            border-radius: var(--ds-radius-sm);
+        }
+        .insight-pill {
+            padding: 0.6rem 0.85rem;
+            border-radius: var(--ds-radius-sm);
+            margin-bottom: 0.5rem;
+            font-size: var(--ds-text-sm);
+            line-height: 1.45;
+            background: var(--ds-accent-soft);
+            border-left: 3px solid var(--ds-accent);
+            color: var(--text-primary);
+        }
+        .section-label {
+            font-size: var(--ds-text-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin: 0 0 0.35rem;
+        }
+        .regression-note {
+            font-size: var(--ds-text-xs);
+            color: var(--text-muted);
+            margin-top: 0.65rem;
+        }
+        .chart-color-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-top: 0.85rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .color-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.55rem;
+            border-radius: 999px;
+            font-size: var(--ds-text-xs);
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .color-chip .swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+        }
+        .analytics-stats .stat-card { border-top: 3px solid transparent; }
+        .analytics-stats .stat-card:nth-child(1) { border-top-color: #6366f1; }
+        .analytics-stats .stat-card:nth-child(1) .stat-icon-wrap { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .analytics-stats .stat-card:nth-child(2) { border-top-color: #10b981; }
+        .analytics-stats .stat-card:nth-child(2) .stat-icon-wrap { background: linear-gradient(135deg, #10b981, #059669); }
+        .analytics-stats .stat-card:nth-child(3) { border-top-color: #f59e0b; }
+        .analytics-stats .stat-card:nth-child(3) .stat-icon-wrap { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .analytics-stats .stat-card:nth-child(4) { border-top-color: #3b82f6; }
+        .analytics-stats .stat-card:nth-child(4) .stat-icon-wrap { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .trend-up { color: var(--ds-success); font-weight: 700; }
+        .trend-down { color: var(--ds-danger); font-weight: 700; }
+        .trend-same { color: var(--text-muted); font-weight: 700; }
+        .nav-links a.is-active {
+            color: var(--ds-accent);
+            background: var(--ds-accent-soft);
+            border-radius: 8px;
+            padding: 0.35rem 0.65rem;
+        }
+        .highlight-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            border-radius: var(--ds-radius-sm);
+            background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(16,185,129,0.08));
+            border: 1px solid rgba(99,102,241,0.25);
+            margin-bottom: 1rem;
+            font-size: var(--ds-text-sm);
+            line-height: 1.5;
+        }
+        .highlight-banner i { color: var(--ds-accent); font-size: 1.15rem; margin-top: 0.1rem; }
+
+        /* ── Enhanced Insights Styles ─────────────────────────────────────── */
+        .perf-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-size: var(--ds-text-xs);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .perf-badge.excellent { background: #d1fae5; color: #065f46; }
+        .perf-badge.good { background: #dbeafe; color: #1e40af; }
+        .perf-badge.satisfactory { background: #fef3c7; color: #92400e; }
+        .perf-badge.needs-improvement { background: #fed7aa; color: #9a3412; }
+        .perf-badge.critical { background: #fecaca; color: #991b1b; }
+        .perf-badge.neutral { background: var(--bg-secondary); color: var(--text-muted); }
+
+        .insight-card {
+            background: var(--bg-card, #1e293b);
+            border: 1px solid var(--border-color);
+            border-radius: var(--ds-radius-sm);
+            padding: 1.15rem 1.25rem;
+            margin-bottom: 0.85rem;
+        }
+        .insight-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin-bottom: 0.55rem;
+        }
+        .insight-card-header h4 {
+            font-size: var(--ds-text-sm);
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .insight-card-body {
+            font-size: var(--ds-text-sm);
+            line-height: 1.55;
+            color: var(--text-secondary);
+        }
+        .insight-card-body i { margin-right: 0.3rem; opacity: 0.8; }
+        .insight-card-body strong { color: var(--text-primary); }
+
+        .insight-strength { border-left: 3px solid var(--ds-success); }
+        .insight-weakness { border-left: 3px solid var(--ds-danger); }
+        .insight-trend { border-left: 3px solid var(--ds-accent); }
+        .insight-compare { border-left: 3px solid #f59e0b; }
+        .insight-recommend { border-left: 3px solid #8b5cf6; }
+        .insight-milestone { border-left: 3px solid #06b6d4; }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.85rem;
+        }
+        @media (min-width: 640px) {
+            .insights-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .milestone-chip {
+            display: inline-block;
+            padding: 0.35rem 0.7rem;
+            border-radius: 999px;
+            background: var(--ds-accent-soft);
+            color: var(--text-primary);
+            font-size: var(--ds-text-xs);
+            font-weight: 500;
+            margin: 0.2rem;
+            border: 1px solid var(--border-color);
+            line-height: 1.4;
+        }
+
+        .grade-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.35rem;
+        }
+
+        .subject-spotlight-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: var(--ds-radius-sm);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Performance banner gradient overlays */
+        .perf-banner {
+            position: relative;
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--ds-radius-sm);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .perf-banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0.12;
+        }
+        .perf-banner.excellent::before { background: linear-gradient(135deg, #10b981, #6366f1); }
+        .perf-banner.good::before { background: linear-gradient(135deg, #3b82f6, #6366f1); }
+        .perf-banner.satisfactory::before { background: linear-gradient(135deg, #f59e0b, #f97316); }
+        .perf-banner.needs-improvement::before { background: linear-gradient(135deg, #f97316, #ef4444); }
+        .perf-banner.critical::before { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .perf-banner.neutral::before { background: linear-gradient(135deg, #64748b, #475569); }
+
+        .perf-banner-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .perf-banner-icon {
+            font-size: 2.2rem;
+            opacity: 0.85;
+        }
+        .perf-banner-text h3 {
+            margin: 0 0 0.25rem;
+            font-size: var(--ds-text-base);
+            font-weight: 700;
+        }
+        .perf-banner-text p {
+            margin: 0;
+            font-size: var(--ds-text-sm);
+            opacity: 0.85;
+            line-height: 1.45;
+        }
+
+        .recommendation-item {
+            display: flex;
+            gap: 0.7rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .recommendation-item:last-child { border-bottom: none; }
+        .recommendation-item .rec-icon { font-size: 1.1rem; flex-shrink: 0; }
+    </style>
+</head>
+<body class="app-page">
+    <nav class="navbar app-nav-style">
+        <h2 class="logo">🎓 AcadStat</h2>
+        <div class="nav-links">
+            <a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="{% url 'core:student_analytics' %}" class="is-active"><i class="fas fa-chart-line"></i> Analytics</a>
+            <a href="{% url 'core:gpa_forecasting' %}"><i class="fas fa-bullseye"></i> GPA Forecast</a>
+            <a href="{% url 'core:student_my_mark_sheet' %}"><i class="fas fa-file-alt"></i> My MarkSheet</a>
+            <a href="/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            <button class="theme-toggle ds-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <main class="app-shell app-shell--wide">
+        <a href="/dashboard/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+
+        <div class="page-hero fade-in">
+            <h1 class="page-title"><i class="fas fa-chart-line" style="color:var(--ds-accent);"></i> My Analytics</h1>
+            <p class="page-subtitle">{{ student.name }} · Class {{ student.student_class }} — Section {{ student.section }} · Detailed marks analysis & trends</p>
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">1</span>
+                <div>
+                    <h2 class="section-title">Filters</h2>
+                    <p class="card-subtitle">Narrow charts by subject or terminal</p>
+                </div>
+            </div>
+            <form method="get">
+                <div class="analytics-filter-row">
+                    <div class="form-group ds">
+                        <label for="subjectFilter">Subject</label>
+                        <select name="subject" id="subjectFilter">
+                            <option value="">All subjects</option>
+                            {% for s in available_subjects %}
+                            <option value="{{ s.id }}" {% if subject_id == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}{% if s.code %} ({{ s.code }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group ds">
+                        <label for="terminalFilter">Terminal</label>
+                        <select name="terminal" id="terminalFilter">
+                            <option value="all" {% if terminal == "all" %}selected{% endif %}>All terminals</option>
+                            {% for t in terminals %}
+                            <option value="{{ t }}" {% if terminal == t %}selected{% endif %}>{{ t }} Terminal</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group ds" style="display:flex;align-items:flex-end;">
+                        <button type="submit" class="btn ds ds-primary ds-block"><i class="fas fa-filter"></i> Apply</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        {% if total > 0 %}
+
+        <div class="stats-grid analytics-stats fade-in">
+            <div class="stat-card">
+                <div class="stat-icon-wrap accent"><i class="fas fa-percentage"></i></div>
+                <div class="stat-label">Your Average</div>
+                <div class="stat-value">{{ avg_pct }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap success"><i class="fas fa-arrow-up"></i></div>
+                <div class="stat-label">Highest Score</div>
+                <div class="stat-value">{{ highest_pct }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap warning"><i class="fas fa-arrow-down"></i></div>
+                <div class="stat-label">Lowest Score</div>
+                <div class="stat-value">{{ lowest_pct }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap info"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-label">Pass Rate</div>
+                <div class="stat-value">{{ pass_rate }}%</div>
+                <p class="text-muted" style="margin:0.25rem 0 0;">{{ pass_count }} / {{ total }} passed</p>
+            </div>
+        </div>
+
+        {# ─── ENHANCED INSIGHTS SECTION ─── #}
+        {% if enriched_insights %}
+        <section class="section-card fade-in" id="insights">
+            <p class="section-label">Insights & Alerts</p>
+            <h2 class="section-title" style="margin-bottom:0.75rem;">
+                <i class="fas fa-lightbulb" style="color:var(--ds-accent);"></i> 
+                Rule-based recommendations
+            </h2>
+
+            {# ── Performance Banner ── #}
+            {% with perf=enriched_insights.performance %}
+            {% if perf %}
+            <div class="perf-banner {{ perf.badge }}">
+                <div class="perf-banner-content">
+                    <div class="perf-banner-icon"><i class="fas {{ perf.icon }}"></i></div>
+                    <div class="perf-banner-text">
+                        <h3>{{ perf.label }} — {{ perf.avg_pct }}% Average</h3>
+                        <p>{{ perf.description }}</p>
+                    </div>
+                    <span class="perf-badge {{ perf.badge }}" style="margin-left:auto;">
+                        <i class="fas {{ perf.icon }}"></i> {{ perf.label }}
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {# ── Subject Spotlight: Strength & Weakness ── #}
+            {% if enriched_insights.subject_spotlight %}
+            <div class="insights-grid" style="margin-bottom:0.85rem;">
+                {% for spot in enriched_insights.subject_spotlight %}
+                <div class="subject-spotlight-card insight-{{ spot.type }}">
+                    <span style="font-size:1.15rem;flex-shrink:0;"><i class="fas {{ spot.icon }}"></i></span>
+                    <div>
+                        <div style="font-size:var(--ds-text-sm);line-height:1.45;">{{ spot.message|safe }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# ── Grade Breakdown Chips ── #}
+            {% if enriched_insights.grade_breakdown %}
+            <div style="margin-bottom:0.85rem;display:flex;flex-wrap:wrap;gap:0.5rem;">
+                {% for gb in enriched_insights.grade_breakdown %}
+                <span class="milestone-chip">
+                    <span class="grade-dot" style="background:{{ gb.color }};"></span>
+                    {{ gb.label }}: <strong>{{ gb.count }}</strong>
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# ── Trend Analysis ── #}
+            {% if enriched_insights.trend_analysis %}
+            {% for trend in enriched_insights.trend_analysis %}
+            <div class="insight-card insight-trend">
+                <div class="insight-card-header">
+                    <i class="fas {{ trend.icon }}" style="color:var(--ds-accent);"></i>
+                    <h4>Trend Analysis</h4>
+                </div>
+                <div class="insight-card-body">
+                    {{ trend.message|safe }}
+                    {% if trend.delta %}
+                    <span style="display:inline-block;margin-left:0.5rem;padding:0.15rem 0.5rem;border-radius:999px;font-size:var(--ds-text-xs);font-weight:700;
+                        {% if trend.delta > 0 %}background:#d1fae5;color:#065f46;{% else %}background:#fecaca;color:#991b1b;{% endif %}">
+                        {{ trend.delta }}{% if trend.delta > 0 %}+{% endif %}%
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {# ── Consistency Score ── #}
+            {% if enriched_insights.consistency %}
+            {% with con=enriched_insights.consistency %}
+            <div class="insight-card insight-trend">
+                <div class="insight-card-header">
+                    <i class="fas {{ con.icon }}" style="color:{{ con.color }};"></i>
+                    <h4>Consistency Score</h4>
+                </div>
+                <div class="insight-card-body">
+                    <span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:999px;font-size:var(--ds-text-xs);font-weight:700;background:{{ con.color }}20;color:{{ con.color }};">
+                        {{ con.label }} (±{{ con.std_dev }}%)
+                    </span>
+                    &nbsp; {{ con.description }}
+                </div>
+            </div>
+            {% endwith %}
+            {% endif %}
+
+            {# ── Comparative (vs Section) ── #}
+            {% if enriched_insights.comparative %}
+            {% for comp in enriched_insights.comparative %}
+            <div class="insight-card insight-compare">
+                <div class="insight-card-header">
+                    <i class="fas fa-users" style="color:#f59e0b;"></i>
+                    <h4>Comparative Analysis</h4>
+                </div>
+                <div class="insight-card-body">
+                    {{ comp.message|safe }}
+                    {% if comp.diff %}
+                    <span style="display:inline-block;margin-left:0.5rem;padding:0.15rem 0.5rem;border-radius:999px;font-size:var(--ds-text-xs);font-weight:700;
+                        {% if comp.diff > 0 %}background:#d1fae5;color:#065f46;{% else %}background:#fecaca;color:#991b1b;{% endif %}">
+                        {% if comp.diff > 0 %}+{% endif %}{{ comp.diff }}%
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {# ── Milestones ── #}
+            {% if enriched_insights.milestones %}
+            <div class="insight-card insight-milestone">
+                <div class="insight-card-header">
+                    <i class="fas fa-flag-checkered" style="color:#06b6d4;"></i>
+                    <h4>Achievements & Milestones</h4>
+                </div>
+                <div class="insight-card-body">
+                    {% for m in enriched_insights.milestones %}
+                    <span class="milestone-chip">{{ m|safe }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# ── Actionable Recommendations ── #}
+            {% if enriched_insights.recommendations %}
+            <div class="insight-card insight-recommend">
+                <div class="insight-card-header">
+                    <i class="fas fa-clipboard-list" style="color:#8b5cf6;"></i>
+                    <h4>Personalized Recommendations</h4>
+                </div>
+                <div class="insight-card-body">
+                    {% for rec in enriched_insights.recommendations %}
+                    <div class="recommendation-item">
+                        <div class="rec-icon">{{ rec|safe }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# ── Summary Banner ── #}
+            {% if enriched_insights.summary %}
+            <div class="highlight-banner" style="margin-top:0.5rem;">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    {% for s in enriched_insights.summary %}
+                    {{ s|safe }}{% if not forloop.last %} · {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+        {% else %}
+        {# ── Fallback to original insight lines ── #}
+        {% if insight_lines %}
+        <section class="section-card fade-in">
+            <p class="section-label">Insights & Alerts</p>
+            <h2 class="section-title" style="margin-bottom:0.75rem;">Rule-based recommendations</h2>
+            {% for line in insight_lines %}
+            <div class="insight-pill"><i class="fas fa-lightbulb" style="margin-right:0.35rem;opacity:0.7;"></i>{{ line }}</div>
+            {% endfor %}
+        </section>
+        {% endif %}
+        {% endif %}
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">2</span>
+                <div>
+                    <h2 class="section-title">Subject Trend Overlap</h2>
+                    <p class="card-subtitle">Terminals vs percentage — each subject plotted on the same axes so you can compare progress side by side</p>
+                </div>
+            </div>
+            <div class="highlight-banner">
+                <i class="fas fa-layer-group"></i>
+                <div>When you have multiple subjects, their lines overlap on one chart. Follow each coloured line across terminals to spot which subjects are improving or falling behind.</div>
+            </div>
+            <div class="chart-wrap chart-wrap--hero">
+                <canvas id="terminalWiseChart" aria-label="Subject trend overlap line chart"></canvas>
+            </div>
+            {% if chart_color_legend.subjects %}
+            <div class="chart-color-legend" aria-label="Subject colour key">
+                {% for item in chart_color_legend.subjects %}
+                <span class="color-chip"><span class="swatch" style="background:{{ item.color }};"></span>{{ item.name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">3</span>
+                    <div>
+                        <h2 class="section-title">Terminal-wise Performance</h2>
+                        <p class="card-subtitle">Your average % per terminal across subjects</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="terminalAvgChart" aria-label="Terminal-wise average chart"></canvas>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">4</span>
+                    <div>
+                        <h2 class="section-title">Subject-wise Performance</h2>
+                        <p class="card-subtitle">Your % per subject — coloured by terminal</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="subjectWiseChart" aria-label="Subject-wise performance line chart"></canvas>
+                </div>
+                {% if chart_color_legend.terminals %}
+                <div class="chart-color-legend" aria-label="Terminal colour key">
+                    {% for item in chart_color_legend.terminals %}
+                    <span class="color-chip"><span class="swatch" style="background:{{ item.color }};"></span>{{ item.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">5</span>
+                    <div>
+                        <h2 class="section-title">Score Distribution</h2>
+                        <p class="card-subtitle">How your results are spread across grade bands</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="distributionChart" aria-label="Score distribution bar chart"></canvas>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">6</span>
+                    <div>
+                        <h2 class="section-title">Pass / Fail Ratio</h2>
+                        <p class="card-subtitle">Results at or above 40% pass threshold</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="passFailChart" aria-label="Pass fail doughnut chart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">7</span>
+                <div>
+                    <h2 class="section-title">Regression Trend Analysis</h2>
+                    <p class="card-subtitle">{{ regression_chart.title }} — linear fit across terminals</p>
+                </div>
+            </div>
+            <div class="chart-wrap chart-wrap--tall">
+                <canvas id="regressionChart" aria-label="Regression scatter and trend line chart"></canvas>
+            </div>
+            {% if regression_chart.slope is not None %}
+            <p class="regression-note">
+                <i class="fas fa-chart-line"></i>
+                Slope: <strong>{{ regression_chart.slope }}</strong> % per terminal
+                {% if regression_chart.slope > 0.5 %}— upward trend, performance improving over time.
+                {% elif regression_chart.slope < -0.5 %}— downward trend, review your study plan.
+                {% else %}— relatively stable performance across terminals.{% endif %}
+            </p>
+            {% endif %}
+        </section>
+
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">8</span>
+                    <div>
+                        <h2 class="section-title">Subject Breakdown</h2>
+                        <p class="card-subtitle">Per-subject performance snapshot</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="subjectBreakdownChart" aria-label="Subject breakdown bar chart"></canvas>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">9</span>
+                    <div>
+                        <h2 class="section-title">You vs Section Average</h2>
+                        <p class="card-subtitle">Compare your progress against classmates in your section</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="sectionCompareChart" aria-label="Student vs section comparison chart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">10</span>
+                <div>
+                    <h2 class="section-title">Subject Trends Table</h2>
+                    <p class="card-subtitle">Your percentage marks by terminal — track improvement at a glance</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="ds-table">
+                    <colgroup>
+                        <col class="student-col">
+                        {% for t in run_terminals %}<col class="num">{% endfor %}
+                        <col class="trend-col">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="student-col">Subject</th>
+                            {% for t in run_terminals %}
+                            <th class="num">{{ t }}</th>
+                            {% endfor %}
+                            <th class="trend-col">Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in trend_rows %}
+                        <tr>
+                            <td class="student-col"><strong>{{ row.subject.name }}</strong></td>
+                            {% for t, mark in row.mark_tuples %}
+                            <td class="num">
+                                {% if mark is not None %}<span class="cell-value">{{ mark }}%</span>{% else %}<span class="cell-empty">—</span>{% endif %}
+                            </td>
+                            {% endfor %}
+                            <td class="trend-col">
+                                {% if row.arrow == "up" %}<span class="trend-up" title="Improving">↑</span>
+                                {% elif row.arrow == "down" %}<span class="trend-down" title="Declining">↓</span>
+                                {% else %}<span class="trend-same" title="Stable">→</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{{ run_terminals|length|add:2 }}" class="empty-state">
+                                <i class="fas fa-table"></i> No trend data for current filters.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        {{ terminal_wise_chart|json_script:"terminal-chart-data" }}
+        {{ subject_wise_chart|json_script:"subject-chart-data" }}
+        {{ distribution_chart|json_script:"distribution-chart-data" }}
+        {{ pass_fail_chart|json_script:"pass-fail-chart-data" }}
+        {{ regression_chart|json_script:"regression-chart-data" }}
+        {{ subject_breakdown_chart|json_script:"subject-breakdown-chart-data" }}
+        {{ student_terminal_chart|json_script:"student-terminal-chart-data" }}
+        {{ comparison_chart|json_script:"comparison-chart-data" }}
+
+        <script>
+        (function() {
+            const charts = {};
+
+            function cssVar(name, fallback) {
+                return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+            }
+
+            function chartTheme() {
+                return {
+                    text: cssVar('--text-secondary', '#94a3b8'),
+                    grid: cssVar('--border-color', 'rgba(148,163,184,0.2)'),
+                    title: cssVar('--text-primary', '#e2e8f0'),
+                    card: cssVar('--bg-card', '#1e293b'),
+                };
+            }
+
+            function basePlugins() {
+                const theme = chartTheme();
+                return {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: theme.text,
+                            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
+                            boxWidth: 12,
+                            padding: 14,
+                        },
+                    },
+                    tooltip: {
+                        backgroundColor: theme.card,
+                        titleColor: theme.title,
+                        bodyColor: theme.text,
+                        borderColor: theme.grid,
+                        borderWidth: 1,
+                    },
+                };
+            }
+
+            function scaleOpts(yLabel, opts) {
+                opts = opts || {};
+                const theme = chartTheme();
+                const isPercent = opts.isPercent !== false;
+                return {
+                    x: {
+                        ticks: { color: theme.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } },
+                        grid: { color: theme.grid },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: opts.max !== undefined ? opts.max : (isPercent ? 100 : undefined),
+                        title: yLabel ? { display: true, text: yLabel, color: theme.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } } : undefined,
+                        ticks: {
+                            color: theme.text,
+                            callback: function(v) { return isPercent ? v + '%' : v; },
+                            font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
+                            stepSize: opts.stepSize,
+                        },
+                        grid: { color: theme.grid },
+                    },
+                };
+            }
+
+            function buildLineChart(id, dataId, yLabel) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const data = JSON.parse(document.getElementById(dataId).textContent);
+                data.datasets = data.datasets.map(function(ds) {
+                    return Object.assign({
+                        borderWidth: 2.5,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        spanGaps: true,
+                        tension: 0.35,
+                        fill: ds.fill !== undefined ? ds.fill : false,
+                    }, ds);
+                });
+                return new Chart(el, {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: Object.assign({}, basePlugins(), {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        const v = ctx.parsed.y;
+                                        return ' ' + ctx.dataset.label + ': ' + (v != null ? v + '%' : '—');
+                                    },
+                                },
+                            },
+                        }),
+                        scales: scaleOpts(yLabel),
+                    },
+                });
+            }
+
+            function buildBarChart(id, dataId, yLabel, scaleOptions) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const data = JSON.parse(document.getElementById(dataId).textContent);
+                return new Chart(el, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: basePlugins(),
+                        scales: scaleOpts(yLabel, scaleOptions),
+                    },
+                });
+            }
+
+            function buildDoughnutChart(id, dataId) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const data = JSON.parse(document.getElementById(dataId).textContent);
+                return new Chart(el, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: Object.assign({}, basePlugins(), {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        const total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                        const pct = total ? Math.round(ctx.parsed / total * 100) : 0;
+                                        return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                                    },
+                                },
+                            },
+                        }),
+                    },
+                });
+            }
+
+            function buildRegressionChart(id, dataId) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const raw = JSON.parse(document.getElementById(dataId).textContent);
+                const theme = chartTheme();
+                const regData = raw.labels.map(function(label, i) {
+                    return { x: i + 1, y: raw.regression[i] };
+                }).filter(function(p) { return p.y != null; });
+
+                return new Chart(el, {
+                    data: {
+                        datasets: [
+                            {
+                                type: 'scatter',
+                                label: 'Your average %',
+                                data: raw.scatter,
+                                backgroundColor: '#6366f1',
+                                borderColor: '#6366f1',
+                                pointRadius: 7,
+                                pointHoverRadius: 9,
+                            },
+                            {
+                                type: 'line',
+                                label: 'Linear regression',
+                                data: regData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2.5,
+                                borderDash: [6, 4],
+                                pointRadius: 0,
+                                tension: 0,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: Object.assign({}, basePlugins(), {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        return ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + '%';
+                                    },
+                                },
+                            },
+                        }),
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                min: 0.5,
+                                max: raw.labels.length + 0.5,
+                                ticks: {
+                                    color: theme.text,
+                                    stepSize: 1,
+                                    callback: function(v) { return raw.labels[v - 1] || ''; },
+                                },
+                                grid: { color: theme.grid },
+                                title: { display: true, text: 'Terminal', color: theme.text },
+                            },
+                            y: Object.assign({}, scaleOpts('Percentage %').y, { max: 100 }),
+                        },
+                    },
+                });
+            }
+
+            function initCharts() {
+                charts.terminal = buildLineChart('terminalWiseChart', 'terminal-chart-data', 'Your %');
+                charts.subject = buildLineChart('subjectWiseChart', 'subject-chart-data', 'Your %');
+                charts.distribution = buildBarChart('distributionChart', 'distribution-chart-data', 'Count', { isPercent: false, stepSize: 1 });
+                charts.passFail = buildDoughnutChart('passFailChart', 'pass-fail-chart-data');
+                charts.regression = buildRegressionChart('regressionChart', 'regression-chart-data');
+                charts.breakdown = buildBarChart('subjectBreakdownChart', 'subject-breakdown-chart-data', 'Your %');
+                charts.terminalAvg = buildBarChart('terminalAvgChart', 'student-terminal-chart-data', 'Your %');
+                charts.sectionCompare = buildBarChart('sectionCompareChart', 'comparison-chart-data', 'Average %');
+            }
+
+            function destroyCharts() {
+                Object.keys(charts).forEach(function(k) {
+                    if (charts[k]) { charts[k].destroy(); charts[k] = null; }
+                });
+            }
+
+            initCharts();
+            window.onThemeChange = function() { destroyCharts(); initCharts(); };
+        })();
+        </script>
+
+        {% else %}
+
+        <section class="section-card fade-in">
+            <div class="empty-state" style="padding:3rem 1rem;">
+                <i class="fas fa-chart-line"></i>
+                <p style="margin:0 0 0.5rem;font-size:var(--ds-text-md);color:var(--text-primary);font-weight:600;">No marks to analyse yet</p>
+                <p style="margin:0 0 1.25rem;">Your teachers haven't entered marks yet. Check back after results are published.</p>
+                <a href="/dashboard/" class="btn ds ds-primary"><i class="fas fa-th-large"></i> Back to Dashboard</a>
+            </div>
+        </section>
+
+        {% endif %}
+    </main>
+
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

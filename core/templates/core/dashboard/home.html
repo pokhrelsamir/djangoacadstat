@@ -1,0 +1,207 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="AcadStat - Academic Performance Analytics" %}
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+</head>
+<body class="landing-page">
+    <nav class="landing-nav" id="mainNav" data-lg-radius="999">
+        <a href="#home" class="brand">
+            <img
+                src="{% static 'images/acadstat-brand-white.png' %}"
+                data-logo-light="{% static 'images/acadstat-brand.png' %}"
+                data-logo-dark="{% static 'images/acadstat-brand-white.png' %}"
+                alt="AcadStat"
+                class="logo-adaptive brand-logo-img"
+            >
+            <span class="brand-text">AcadStat</span>
+        </a>
+        <div class="landing-nav-links">
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#features">Features</a>
+            <a href="#contact">Contact</a>
+            <a href="/login/" class="nav-cta"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <button class="landing-theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+                <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section id="home" class="landing-hero">
+        <div class="landing-hero-bg"></div>
+        <div class="landing-hero-content">
+            <div class="landing-hero-badge"><i class="fas fa-graduation-cap"></i> Academic Performance Analytics</div>
+            <h1>Empowering Education with <span>Data-Driven Insights</span></h1>
+            <p class="landing-hero-desc">AcadStat helps institutions track student performance, manage marks, monitor attendance, and generate insightful academic reports — all in one modern platform.</p>
+            <div class="landing-hero-btns">
+                <a href="/login/" class="landing-btn landing-btn-primary"><i class="fas fa-arrow-right"></i> Get Started</a>
+                <a href="/admin/" class="landing-btn landing-btn-outline"><i class="fas fa-cog"></i> Admin Panel</a>
+            </div>
+        </div>
+        <div class="landing-hero-visual">
+            <div class="hero-image-stack">
+                <img src="{% static 'images/tu/tu-1.jpg' %}" alt="TU Graduates" class="hero-img-main">
+                <img src="{% static 'images/tu/tu-2.jpg' %}" alt="TU Students" class="hero-img-float students">
+                <img src="{% static 'images/tu/tu-3.jpg' %}" alt="TU Graduate celebration" class="hero-img-float campus">
+                <div class="hero-stat-card">
+                    <div class="num">500+</div>
+                    <div class="lbl">Students Managed</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="landing-section alt">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">About Us</span>
+                <h2 class="section-title">Welcome to AcadStat</h2>
+                <p class="section-desc">Your complete academic performance management solution for modern institutions.</p>
+            </div>
+            <div class="about-grid">
+                <div class="about-card reveal reveal-delay-1 hover-lift">
+                    <img src="{% static 'images/tu/tu-4.jpg' %}" alt="TU Graduation ceremony" class="about-card-img">
+                    <div class="about-card-body">
+                        <h3><i class="fas fa-bullseye"></i> Our Mission</h3>
+                        <p>Empower educational institutions with powerful analytics tools that help track and improve student performance through data-driven insights.</p>
+                    </div>
+                </div>
+                <div class="about-card reveal reveal-delay-2 hover-lift">
+                    <img src="{% static 'images/tu/tu-5.jpg' %}" alt="TU Central Campus" class="about-card-img">
+                    <div class="about-card-body">
+                        <h3><i class="fas fa-chart-bar"></i> What We Do</h3>
+                        <p>Comprehensive platform for managing student marks, generating performance reports, and visualizing academic data with intuitive dashboards.</p>
+                    </div>
+                </div>
+                <div class="about-card reveal reveal-delay-3 hover-lift">
+                    <img src="{% static 'images/tu/tu-7.png' %}" alt="TU Office of the Registrar" class="about-card-img">
+                    <div class="about-card-body">
+                        <h3><i class="fas fa-rocket"></i> Why Choose Us</h3>
+                        <p>Simple, modern, and efficient. Designed to be user-friendly while providing powerful features for academic management.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-bar reveal">
+                <div class="stat"><span class="num">500+</span><span class="lbl">Students</span></div>
+                <div class="stat"><span class="num">50+</span><span class="lbl">Subjects</span></div>
+                <div class="stat"><span class="num">100%</span><span class="lbl">Accuracy</span></div>
+                <div class="stat"><span class="num">24/7</span><span class="lbl">Support</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="landing-section">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Features</span>
+                <h2 class="section-title">Powerful Features</h2>
+                <p class="section-desc">Everything you need to manage academic performance effectively.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card reveal reveal-delay-1">
+                    <div class="feature-icon"><i class="fas fa-user-graduate"></i></div>
+                    <h3>Student Management</h3>
+                    <p>Complete student database with roll numbers, classes, and sections management.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="feature-icon"><i class="fas fa-book"></i></div>
+                    <h3>Subject Tracking</h3>
+                    <p>Manage multiple subjects with detailed codes and categories.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-3">
+                    <div class="feature-icon"><i class="fas fa-pen-to-square"></i></div>
+                    <h3>Marks Entry</h3>
+                    <p>Easy and quick marks entry with validation and instant updates.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-1">
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Visual charts and graphs showing performance trends and insights.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+                    <h3>Secure Access</h3>
+                    <p>Role-based access control with secure authentication.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-3">
+                    <div class="feature-icon"><i class="fas fa-file-export"></i></div>
+                    <h3>Easy Export</h3>
+                    <p>Export reports and data in various formats for printing.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="landing-section alt">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-tag">Contact Us</span>
+                <h2 class="section-title">Get In Touch</h2>
+                <p class="section-desc">Have questions? We'd love to hear from you!</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-items reveal">
+                    <div class="contact-item hover-lift">
+                        <div class="contact-item-icon"><i class="fas fa-location-dot"></i></div>
+                        <div><strong>Address</strong><br>Soch College of IT, Ranipauwa -12, Pokhara</div>
+                    </div>
+                    <div class="contact-item hover-lift">
+                        <div class="contact-item-icon"><i class="fas fa-envelope"></i></div>
+                        <div><strong>Email</strong><br>acadstatadmin@gmail.com</div>
+                    </div>
+                    <div class="contact-item hover-lift">
+                        <div class="contact-item-icon"><i class="fas fa-phone"></i></div>
+                        <div><strong>Phone</strong><br>+977 9846012345</div>
+                    </div>
+                    <div class="contact-item hover-lift">
+                        <div class="contact-item-icon"><i class="fas fa-globe"></i></div>
+                        <div><strong>Website</strong><br>https://v0-acadstat.vercel.app/</div>
+                    </div>
+                </div>
+                <div class="contact-form-card reveal reveal-delay-2">
+                    <h3><i class="fas fa-paper-plane"></i> Send us a Message</h3>
+                    <form action="https://formspree.io/f/xojkgbgq" method="POST">
+                        <input type="text" name="name" placeholder="Your Name" required>
+                        <input type="email" name="email" placeholder="Your Email" required>
+                        <input type="text" name="subject" placeholder="Subject" required>
+                        <textarea name="message" placeholder="Your Message" rows="4" required></textarea>
+                        <button type="submit" class="landing-btn landing-btn-primary" style="width:100%;justify-content:center;">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="landing-footer">
+        <p>&copy; 2026 AcadStat — Academic Performance Analytics. All rights reserved.</p>
+        <div class="landing-footer-links">
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#features">Features</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('a[href^="#"]').forEach(a => {
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+            if (typeof AcadStatUI !== 'undefined') AcadStatUI.initScrollReveal();
+        });
+    </script>
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

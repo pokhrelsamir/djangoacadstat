@@ -1,0 +1,493 @@
+/**
+ * AcadStat Brand Theme — monochrome academic identity (logoW.png)
+ * Black & white with subtle gray accents
+ */
+
+[data-theme="dark"] {
+    --brand-black: #0a0a0a;
+    --brand-white: #ffffff;
+    --brand-gray-50: #fafafa;
+    --brand-gray-100: #f4f4f5;
+    --brand-gray-200: #e4e4e7;
+    --brand-gray-300: #d4d4d8;
+    --brand-gray-400: #a1a1aa;
+    --brand-gray-500: #71717a;
+    --brand-gray-600: #52525b;
+    --brand-gray-700: #3f3f46;
+    --brand-gray-800: #27272a;
+    --brand-gray-900: #18181b;
+
+    --ds-accent: #0a0a0a;
+    --ds-accent-2: #27272a;
+    --ds-accent-soft: rgba(255, 255, 255, 0.06);
+    --ds-gradient: linear-gradient(135deg, #0a0a0a 0%, #27272a 100%);
+    --ds-gradient-light: linear-gradient(135deg, #fafafa 0%, #e4e4e7 100%);
+
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #18181b;
+    --bg-card: #18181b;
+    --bg-card-hover: #27272a;
+    --text-primary: #fafafa;
+    --text-secondary: #d4d4d8;
+    --text-muted: #a1a1aa;
+    --border-color: #27272a;
+    --border-light: #3f3f46;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+    --input-bg: #18181b;
+    --input-border: #3f3f46;
+    --table-hover: #27272a;
+    --navbar-bg: rgba(10, 10, 10, 0.92);
+    --hero-overlay: rgba(10, 10, 10, 0.78);
+    --footer-bg: #000000;
+    --modal-overlay-bg: rgba(0, 0, 0, 0.65);
+}
+
+/* Default before JS — dark theme */
+html:not([data-theme]) {
+    --bg-primary: #0a0a0a;
+    --text-primary: #fafafa;
+    --text-secondary: #d4d4d8;
+    --text-muted: #a1a1aa;
+    --bg-card: #18181b;
+    --border-color: #27272a;
+    --input-bg: #18181b;
+    --navbar-bg: rgba(10, 10, 10, 0.92);
+    color-scheme: dark;
+}
+
+[data-theme="light"] {
+    --ds-accent: #0a0a0a;
+    --ds-accent-2: #27272a;
+    --ds-accent-soft: rgba(10, 10, 10, 0.06);
+    --ds-gradient: linear-gradient(135deg, #0a0a0a 0%, #27272a 100%);
+    --ds-gradient-light: linear-gradient(135deg, #ffffff 0%, #f4f4f5 100%);
+
+    --bg-primary: #fafafa;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f4f4f5;
+    --text-primary: #0a0a0a;
+    --text-secondary: #52525b;
+    --text-muted: #71717a;
+    --border-color: #e4e4e7;
+    --border-light: #f4f4f5;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+    --input-bg: #ffffff;
+    --input-border: #e4e4e7;
+    --table-hover: #f4f4f5;
+    --navbar-bg: rgba(255, 255, 255, 0.92);
+    --hero-overlay: rgba(255, 255, 255, 0.88);
+    --footer-bg: #0a0a0a;
+    --modal-overlay-bg: rgba(10, 10, 10, 0.45);
+}
+
+/* TU campus photo background for app pages (media/TU Photos/6.jpg) */
+[data-theme="dark"] body.app-page:not(.login-page-wrapper),
+html:not([data-theme]) body.app-page:not(.login-page-wrapper) {
+    --app-glass-bg: rgba(14, 14, 18, 0.68);
+    --app-glass-bg-soft: rgba(14, 14, 18, 0.58);
+    --app-glass-border: rgba(255, 255, 255, 0.05);
+    --app-glass-border-hover: rgba(255, 255, 255, 0.1);
+    --app-glass-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --app-campus-overlay:
+        linear-gradient(160deg, rgba(10, 10, 10, 0.55) 0%, rgba(10, 10, 10, 0.38) 50%, rgba(10, 10, 10, 0.5) 100%);
+    --page-hero-overlay:
+        linear-gradient(135deg, rgba(10, 10, 10, 0.62) 0%, rgba(10, 10, 10, 0.38) 55%, rgba(10, 10, 10, 0.52) 100%);
+}
+
+[data-theme="light"] body.app-page:not(.login-page-wrapper) {
+    --app-glass-bg: rgba(255, 255, 255, 0.74);
+    --app-glass-bg-soft: rgba(255, 255, 255, 0.66);
+    --app-glass-border: rgba(10, 10, 10, 0.07);
+    --app-glass-border-hover: rgba(10, 10, 10, 0.12);
+    --app-glass-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    --app-campus-overlay:
+        linear-gradient(160deg, rgba(250, 250, 250, 0.76) 0%, rgba(250, 250, 250, 0.58) 50%, rgba(250, 250, 250, 0.72) 100%);
+    --page-hero-overlay:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.58) 55%, rgba(255, 255, 255, 0.72) 100%);
+}
+
+body.app-page:not(.login-page-wrapper) {
+    --bg-primary: transparent;
+    --bg-card: var(--app-glass-bg);
+    --bg-secondary: var(--app-glass-bg-soft);
+    --bg-card-hover: rgba(255, 255, 255, 0.08);
+    --card-bg: var(--app-glass-bg);
+    --input-bg: var(--app-glass-bg-soft);
+    --border-color: var(--app-glass-border);
+    --border-light: var(--app-glass-border);
+    --input-border: var(--app-glass-border);
+    background: transparent !important;
+    transition: color 0.35s ease;
+}
+
+[data-theme="light"] body.app-page:not(.login-page-wrapper) {
+    --bg-card-hover: rgba(10, 10, 10, 0.04);
+}
+
+/* Unified glass panels — theme-aware borders (no harsh light edges) */
+.app-page:not(.login-page-wrapper) .section-card,
+.app-page:not(.login-page-wrapper) .stat-card,
+.app-page:not(.login-page-wrapper) .page-hero,
+.app-page:not(.login-page-wrapper) .chart-card,
+.app-page:not(.login-page-wrapper) .quick-actions-section,
+.app-page:not(.login-page-wrapper) .filter-section,
+.app-page:not(.login-page-wrapper) .table-card,
+.app-page:not(.login-page-wrapper) .form-card,
+.app-page:not(.login-page-wrapper) .material-item,
+.app-page:not(.login-page-wrapper) .search-box,
+.app-page:not(.login-page-wrapper) .table-container,
+.app-page:not(.login-page-wrapper) .student-chip,
+.app-page:not(.login-page-wrapper) .back-btn,
+.app-page:not(.login-page-wrapper) .module-card {
+    background: var(--app-glass-bg) !important;
+    border: 1px solid var(--app-glass-border) !important;
+    box-shadow: var(--app-glass-shadow) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition:
+        background 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.25s ease,
+        transform 0.2s ease;
+}
+
+.app-page:not(.login-page-wrapper) .section-card:hover,
+.app-page:not(.login-page-wrapper) .stat-card:hover,
+.app-page:not(.login-page-wrapper) .chart-card:hover,
+.app-page:not(.login-page-wrapper) .quick-actions-section:hover {
+    border-color: var(--app-glass-border-hover) !important;
+}
+
+.app-page:not(.login-page-wrapper) .action-item {
+    background-color: var(--app-glass-bg-soft) !important;
+    border: 1px solid var(--app-glass-border) !important;
+    box-shadow: var(--app-glass-shadow);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.app-page:not(.login-page-wrapper) .action-item:hover {
+    border-color: var(--app-glass-border-hover) !important;
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: var(--app-glass-shadow);
+    background-color: var(--ds-accent) !important;
+}
+
+[data-theme="dark"] .app-page:not(.login-page-wrapper) .action-item:hover {
+    color: #0a0a0a;
+}
+
+.app-page:not(.login-page-wrapper) .action-item:hover i {
+    color: inherit;
+}
+
+.app-page:not(.login-page-wrapper) .form-group input,
+.app-page:not(.login-page-wrapper) .form-group select,
+.app-page:not(.login-page-wrapper) .form-group textarea,
+.app-page:not(.login-page-wrapper) .ds-select,
+.app-page:not(.login-page-wrapper) .ds-input {
+    background: var(--app-glass-bg-soft) !important;
+    border: 1px solid var(--app-glass-border) !important;
+    color: var(--text-primary);
+    transition: background 0.35s ease, border-color 0.25s ease, color 0.35s ease;
+}
+
+.app-page:not(.login-page-wrapper) .form-group input:focus,
+.app-page:not(.login-page-wrapper) .form-group select:focus,
+.app-page:not(.login-page-wrapper) .form-group textarea:focus {
+    border-color: var(--app-glass-border-hover) !important;
+    box-shadow: 0 0 0 3px var(--ds-accent-soft);
+}
+
+.app-page:not(.login-page-wrapper) .marks-table tbody tr {
+    background: transparent;
+    border-bottom-color: var(--app-glass-border) !important;
+}
+
+.app-page:not(.login-page-wrapper) .marks-table tbody tr:hover {
+    background: var(--bg-card-hover) !important;
+}
+
+.app-campus-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.app-campus-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--app-campus-overlay);
+}
+
+body.app-page:not(.login-page-wrapper) > *:not(.app-campus-bg):not(.acad-modal-overlay):not(.acad-form-modal-overlay):not(.save-modal-overlay):not(.acad-toast-container) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Modals/toasts must stay viewport-fixed (theme rule above would break centering) */
+body.app-page .acad-modal-overlay,
+body.app-page .acad-form-modal-overlay,
+body.app-page .save-modal-overlay {
+    position: fixed !important;
+    inset: 0;
+    z-index: 100000 !important;
+}
+
+body.app-page .acad-toast-container {
+    position: fixed !important;
+    z-index: 100001 !important;
+}
+
+/* Legacy inline panels */
+.app-page:not(.login-page-wrapper) .search-box,
+.app-page:not(.login-page-wrapper) .stat-badge,
+.app-page:not(.login-page-wrapper) .modal-content,
+.app-page:not(.login-page-wrapper) .terminal-modal-content {
+    color: var(--text-secondary);
+}
+
+/* Branded navbar */
+.app-page .navbar.app-nav-style {
+    background: transparent !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    transition: box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.app-page .navbar.app-nav-style .lg-nav-inner {
+    background: var(--app-glass-bg) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--app-glass-border) !important;
+    border-radius: 0 !important;
+    box-shadow: var(--app-glass-shadow) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: background 0.35s ease, border-color 0.35s ease;
+}
+
+.app-page .theme-toggle.ds-toggle {
+    background: var(--app-glass-bg-soft) !important;
+    border: 1px solid var(--app-glass-border) !important;
+    color: var(--text-primary) !important;
+    transition: background 0.35s ease, border-color 0.25s ease, color 0.35s ease, transform 0.2s ease;
+}
+
+.app-page .theme-toggle.ds-toggle:hover {
+    border-color: var(--app-glass-border-hover) !important;
+    background: var(--app-glass-bg) !important;
+    color: var(--text-primary) !important;
+    transform: scale(1.05);
+}
+
+.app-page .navbar.app-nav-style .logo {
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+}
+
+.app-page .navbar.app-nav-style .logo img {
+    height: 32px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.app-page .navbar.app-nav-style .logo:hover img {
+    transform: scale(1.05);
+}
+
+.app-page .navbar.app-nav-style .nav-links a {
+    position: relative;
+    overflow: hidden;
+}
+
+.app-page .navbar.app-nav-style .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--text-primary);
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+.app-page .navbar.app-nav-style .nav-links a:hover::after {
+    width: 60%;
+    left: 20%;
+}
+
+.app-page .navbar.app-nav-style .nav-links a:hover {
+    background: var(--ds-accent-soft);
+    color: var(--text-primary);
+}
+
+/* TU campus hero backgrounds */
+:root {
+    --tu-hero-5: url('../images/tu/tu-5.jpg');
+    --tu-hero-6: url('../images/tu/tu-6-web.jpg');
+    --tu-hero-7: url('../images/tu/tu-7.png');
+}
+
+/* Page hero — TU central campus (media/TU Photos/5.jpeg) */
+.app-page:not(.login-page-wrapper) .page-hero {
+    background: var(--tu-hero-5) center / cover no-repeat;
+    border: 1px solid var(--app-glass-border, var(--border-color));
+    position: relative;
+    overflow: hidden;
+    min-height: 7.5rem;
+}
+
+.app-page:not(.login-page-wrapper) .page-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--page-hero-overlay);
+    z-index: 0;
+}
+
+.app-page:not(.login-page-wrapper) .page-hero::after {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 180px;
+    height: 180px;
+    background: var(--ds-gradient);
+    opacity: 0.06;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.app-page:not(.login-page-wrapper) .page-hero > * {
+    position: relative;
+    z-index: 1;
+}
+
+.app-page:not(.login-page-wrapper) .page-hero .page-title {
+    color: var(--text-primary);
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+}
+
+.app-page:not(.login-page-wrapper) .page-hero .page-subtitle {
+    color: var(--text-secondary);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="light"] .app-page:not(.login-page-wrapper) .page-hero .page-title,
+[data-theme="light"] .app-page:not(.login-page-wrapper) .page-hero .page-subtitle {
+    text-shadow: 0 1px 10px rgba(255, 255, 255, 0.65);
+}
+
+/* Stat cards hover lift */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--ds-gradient);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s ease;
+}
+
+.stat-card:hover::before { transform: scaleX(1); }
+
+.stat-icon-wrap.accent { background: var(--ds-gradient); }
+.stat-icon-wrap.info { background: linear-gradient(135deg, #3f3f46, #18181b); }
+.stat-icon-wrap.success { background: linear-gradient(135deg, #27272a, #0a0a0a); }
+.stat-icon-wrap.warning { background: linear-gradient(135deg, #52525b, #27272a); }
+
+/* Action items — slide fill (non-app pages) */
+body:not(.app-page) .action-item,
+.login-page-wrapper .action-item {
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(
+        90deg,
+        var(--action-hover-start, #0a0a0a) 0%,
+        var(--action-hover-end, #27272a) 50%,
+        var(--bg-primary) 50%,
+        var(--bg-primary) 100%
+    );
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    transition: background-position 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.25s ease,
+                border-color 0.25s ease,
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+[data-theme="dark"] .action-item {
+    --action-hover-start: #fafafa;
+    --action-hover-end: #e4e4e7;
+}
+
+[data-theme="light"] .action-item {
+    --action-hover-start: #0a0a0a;
+    --action-hover-end: #27272a;
+}
+
+body:not(.app-page) .action-item:hover,
+.login-page-wrapper .action-item:hover {
+    background-position: 0 0;
+    color: #ffffff;
+    border-color: var(--text-primary);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] body:not(.app-page) .action-item:hover,
+[data-theme="dark"] .login-page-wrapper .action-item:hover {
+    color: #0a0a0a;
+}
+
+body:not(.app-page) .action-item:hover i,
+.login-page-wrapper .action-item:hover i {
+    color: inherit;
+}
+
+/* Buttons brand style */
+.btn.ds-primary {
+    background: var(--ds-gradient);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.btn.ds-primary:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    transform: translateY(-2px);
+}
+
+.step-badge { background: var(--ds-gradient); }
+
+.ds-table thead,
+.app-page .marks-table thead { background: var(--ds-gradient); }
+

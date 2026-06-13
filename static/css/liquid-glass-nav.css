@@ -1,0 +1,297 @@
+/**
+ * AcadStat — iOS 26 liquid glass navbar (reference tokens + structure)
+ */
+
+html[data-theme="dark"] {
+    --lg-panel: rgba(25, 30, 40, 0.55);
+    --lg-panel-soft: rgba(27, 25, 31, 0.5);
+    --lg-shadow-light: rgba(255, 255, 255, 0.04);
+    --lg-shadow-dark: rgba(0, 0, 0, 0.48);
+    --lg-line-soft: rgba(255, 255, 255, 0.06);
+    --lg-nav-glow-rgb: 168, 201, 255;
+    --lg-text-shadow: 1px 1px 7px rgba(15, 18, 24, 0.5);
+}
+
+html[data-theme="light"] {
+    --lg-panel: rgba(227, 232, 238, 0.62);
+    --lg-panel-soft: rgba(220, 226, 234, 0.67);
+    --lg-shadow-light: rgba(255, 255, 255, 0.78);
+    --lg-shadow-dark: rgba(148, 160, 181, 0.32);
+    --lg-line-soft: rgba(10, 10, 10, 0.08);
+    --lg-nav-glow-rgb: 205, 228, 255;
+    --lg-text-shadow: none;
+}
+
+/* ── Base nav shell ── */
+.liquid-glass-nav,
+.landing-nav.scrolled,
+.app-page .navbar.app-nav-style,
+.app-page .navbar.liquid-glass-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    isolation: isolate;
+    overflow: visible;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transition:
+        transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+        width 0.35s ease,
+        top 0.35s ease,
+        padding 0.35s ease;
+}
+
+.landing-nav {
+    background: transparent;
+    border-bottom: 1px solid transparent;
+}
+
+/* Inner frosted panel */
+.lg-nav-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 58px;
+    padding: 8px 14px;
+    border-radius: inherit;
+    background: var(--lg-panel-soft);
+    border: 1px solid var(--lg-line-soft);
+    box-shadow:
+        14px 14px 36px var(--lg-shadow-dark),
+        -14px -14px 36px var(--lg-shadow-light),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    --gx: 50%;
+    --gy: 50%;
+    --ga: 0;
+    overflow: hidden;
+}
+
+/* Center the logo in the app navbar while nav-links sit to the right */
+.app-page .lg-nav-inner > .logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+.lg-nav-inner > .nav-links {
+    margin-left: auto;
+}
+
+
+.landing-nav:not(.scrolled) .lg-nav-inner {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    min-height: auto;
+}
+
+.landing-nav:not(.scrolled) .lg-nav-glow {
+    opacity: 0;
+}
+
+.landing-nav.scrolled .lg-nav-inner {
+    flex: 1;
+    width: 100%;
+}
+
+.lg-nav-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+    clip-path: inset(0 round inherit);
+    background: radial-gradient(
+        240px 150px at var(--gx) var(--gy),
+        rgba(var(--lg-nav-glow-rgb), var(--ga)) 0%,
+        rgba(var(--lg-nav-glow-rgb), 0) 74%
+    );
+    transition: background 0.18s ease;
+}
+
+/* Logo alignment fixes (marks-list/add-marks should match dashboard centering) */
+.lg-nav-inner .logo {
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+.lg-nav-inner .logo a {
+    display: flex;
+    align-items: center;
+}
+.lg-nav-inner .logo img {
+    display: block;
+}
+
+/* SVG glass layers (injected by liquid-glass.js) */
+.lg-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.lg-refract {
+    z-index: 0;
+}
+
+.lg-tint {
+    z-index: 0;
+}
+
+.liquid-glass-nav > .logo,
+.liquid-glass-nav > .nav-links,
+.landing-nav > .brand,
+.landing-nav > .landing-nav-links,
+.lg-nav-inner > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* App navbar — full width inner */
+.app-page .liquid-glass-nav,
+.app-page .navbar.app-nav-style {
+    padding: 0;
+    margin: 0;
+}
+
+.app-page .liquid-glass-nav .lg-nav-inner,
+.app-page .navbar.app-nav-style .lg-nav-inner {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    min-height: 56px;
+    padding: 0.5rem 1.25rem;
+}
+
+/* Landing — floating pill when scrolled */
+.landing-nav.scrolled {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    justify-content: center;
+    width: min(960px, calc(100vw - 32px));
+    padding: 0;
+    border-radius: 999px;
+}
+
+.landing-nav.scrolled .lg-nav-inner,
+.landing-nav.scrolled {
+    border-radius: 999px;
+}
+
+.landing-nav.scrolled.is-scrolled {
+    transform: translateX(-50%) scale(1.01);
+}
+
+.landing-nav.scrolled .lg-nav-inner {
+    min-height: 62px;
+    padding: 8px 18px;
+}
+
+/* Link hovers — glass pills */
+.app-page .navbar .nav-links a,
+.landing-nav.scrolled .landing-nav-links a:not(.nav-cta) {
+    text-shadow: var(--lg-text-shadow);
+    border-radius: 999px;
+    transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.app-page .navbar .nav-links a:hover,
+.landing-nav.scrolled .landing-nav-links a:not(.nav-cta):hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+html[data-theme="dark"] .app-page .navbar .nav-links a:hover,
+html[data-theme="dark"] .landing-nav.scrolled .landing-nav-links a:not(.nav-cta):hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Theme toggle — neumorphic glass control */
+.app-page .navbar .theme-toggle.ds-toggle,
+.landing-nav.scrolled .landing-theme-toggle {
+    background: var(--lg-panel-soft) !important;
+    border: 1px solid var(--lg-line-soft) !important;
+    box-shadow:
+        8px 8px 20px var(--lg-shadow-dark),
+        -6px -6px 16px var(--lg-shadow-light),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.app-page .navbar .theme-toggle.ds-toggle:hover,
+.landing-nav.scrolled .landing-theme-toggle:hover {
+    transform: scale(1.06);
+}
+
+/* Scrolled text on landing */
+.landing-nav.scrolled .brand,
+.landing-nav.scrolled .brand-text,
+.landing-nav.scrolled .landing-nav-links a:not(.nav-cta) {
+    color: var(--text-primary);
+}
+
+.landing-nav:not(.scrolled) .brand,
+.landing-nav:not(.scrolled) .brand-text,
+.landing-nav:not(.scrolled) .landing-nav-links a:not(.nav-cta) {
+    color: #ffffff;
+}
+
+.landing-nav:not(.scrolled) .landing-theme-toggle {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+/* Login CTA on landing pill */
+.landing-nav.scrolled .nav-cta {
+    box-shadow:
+        10px 10px 24px var(--lg-shadow-dark),
+        -8px -8px 20px var(--lg-shadow-light);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .lg-nav-inner {
+        background: var(--bg-card);
+    }
+}
+
+@media (max-width: 768px) {
+    .landing-nav.scrolled {
+        width: calc(100vw - 16px);
+        top: 8px;
+    }
+
+    .landing-nav.scrolled .lg-nav-inner {
+        padding: 8px 12px;
+        min-height: 56px;
+    }
+
+    .app-page .liquid-glass-nav .lg-nav-inner,
+    .app-page .navbar.app-nav-style .lg-nav-inner {
+        padding: 0.45rem 0.85rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .liquid-glass-nav,
+    .landing-nav {
+        transition: none;
+    }
+}

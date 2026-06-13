@@ -1,0 +1,18 @@
+1. Create user noname in PostgreSQL
+
+
+
+If you want to keep "noname":
+
+Open PostgreSQL (psql or pgAdmin) and run:
+
+CREATE USER noname WITH PASSWORD 'yourpassword';
+ALTER ROLE noname SET client_encoding TO 'utf8';
+ALTER ROLE noname SET default_transaction_isolation TO 'read committed';
+ALTER ROLE noname SET timezone TO 'UTC';
+
+
+
+Also create DB:
+
+CREATE DATABASE your_db_name OWNER noname;

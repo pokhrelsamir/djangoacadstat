@@ -1,0 +1,271 @@
+{% load static %}
+
+
+
+<!DOCTYPE html>
+
+
+
+<html lang="en">
+
+
+
+<head>
+
+
+
+    {% include 'core/partials/design_head.html' with page_title="Mark Sheet Verification — AcadStat" %}
+
+
+
+    <link rel="stylesheet" href="{% static 'css/marksheet.css' %}">
+
+
+
+</head>
+
+
+
+<body class="app-page">
+
+
+
+    <div class="verify-page">
+
+
+
+        <div class="verify-card">
+
+
+
+            {% if is_valid %}
+
+
+
+            <div class="verify-icon ok"><i class="fas fa-circle-check"></i></div>
+
+
+
+            <h1>Authentic Mark Sheet</h1>
+
+
+
+            <p>
+
+
+
+                This document <strong>{{ doc_id }}</strong> is verified as an original AcadStat marksheet
+
+
+
+                {% if student_name %}for <strong>{{ student_name }}</strong>{% endif %}
+
+
+
+                ({{ terminal_display }}).
+
+
+
+            </p>
+
+
+
+            <dl class="verify-meta">
+
+
+
+                <dt>Verified at</dt>
+
+
+
+                <dd>{{ verified_at|date:"d M Y, g:i A" }}</dd>
+
+
+
+                {% if subjects_count %}
+
+
+
+                <dt>Subjects on record</dt>
+
+
+
+                <dd>{{ subjects_count }}</dd>
+
+
+
+                {% endif %}
+
+
+
+                {% if overall_percentage %}
+
+
+
+                <dt>Overall percentage</dt>
+
+
+
+                <dd>{{ overall_percentage }}%</dd>
+
+
+
+                {% endif %}
+
+
+
+                {% if result %}
+
+
+
+                <dt>Result</dt>
+
+
+
+                <dd>{{ result }}</dd>
+
+
+
+                {% endif %}
+
+
+
+            </dl>
+
+
+
+            <p>Issued through AcadStat for <strong>Soch College of IT</strong>, affiliated with Tribhuvan University.</p>
+
+
+
+            {% else %}
+
+
+
+            <div class="verify-icon bad"><i class="fas fa-times-circle"></i></div>
+
+
+
+            <h1>Verification Failed</h1>
+
+
+
+            <p>This QR code could not be matched to a valid marksheet record. Please contact the institution.</p>
+
+
+
+            <p class="verify-redirect">Checked at {{ verified_at|date:"d M Y, g:i A" }}</p>
+
+
+
+            {% endif %}
+
+
+
+            <p class="verify-redirect" id="redirectMsg">
+
+
+
+                Redirecting to <a href="{{ soch_college_url }}" id="sochLink">Soch College of IT</a> in <span id="countdown">5</span>s…
+
+
+
+            </p>
+
+
+
+            <a href="{{ soch_college_url }}" class="btn ds ds-primary" style="margin-top:0.75rem;">
+
+
+
+                <i class="fas fa-external-link-alt"></i> Visit sochcollege.edu.np
+
+
+
+            </a>
+
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+
+
+
+
+    <script>
+
+
+
+    (function() {
+
+
+
+        var target = "{{ soch_college_url }}";
+
+
+
+        var left = 5;
+
+
+
+        var el = document.getElementById('countdown');
+
+
+
+        var t = setInterval(function() {
+
+
+
+            left -= 1;
+
+
+
+            if (el) el.textContent = left;
+
+
+
+            if (left <= 0) {
+
+
+
+                clearInterval(t);
+
+
+
+                window.location.href = target;
+
+
+
+            }
+
+
+
+        }, 1000);
+
+
+
+    })();
+
+
+
+    </script>
+
+
+
+    {% include 'core/partials/theme_script.html' %}
+
+
+
+</body>
+
+
+
+</html>
+
+

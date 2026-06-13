@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="Marks List - Academic System" %}
+</head>
+
+<body class="app-page">
+    {% with nav_links='<a href="/"><i class="fas fa-home"></i> Home</a><a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a>' %}
+    {% include 'core/partials/app_navbar.html' %}
+    {% endwith %}
+
+    <main class="app-shell app-shell--wide">
+        {% block content %}
+<div class="marks-page-wrapper">
+    <!-- Header Section -->
+    <div class="marks-header">
+        <div class="header-left">
+            <a href="/dashboard/" class="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </a>
+            <div class="title-section">
+                <h2>Student Marks</h2>
+                <p>View and manage all student marks records</p>
+            </div>
+        </div>
+        {% if can_manage_marks %}
+        <a href="/add-marks/" class="add-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add New Marks
+        </a>
+        {% endif %}
+        <a href="/select-mark-sheet/" class="add-btn" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); margin-right: 10px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            View Mark Sheet
+        </a>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="filter-section">
+        <div class="search-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search by student name or subject...">
+        </div>
+        <div class="filter-stats">
+            <span class="stat-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span id="totalRecords">{{ result.count }}</span> Records
+            </span>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container table-wrap">
+        <table class="marks-table" id="marksTable">
+            <thead>
+                <tr>
+                    <th class="student-col">
+                        <span class="th-content">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Student
+                        </span>
+                    </th>
+                    <th>
+                        <span class="th-content">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                            Subject
+                        </span>
+                    </th>
+                    <th class="num">
+                        <span class="th-content th-content--center">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Terminal
+                        </span>
+                    </th>
+                    <th class="num">
+                        <span class="th-content th-content--center">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            Marks
+                        </span>
+                    </th>
+                    <th class="num">
+                        <span class="th-content th-content--center">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            Percentage
+                        </span>
+                    </th>
+                    <th class="num">
+                        <span class="th-content th-content--center">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Date
+                        </span>
+                    </th>
+                    <th class="center">
+                        <span class="th-content th-content--center">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="1"/>
+                                <circle cx="19" cy="12" r="1"/>
+                                <circle cx="5" cy="12" r="1"/>
+                            </svg>
+                            Actions
+                        </span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mark in result %}
+                <tr data-id="{{ mark.id }}">
+                    <td class="student-cell student-col">
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                {{ mark.student.name|make_list|first|upper }}
+                            </div>
+                            <div>
+                                <span class="student-name">{{ mark.student.name }}</span>
+                                <span class="student-roll">{{ mark.student.roll_number|default:"N/A" }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="subject-badge">{{ mark.subject.name }}</span>
+                    </td>
+                    <td class="num">
+                        <span class="terminal-badge {{ mark.terminal }}-badge">{{ mark.terminal }}</span>
+                    </td>
+                    <td class="num">
+                        <div class="marks-cell marks-cell--center">
+                            <span class="marks-obtained">{{ mark.marks_obtained }}</span>
+                            <span class="marks-divider">/</span>
+                            <span class="marks-total">{{ mark.total_marks }}</span>
+                        </div>
+                    </td>
+                    <td class="num">
+                        <div class="percentage-badge {% if mark.percentage >= 60 %}pass{% else %}fail{% endif %}">
+                            {{ mark.percentage|floatformat:1 }}%
+                        </div>
+                    </td>
+                    <td class="num date-cell">
+                        {{ mark.created_at|date:"M d, Y" }}
+                    </td>
+                    <td class="center">
+                        <div class="action-buttons action-buttons--center">
+                            <button class="action-btn marksheet-btn" data-action="marksheet" data-student-id="{{ mark.student.id }}" data-student-name="{{ mark.student.name|escape }}" title="Generate Mark Sheet 📑" style="background: #dcfce7; color: #16a34a; border: none; display: flex; align-items: center; justify-content: center;">
+                                📑
+                            </button>
+                            {% if can_manage_marks %}
+                            <button class="action-btn edit-btn" data-action="edit" data-mark-id="{{ mark.id }}" title="Edit 📝" style="background: #dbeafe; color: #2563eb;">
+                                📝
+                            </button>
+                            <button class="action-btn delete-btn" data-action="delete" data-mark-id="{{ mark.id }}" title="Delete ❌" style="background: #fee2e2; color: #dc2626;">
+                                ❌
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <div class="empty-content">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                            <h3>No marks records found</h3>
+                            <p>{% if can_manage_marks %}Start by adding marks for your assigned students{% else %}No marks have been recorded yet{% endif %}</p>
+                            {% if can_manage_marks %}
+                            <a href="/add-marks/" class="empty-btn">Add Marks</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Marks</h3>
+            <button class="modal-close" onclick="closeModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <form id="editForm" class="edit-form">
+            {% csrf_token %}
+            <input type="hidden" id="editMarkId" name="mark_id">
+            
+            <div class="form-group">
+                <label>Student</label>
+                <input type="text" id="editStudent" readonly class="readonly-input">
+            </div>
+            
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="editSubject" readonly class="readonly-input">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editMarksObtained">Marks Obtained</label>
+                    <input type="number" id="editMarksObtained" name="marks_obtained" step="0.01" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editTotalMarks">Total Marks</label>
+                    <input type="number" id="editTotalMarks" name="total_marks" step="0.01" min="1" required>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-save">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="dm-delete-overlay">
+    <div class="dm-delete-card dm-delete-card--confirm" id="deleteModalCard">
+        <div class="dm-delete-bar" id="deleteModalBar"></div>
+        <div class="dm-delete-icon" id="deleteModalIcon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+        </div>
+        <h3 class="dm-delete-title" id="deleteModalTitle">Delete Marks Record?</h3>
+        <p class="dm-delete-text" id="deleteModalText">This action cannot be undone. The student's marks will be permanently removed.</p>
+        <input type="hidden" id="deleteMarkId">
+        <div class="dm-delete-actions" id="deleteModalActions">
+            <button type="button" class="dm-delete-cancel" id="deleteCancelBtn">Cancel</button>
+            <button type="button" class="dm-delete-confirm" id="deleteConfirmBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                Delete
+            </button>
+        </div>
+        <div class="dm-delete-timer" id="deleteModalTimer"></div>
+    </div>
+</div>
+
+<!-- Delete Modal Animated Styles -->
+<style>
+.dm-delete-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.dm-delete-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dm-delete-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+}
+
+.dm-delete-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #e4e4e7);
+    border-radius: 24px;
+    padding: 2.5rem 1.75rem 1.75rem;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(10, 10, 10, 0.10);
+    transform: scale(0.45) translateY(30px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.dm-delete-overlay.active .dm-delete-card {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.dm-delete-card.dm-state-success {
+    animation: dmStateToSuccess 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    border-color: rgba(16, 185, 129, 0.35);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(16, 185, 129, 0.12);
+}
+
+.dm-delete-card.dm-state-confirm {
+    border-color: var(--border-color, #e4e4e7);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(10, 10, 10, 0.10);
+}
+
+@keyframes dmStateToSuccess {
+    0%   { transform: scale(1) translateY(0); opacity: 1; }
+    40%  { transform: scale(1.02) translateY(-4px); opacity: 0.85; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.dm-delete-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #ef4444, #dc2626, #f87171, #ef4444);
+    background-size: 300% 100%;
+    animation: dmShimmer 2.5s linear infinite;
+    border-radius: 24px 24px 0 0;
+}
+
+.dm-delete-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.18);
+    animation: dmBounce 2s ease-in-out infinite;
+}
+
+.dm-delete-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary, #0a0a0a);
+    margin: 0 0 0.35rem;
+}
+
+.dm-delete-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #64748b);
+    line-height: 1.5;
+    margin: 0 0 1.25rem;
+}
+
+.dm-delete-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.dm-delete-cancel {
+    flex: 1;
+    padding: 0.7rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: #f1f5f9;
+    color: #475569;
+    transition: all 0.25s ease;
+}
+
+.dm-delete-cancel:hover {
+    background: #e2e8f0;
+}
+
+.dm-delete-confirm {
+    flex: 1;
+    padding: 0.7rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    color: #fff;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.30);
+    transition: transform 0.2s ease, box-shadow 0.25s ease, background 0.35s ease;
+}
+
+.dm-delete-confirm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.40);
+}
+
+.dm-delete-card.dm-state-success .dm-delete-confirm {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+}
+
+.dm-delete-card.dm-state-success .dm-delete-cancel {
+    display: none;
+}
+
+.dm-delete-timer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ef4444, #f87171);
+    border-radius: 0 0 24px 24px;
+    transform-origin: left;
+    transform: scaleX(1);
+}
+
+.dm-delete-overlay.active .dm-delete-timer {
+    animation: dmCountdown 3s linear forwards;
+}
+
+.dm-delete-particle,
+.dm-delete-timer {
+    pointer-events: none;
+}
+
+@keyframes dmShimmer {
+    0%   { background-position: 300% 0; }
+    100% { background-position: 0% 0; }
+}
+
+@keyframes dmBounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+}
+
+@keyframes dmCountdown {
+    0%   { transform: scaleX(1); }
+    100% { transform: scaleX(0); }
+}
+</style>
+
+<!-- Delete Success Popup reuses the same centered dialog as Delete Confirm -->
+
+<!-- Terminal Selection Modal for Mark Sheet -->
+<div class="modal-overlay" id="terminalModal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>Select Terminal for Mark Sheet</h3>
+            <button class="modal-close" onclick="closeTerminalModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div style="padding: 10px 0;">
+            <p id="terminalModalStudent" style="color: #64748b; margin-bottom: 15px; font-size: 0.95rem;"></p>
+            <div class="terminal-select-grid">
+                <div class="terminal-select-option">
+                    <input type="radio" id="select_1st" name="terminal_select" value="1st">
+                    <label for="select_1st">
+                        <span class="emoji">📝</span>
+                        <span class="label-text">1st Terminal</span>
+                    </label>
+                </div>
+                <div class="terminal-select-option">
+                    <input type="radio" id="select_2nd" name="terminal_select" value="2nd">
+                    <label for="select_2nd">
+                        <span class="emoji">📋</span>
+                        <span class="label-text">2nd Terminal</span>
+                    </label>
+                </div>
+                <div class="terminal-select-option">
+                    <input type="radio" id="select_3rd" name="terminal_select" value="3rd">
+                    <label for="select_3rd">
+                        <span class="emoji">📊</span>
+                        <span class="label-text">3rd Terminal</span>
+                    </label>
+                </div>
+                <div class="terminal-select-option">
+                    <input type="radio" id="select_Final" name="terminal_select" value="Final">
+                    <label for="select_Final">
+                        <span class="emoji">🏆</span>
+                        <span class="label-text">Final</span>
+                    </label>
+                </div>
+            </div>
+            <input type="hidden" id="terminalModalStudentId">
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button type="button" class="btn-cancel" onclick="closeTerminalModal()">Cancel</button>
+                <button type="button" class="btn-save" onclick="generateMarkSheet()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Generate Mark Sheet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .marks-page-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    .marks-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 10px 16px;
+        border-radius: 10px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s;
+    }
+
+    .back-btn:hover {
+        transform: translateX(-5px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .title-section h2 {
+        color: var(--text-primary);
+        font-size: var(--ds-text-lg);
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .title-section p {
+        color: var(--text-muted);
+        font-size: var(--ds-text-sm);
+    }
+
+    .add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .add-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .filter-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        padding: 12px 18px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .search-box svg {
+        color: #94a3b8;
+    }
+
+    .search-box input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-size: 0.95rem;
+        color: #334155;
+    }
+
+    .search-box input::placeholder {
+        color: #94a3b8;
+    }
+
+    .filter-stats {
+        display: flex;
+        gap: 15px;
+    }
+
+    .stat-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: white;
+        border-radius: 10px;
+        color: #64748b;
+        font-weight: 500;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .table-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--ds-radius);
+        box-shadow: var(--shadow-sm);
+        overflow-x: auto;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .marks-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+        min-width: 720px;
+    }
+
+    .marks-table th {
+        background: var(--ds-gradient);
+        color: white;
+        padding: 0.65rem 0.75rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: var(--ds-text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        vertical-align: middle;
+    }
+
+    .th-content {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .th-content--center {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .marks-table tbody tr {
+        border-bottom: 1px solid var(--border-color);
+        transition: background 0.15s;
+        background: var(--bg-card);
+    }
+
+    .marks-table tbody tr:hover {
+        background: var(--table-hover, var(--bg-card-hover));
+    }
+
+    .marks-table td {
+        padding: 0.7rem 0.75rem;
+        color: var(--text-primary);
+        font-size: var(--ds-text-sm);
+        vertical-align: middle;
+    }
+
+    .marks-cell--center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .action-buttons--center {
+        justify-content: center;
+    }
+
+    .student-cell .student-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .student-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .student-name {
+        display: block;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .student-roll {
+        display: block;
+        font-size: var(--ds-text-sm);
+        color: var(--text-muted);
+    }
+
+    .subject-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-size: var(--ds-text-sm);
+    }
+    
+    .terminal-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+        min-width: 85px;
+        font-size: 0.85rem;
+    }
+    
+    .terminal-badge.1st-badge {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+    
+    .terminal-badge.2nd-badge {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+    }
+    
+    .terminal-badge.3rd-badge {
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+        color: #5b21b6;
+    }
+    
+    .terminal-badge.Final-badge {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+
+    .marks-cell {
+        font-weight: 600;
+    }
+
+    .marks-obtained {
+        font-size: var(--ds-text-base);
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .marks-divider {
+        color: var(--text-muted);
+        margin: 0 4px;
+    }
+
+    .marks-total {
+        color: var(--text-muted);
+    }
+
+    .percentage-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .percentage-badge.pass {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .percentage-badge.fail {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .date-cell {
+        color: var(--text-muted);
+        font-size: var(--ds-text-sm);
+        white-space: nowrap;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-btn {
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+
+    .edit-btn {
+        background: #e0f2fe;
+        color: #0284c7;
+    }
+
+    .edit-btn:hover {
+        background: #0284c7;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .marksheet-btn {
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .marksheet-btn:hover {
+        background: #16a34a !important;
+        color: white !important;
+        transform: scale(1.1);
+    }
+
+    .delete-btn {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .delete-btn:hover {
+        background: #dc2626;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .empty-state {
+        padding: 60px 20px !important;
+    }
+
+    .empty-content {
+        text-align: center;
+    }
+
+    .empty-content h3 {
+        color: #475569;
+        margin: 20px 0 10px;
+    }
+
+    .empty-content p {
+        color: #94a3b8;
+        margin-bottom: 20px;
+    }
+
+    .empty-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .empty-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+    }
+
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        width: 90%;
+        max-width: 500px;
+        transform: scale(0.9);
+        transition: all 0.3s;
+    }
+
+    .modal-overlay.active .modal-content {
+        transform: scale(1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.5rem;
+        color: #1e293b;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #94a3b8;
+        padding: 5px;
+        transition: color 0.3s;
+    }
+
+    .modal-close:hover {
+        color: #475569;
+    }
+
+    .edit-form .form-group {
+        margin-bottom: 20px;
+    }
+
+    .edit-form label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+    }
+
+    .edit-form input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .edit-form input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .readonly-input {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+    .edit-form .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .modal-actions button {
+        flex: 1;
+        padding: 14px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s;
+        border: none;
+    }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-cancel:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-delete {
+        background: #dc2626;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+    }
+
+    /* Terminal Selection Modal Styles */
+    .terminal-select-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .terminal-select-option {
+        position: relative;
+    }
+
+    .terminal-select-option input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .terminal-select-option label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 10px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 0;
+        font-weight: 500;
+    }
+
+    .terminal-select-option label:hover {
+        border-color: #16a34a;
+        transform: translateY(-2px);
+    }
+
+    .terminal-select-option input:checked + label {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .terminal-select-option .emoji {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+    }
+
+    .terminal-select-option .label-text {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* Ensure action buttons stay on same line */
+    .action-buttons {
+        display: flex !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .action-btn {
+        flex-shrink: 0 !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .marks-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .filter-section {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .search-box {
+            max-width: none;
+        }
+        
+        .marks-table {
+            min-width: 680px;
+        }
+    }
+    
+    /* Toast Notifications */
+    .toast-notification {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 24px;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 9999;
+        font-weight: 500;
+    }
+    
+    .toast-notification.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    .toast-notification.toast-success {
+        border-left: 4px solid #10b981;
+    }
+    
+    .toast-notification.toast-success svg {
+        color: #10b981;
+    }
+    
+    .toast-notification.toast-error {
+        border-left: 4px solid #ef4444;
+    }
+    
+    .toast-notification.toast-error svg {
+        color: #ef4444;
+    }
+</style>
+
+<script>
+    // CSRF token helper
+    function getCSRFToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
+    }
+
+    // Store marks data for JavaScript access
+    var marksData = {};
+    try {
+        marksData = {
+            {% for mark in result %}
+            {{ mark.id }}: {
+                student: "{{ mark.student.name|escapejs }}",
+                subject: "{{ mark.subject.name|escapejs }}",
+                marks_obtained: {{ mark.marks_obtained }},
+                total_marks: {{ mark.total_marks }},
+                student_id: {{ mark.student.id }},
+                subject_id: {{ mark.subject.id }}
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        };
+    } catch(e) {
+        console.warn('marksData init error:', e);
+    }
+
+    // Search functionality
+    var searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            var searchTerm = e.target.value.toLowerCase();
+            var rows = document.querySelectorAll('#marksTable tbody tr');
+            
+            rows.forEach(function(row) {
+                var studentName = (row.querySelector('.student-name')?.textContent || '').toLowerCase();
+                var subject = (row.querySelector('.subject-badge')?.textContent || '').toLowerCase();
+                row.style.display = (studentName.includes(searchTerm) || subject.includes(searchTerm)) ? '' : 'none';
+            });
+        });
+    }
+
+    // Edit Marks
+    function editMarks(id) {
+        var mark = marksData[id];
+        if (!mark) return;
+        
+        document.getElementById('editMarkId').value = id;
+        document.getElementById('editStudent').value = mark.student;
+        document.getElementById('editSubject').value = mark.subject;
+        document.getElementById('editMarksObtained').value = mark.marks_obtained;
+        document.getElementById('editTotalMarks').value = mark.total_marks;
+        
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    // Delegate clicks on document for marks table actions
+    document.addEventListener('click', function(e) {
+        var button = e.target.closest('#marksTable button[data-action]');
+        if (!button) return;
+
+        var action = button.dataset.action;
+        if (action === 'edit') {
+            editMarks(Number(button.dataset.markId));
+        } else if (action === 'delete') {
+            deleteMarks(Number(button.dataset.markId));
+        } else if (action === 'marksheet') {
+            openTerminalModal(Number(button.dataset.studentId), button.dataset.studentName);
+        }
+    });
+
+    // Close Modal
+    function closeModal() {
+        document.getElementById('editModal').classList.remove('active');
+    }
+
+    // Delete Marks
+    function deleteMarks(id) {
+        document.getElementById('deleteMarkId').value = id;
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        var modal = document.getElementById('deleteModal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        resetDeleteModalContent();
+    }
+
+    function resetDeleteModalContent() {
+        var card = document.getElementById('deleteModalCard');
+        var icon = document.getElementById('deleteModalIcon');
+        var title = document.getElementById('deleteModalTitle');
+        var text = document.getElementById('deleteModalText');
+        var actions = document.getElementById('deleteModalActions');
+        var bar = document.getElementById('deleteModalBar');
+        var timer = document.getElementById('deleteModalTimer');
+
+        if (!card || !icon || !title || !text || !actions) return;
+
+        card.classList.remove('dm-state-success');
+        card.classList.add('dm-state-confirm');
+
+        icon.style.background = '';
+        icon.style.boxShadow = '';
+        icon.innerHTML = `
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+        `;
+        if (bar) {
+            bar.style.background = '';
+            bar.style.animation = '';
+        }
+
+        title.textContent = 'Delete Marks Record?';
+        text.textContent = 'This action cannot be undone. The student\'s marks will be permanently removed.';
+
+        actions.innerHTML = `
+            <button type="button" class="dm-delete-cancel" id="deleteCancelBtn">Cancel</button>
+            <button type="button" class="dm-delete-confirm" id="deleteConfirmBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                Delete
+            </button>
+        `;
+
+        if (timer) {
+            timer.classList.remove('dm-delete-timer');
+            timer.style.background = '';
+            timer.style.animation = '';
+            timer.style.transform = '';
+        }
+    }
+
+    function showSuccessInDeleteModal(message) {
+        var modal = document.getElementById('deleteModal');
+        var card = document.getElementById('deleteModalCard');
+        var icon = document.getElementById('deleteModalIcon');
+        var title = document.getElementById('deleteModalTitle');
+        var text = document.getElementById('deleteModalText');
+        var actions = document.getElementById('deleteModalActions');
+        var bar = document.getElementById('deleteModalBar');
+        var timer = document.getElementById('deleteModalTimer');
+        if (!modal || !card || !icon || !title || !text || !actions) return;
+
+        modal.classList.add('active');
+
+        card.classList.remove('dm-state-confirm');
+        card.classList.add('dm-state-success');
+
+        icon.style.background = 'linear-gradient(135deg, #d1fae5, #a7f3d0)';
+        icon.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.18)';
+        icon.innerHTML = `
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        `;
+
+        if (bar) {
+            bar.style.background = 'linear-gradient(90deg, #10b981, #059669, #34d399, #10b981)';
+            bar.style.animation = 'dmShimmer 2.5s linear infinite';
+            bar.style.backgroundSize = '300% 100%';
+        }
+
+        title.textContent = 'Deleted Successfully!';
+        text.textContent = message;
+
+        actions.innerHTML = `
+            <button type="button" class="dm-delete-confirm" id="deleteConfOkBtn" style="flex:1;">Ok</button>
+        `;
+        var confirmBtn = actions.querySelector('#deleteConfOkBtn');
+        if (confirmBtn) {
+            confirmBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            confirmBtn.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.30)';
+            confirmBtn.onclick = function() { closeDeleteModal(); };
+        }
+
+        if (timer) {
+            timer.classList.add('dm-delete-timer');
+            timer.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+            timer.style.animation = 'none';
+            timer.offsetHeight;
+            timer.style.animation = 'dmCountdown 3s linear forwards';
+            timer.style.transform = 'scaleX(1)';
+        }
+
+        clearTimeout(window._dsDeleteTimeout);
+        window._dsDeleteTimeout = setTimeout(function() {
+            card.classList.remove('dm-state-success');
+            card.classList.add('dm-state-confirm');
+            closeDeleteModal();
+        }, 3200);
+    }
+
+    // Terminal Selection Modal for Mark Sheet
+    function openTerminalModal(studentId, studentName) {
+        document.getElementById('terminalModalStudentId').value = studentId;
+        document.getElementById('terminalModalStudent').textContent = 'Generate mark sheet for: ' + studentName;
+        
+        // Reset radio button selection
+        const radios = document.getElementsByName('terminal_select');
+        for (let radio of radios) {
+            radio.checked = false;
+        }
+        
+        document.getElementById('terminalModal').classList.add('active');
+    }
+
+    function closeTerminalModal() {
+        document.getElementById('terminalModal').classList.remove('active');
+    }
+
+    function generateMarkSheet() {
+        const studentId = document.getElementById('terminalModalStudentId').value;
+        const terminal = document.querySelector('input[name="terminal_select"]:checked');
+        
+        if (!terminal) {
+            alert('Please select a terminal');
+            return;
+        }
+        
+        window.location.href = `/mark-sheet/${studentId}/${terminal.value}/`;
+    }
+
+    // Confirm Delete
+    function confirmDelete() {
+        var id = document.getElementById('deleteMarkId').value;
+        
+        fetch('/delete-marks/' + id + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(async response => {
+            let data;
+            try {
+                data = await response.json();
+            } catch (error) {
+                data = {
+                    success: false,
+                    message: `Server returned HTTP ${response.status}`
+                };
+            }
+            return data;
+        })
+        .then(data => {
+            if (data && data.success) {
+                const row = document.querySelector(`tr[data-id="${id}"]`);
+                if (row) {
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(-20px)';
+                    setTimeout(() => {
+                        row.remove();
+                        const countEl = document.getElementById('totalRecords');
+                        countEl.textContent = parseInt(countEl.textContent) - 1;
+                    }, 300);
+                }
+                showSuccessInDeleteModal(data.message || 'Marks deleted successfully');
+            } else {
+                showToast((data && data.message) || 'Error deleting record', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error deleting record. Please try again.', 'error');
+        });
+    }
+
+
+    
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                ${type === 'success' ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}
+            </svg>
+            <span></span>
+        `;
+        toast.querySelector('span').textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Handle Edit Form Submit
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const id = document.getElementById('editMarkId').value;
+        const marks_obtained = document.getElementById('editMarksObtained').value;
+        const total_marks = document.getElementById('editTotalMarks').value;
+        
+        fetch('/edit-marks/' + id + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                marks_obtained: marks_obtained,
+                total_marks: total_marks
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Update the row data
+                const row = document.querySelector(`tr[data-id="${id}"]`);
+                if (row) {
+                    row.querySelector('.marks-obtained').textContent = marks_obtained;
+                    row.querySelector('.marks-total').textContent = total_marks;
+                    
+                    // Update percentage
+                    const percentage = Math.round((marks_obtained / total_marks) * 100);
+                    const percentBadge = row.querySelector('.percentage-badge');
+                    percentBadge.textContent = percentage + '%';
+                    percentBadge.className = 'percentage-badge ' + (percentage >= 60 ? 'pass' : 'fail');
+                }
+                closeModal();
+            } else {
+                alert('Error updating record');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating record');
+        });
+    });
+
+    // Close modals on outside click
+    document.addEventListener('click', function(e) {
+        var target = e.target;
+        var deleteModal = document.getElementById('deleteModal');
+
+        if (deleteModal && target === deleteModal) {
+            deleteModal.classList.remove('active');
+            setTimeout(resetDeleteModalContent, 260);
+        }
+    });
+
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        var target = e.target;
+        var card = document.getElementById('deleteModalCard');
+        var cancelBtn = document.getElementById('deleteCancelBtn');
+        var confirmBtn = document.getElementById('deleteConfirmBtn');
+        var okBtn = document.getElementById('deleteConfOkBtn');
+
+        if (target === this && card && !card.contains(e.target)) {
+            closeDeleteModal();
+            return;
+        }
+
+        if (card && card.contains(target)) {
+            if (cancelBtn && (target === cancelBtn || cancelBtn.contains(target))) {
+                closeDeleteModal();
+                return;
+            }
+            if (confirmBtn && (target === confirmBtn || confirmBtn.contains(target))) {
+                confirmDelete();
+                return;
+            }
+            if (okBtn && (target === okBtn || okBtn.contains(target))) {
+                closeDeleteModal();
+                setTimeout(resetDeleteModalContent, 260);
+                return;
+            }
+        }
+    });
+</script>
+{% endblock %}
+    </main>
+
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

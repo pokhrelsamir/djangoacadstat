@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="Dashboard - Academic System" %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="app-page">
+    {% include 'core/partials/app_navbar.html' %}
+
+    <main class="app-shell app-shell--wide">
+        <div class="page-hero">
+            <h1 class="page-title"><i class="fas fa-tachometer-alt" style="color:var(--ds-accent);"></i> Welcome back, {{ user.username }}</h1>
+            <p class="page-subtitle">Overview of academic performance and activities</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card reveal hover-lift">
+                <div class="stat-icon-wrap accent"><i class="fas fa-users"></i></div>
+                <div class="stat-label">Total Students</div>
+                <div class="stat-value">{{ total_students }}</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-1 hover-lift">
+                <div class="stat-icon-wrap info"><i class="fas fa-book"></i></div>
+                <div class="stat-label">Total Subjects</div>
+                <div class="stat-value">{{ total_subjects }}</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-2 hover-lift">
+                <div class="stat-icon-wrap success"><i class="fas fa-chart-pie"></i></div>
+                <div class="stat-label">Average Score</div>
+                <div class="stat-value">{{ average_marks }}%</div>
+            </div>
+        </div>
+
+        <section class="charts-section reveal">
+            <h2 class="section-title"><i class="fas fa-chart-bar" style="color:var(--ds-accent);"></i> Performance Analytics</h2>
+            <div class="charts-grid">
+                <div class="chart-card hover-lift">
+                    <h3><i class="fas fa-chart-bar"></i> Marks Distribution</h3>
+                    <div class="chart-wrapper"><canvas id="distributionChart"></canvas></div>
+                </div>
+                <div class="chart-card hover-lift">
+                    <h3><i class="fas fa-chart-line"></i> Subject Performance</h3>
+                    <div class="chart-wrapper"><canvas id="subjectChart"></canvas></div>
+                </div>
+                <div class="chart-card hover-lift">
+                    <h3><i class="fas fa-trophy"></i> Top Students</h3>
+                    <div class="chart-wrapper"><canvas id="topStudentsChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-actions-section reveal">
+            <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+            <div class="action-grid">
+                <a href="/marks-list/" class="action-item"><i class="fas fa-list"></i> View All Marks</a>
+                <a href="/select-mark-sheet/" class="action-item"><i class="fas fa-file-alt"></i> Generate Mark Sheet</a>
+                <a href="/student-analysis/" class="action-item"><i class="fas fa-robot"></i> AI Analysis</a>
+                {% if show_admin_panel %}
+                <a href="/admin/" class="action-item" target="_blank" rel="noopener noreferrer"><i class="fas fa-cog"></i> Admin Panel</a>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+
+    {% include 'core/partials/theme_script.html' %}
+    <script>
+        window.onThemeChange = function() { if (typeof loadCharts === 'function') loadCharts(); };
+        document.addEventListener('DOMContentLoaded', function() { loadCharts(); if (typeof AcadStatUI !== 'undefined') AcadStatUI.initScrollReveal(); });
+
+        async function loadCharts() {
+            try {
+                const response = await fetch('/chart-data/');
+                const data = await response.json();
+                const html = document.documentElement;
+                const isDark = html.getAttribute('data-theme') === 'dark';
+                const textColor = isDark ? '#f1f5f9' : '#1e293b';
+                const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+                Chart.defaults.color = textColor;
+                Chart.defaults.borderColor = gridColor;
+
+                const mk = (id, cfg) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    if (el._chart) el._chart.destroy();
+                    el._chart = new Chart(el.getContext('2d'), cfg);
+                };
+
+                mk('distributionChart', {
+                    type: 'bar',
+                    data: {
+                        labels: data.distribution.labels,
+                        datasets: [{ label: 'Students', data: data.distribution.data,
+                            backgroundColor: ['rgba(239,68,68,0.7)','rgba(245,158,11,0.7)','rgba(59,130,246,0.7)','rgba(34,197,94,0.7)','rgba(139,92,246,0.7)'],
+                            borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } } }
+                });
+
+                mk('subjectChart', {
+                    type: 'line',
+                    data: {
+                        labels: data.subjects.labels,
+                        datasets: [{ label: 'Avg %', data: data.subjects.data, borderColor: '#0a0a0a',
+                            backgroundColor: 'rgba(10,10,10,0.08)', fill: true, tension: 0.4 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, max: 100, grid: { color: gridColor } }, x: { grid: { display: false } } } }
+                });
+
+                mk('topStudentsChart', {
+                    type: 'bar',
+                    data: {
+                        labels: data.top_students.labels,
+                        datasets: [{ label: 'Score %', data: data.top_students.data,
+                            backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 6 }]
+                    },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                        scales: { x: { beginAtZero: true, max: 100, grid: { color: gridColor } }, y: { grid: { display: false } } } }
+                });
+            } catch (e) { console.error('Chart load failed', e); }
+        }
+    </script>
+</body>
+</html>

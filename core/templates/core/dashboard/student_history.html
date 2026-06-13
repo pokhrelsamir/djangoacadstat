@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="Student History — AcadStat" %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root{--pri:#667eea;--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--bg:#f8fafc;}
+        .hist-wrapper{max-width:900px;margin:0 auto;padding:30px;background:var(--bg);min-height:calc(100vh - 70px);}
+        .page-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;}
+        .page-header a{color:var(--pri);text-decoration:none;font-size:.9rem;}
+        .page-header h1{font-size:1.6rem;color:#1e293b;font-weight:700;}
+        .student-info{display:flex;align-items:center;gap:16px;background:white;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 4px 6px -1px rgba(0,0,0,.1);border:1px solid #e2e8f0;}
+        .stu-img{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--pri),#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.4rem;}
+        .stu-name{font-size:1.15rem;font-weight:700;color:#1e293b;}
+        .stu-meta{font-size:.85rem;color:#64748b;margin-top:2px;}
+        .hist-card{background:white;border-radius:16px;padding:24px;box-shadow:0 4px 6px -1px rgba(0,0,0,.1);border:1px solid #e2e8f0;}
+        .hist-card h3{margin:0 0 20px 0;font-size:1.05rem;color:#1e293b;display:flex;align-items:center;gap:8px;}
+        .hist-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f1f5f9;align-items:center;}
+        .hist-row:last-child{border-bottom:none;}
+        .hist-year{font-weight:600;color:#1e293b;}
+        .hist-detail{font-size:.85rem;color:#64748b;margin-top:2px;}
+        .hist-pct{font-weight:700;font-size:1rem;}
+        .hist-pct.ok{color:var(--ok);} .hist-pct.warn{color:var(--warn);} .hist-pct.bad{color:var(--err);}
+        .empty-state{text-align:center;padding:40px;color:#94a3b8;}
+        .empty-state i{font-size:2.5rem;margin-bottom:12px;display:block;}
+        @media(max-width:768px){.hist-wrapper{padding:15px;}.hist-row{flex-direction:column;align-items:flex-start;gap:4px;}}
+    </style>
+</head>
+<body class="app-page">
+    <nav class="navbar app-nav-style">
+        <h2 class="logo"><i class="fas fa-history"></i> AcadStat</h2>
+        <div class="nav-links">
+            <a href="/students-list/"><i class="fas fa-users"></i> Students</a>
+            <a href="/smart-dashboard/"><i class="fas fa-brain"></i> Analytics</a>
+            <a href="/logout/"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        
+            <button class="theme-toggle ds-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </nav>
+    <div class="hist-wrapper">
+        <div class="page-header">
+            <a href="/students-list/"><i class="fas fa-arrow-left"></i> All Students</a>
+            <h1><i class="fas fa-history"></i> Academic History</h1>
+        </div>
+        <div class="student-info">
+            <div class="stu-img">{{ student.name|slice:":1"|upper }}</div>
+            <div>
+                <div class="stu-name">{{ student.name }}</div>
+                <div class="stu-meta">{{ student.student_class }} {{ student.section }} · Level: {{ student.get_level_display }} · Roll: {{ student.roll_number }}"</div>
+            </div>
+        </div>
+        <div class="hist-card">
+            <h3><i class="fas fa-chart-line"></i> Year-wise Performance Records</h3>
+            {% if history %}
+            {% for h in history %}
+            <div class="hist-row">
+                <div>
+                    <div class="hist-year">
+                        {{ h.previous_class }} → {{ h.promoted_to_class }}
+                        <span style="font-size:.78rem;font-weight:400;color:#94a3b8;margin-left:8px;">({{ h.academic_year.name if h.academic_year else 'N/A' }})</span>
+                    </div>
+                    <div class="hist-detail">
+                        {{ h.total_marks_obtained|floatformat:0 }} / {{ h.total_marks|floatformat:0 }} marks overall
+                        {% if h.remarks %}<br>Note: {{ h.remarks }}{% endif %}
+                    </div>
+                </div>
+                <div>
+                    <div class="hist-pct {% if h.percentage >= 60 %}ok{% elif h.percentage >= 40 %}warn{% else %}bad{% endif %}">
+                        {{ h.percentage }}%
+                    </div>
+                    {% if h.grade %}
+                    <div style="font-size:.82rem;text-align:right;color:#667eea;font-weight:600;">Grade: {{ h.grade }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state"><i class="fas fa-inbox"></i><p>No academic history recorded yet. Promote the student to create a history record.</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

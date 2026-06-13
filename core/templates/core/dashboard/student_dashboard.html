@@ -1,0 +1,654 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="My Dashboard - Academic System" %}
+<link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#667eea">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+        .hero-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .hero-profile {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .hero-profile img { width: 100%; height: 100%; object-fit: cover; }
+        .hero-profile-placeholder {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: var(--ds-gradient);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: 2px solid var(--border-color);
+        }
+        .terminal-chip.visible { display: inline-flex; }
+        .chart-wrap { position: relative; width: 100%; min-height: 260px; }
+        .chart-wrap canvas { max-height: 300px; }
+        .grade-badge {
+            display: inline-block;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: var(--ds-text-xs);
+        }
+        .grade-badge.pass { background: rgba(16, 185, 129, 0.15); color: var(--ds-success); }
+        .grade-badge.fail { background: rgba(239, 68, 68, 0.12); color: var(--ds-danger); }
+        .no-data { text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); }
+        .no-data svg { width: 64px; height: 64px; margin-bottom: 0.75rem; opacity: 0.45; }
+
+         /* Notifications Dropdown */
+         .notifications-btn:hover {
+             border-color: #667eea !important;
+             color: #667eea !important;
+         }
+         
+         .notification-badge {
+             animation: pulse 2s infinite;
+         }
+         
+         @keyframes pulse {
+             0% { transform: scale(1); }
+             50% { transform: scale(1.1); }
+             100% { transform: scale(1); }
+         }
+         
+         .notification-item {
+             padding: 0.75rem 1rem;
+             border-bottom: 1px solid var(--border-color);
+             transition: background 0.2s;
+             cursor: pointer;
+         }
+         
+         .notification-item:hover {
+             background: var(--bg-card-hover);
+         }
+         
+         .notification-item.unread {
+             background: rgba(102, 126, 234, 0.05);
+             border-left: 3px solid #667eea;
+         }
+         
+         .notification-item:last-child {
+             border-bottom: none;
+         }
+         
+         .notification-title {
+             font-weight: 600;
+             color: var(--text-primary);
+             font-size: 0.9rem;
+             margin-bottom: 0.25rem;
+         }
+         
+         .notification-message {
+             color: var(--text-secondary);
+             font-size: 0.85rem;
+             line-height: 1.4;
+         }
+         
+         .notification-meta {
+             font-size: 0.75rem;
+             color: var(--text-secondary);
+             margin-top: 0.4rem;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+         }
+         
+         .notification-type-icon {
+             margin-right: 0.5rem;
+         }
+         
+         .type-info { color: #3b82f6; }
+         .type-success { color: #10b981; }
+         .type-warning { color: #f59e0b; }
+         .type-danger { color: #ef4444; }
+         
+         .empty-notifications {
+             padding: 2rem;
+             text-align: center;
+             color: var(--text-secondary);
+         }
+         
+         .empty-notifications svg {
+             width: 60px;
+             height: 60px;
+             opacity: 0.5;
+             margin-bottom: 0.5rem;
+         }
+         
+         .mark-all-read-container {
+             padding: 0.5rem 1rem;
+             text-align: center;
+             border-top: 1px solid var(--border-color);
+         }
+        
+    </style>
+</head>
+
+<body class="app-page">
+    <!-- Navbar -->
+     <nav class="navbar app-nav-style">
+         <h2 class="logo">🎓 AcadStat </h2>
+         <div class="nav-links">
+             <a href="/">Home</a>
+             {% if user.is_authenticated %}
+                 <a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a>
+                 <a href="{% url 'core:student_analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a>
+                 <a href="{% url 'core:student_my_mark_sheet' %}"><i class="fas fa-file-alt"></i> My MarkSheet</a>
+                 <a href="/logout/">Logout</a>
+             {% else %}
+                 <a href="/login/">Login</a>
+             {% endif %}
+             
+             <!-- Notifications Dropdown -->
+             <div class="notifications-dropdown" id="notificationsDropdown" style="position: relative; display: inline-block;">
+                 <button class="notifications-btn" id="notificationsBtn" aria-label="Notifications" style="position: relative; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 10px; padding: 0.5rem 0.75rem; cursor: pointer; color: var(--text-primary); transition: all 0.3s ease;">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                     </svg>
+                     {% if total_unread > 0 %}
+                     <span class="notification-badge" id="notificationBadge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center;">{{ total_unread }}</span>
+                     {% endif %}
+                 </button>
+                 
+                 <!-- Notifications Panel -->
+                 <div id="notificationsPanel" style="display: none; position: absolute; top: 100%; right: 0; width: 380px; max-height: 500px; overflow-y: auto; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; margin-top: 0.5rem;">
+                     <div class="notifications-header" style="padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                         <h4 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-primary);">Notifications</h4>
+                         {% if total_unread > 0 %}
+                         <button id="markAllReadBtn" style="background: none; border: none; color: #667eea; font-size: 0.8rem; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(102,126,234,0.1)'" onmouseout="this.style.background='transparent'">Mark all read</button>
+                         {% endif %}
+                     </div>
+                     <div id="notificationsList" style="padding: 0.5rem;">
+                         <!-- Notifications will be loaded here by JS -->
+                         <div style="padding: 1rem; text-align: center; color: var(--text-secondary);">Loading notifications...</div>
+                     </div>
+                 </div>
+             </div>
+             
+             <button class="theme-toggle ds-toggle" id="themeToggle" aria-label="Toggle theme">
+                 <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <circle cx="12" cy="12" r="5"/>
+                     <line x1="12" y1="1" x2="12" y2="3"/>
+                     <line x1="12" y1="21" x2="12" y2="23"/>
+                     <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                     <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                     <line x1="1" y1="12" x2="3" y2="12"/>
+                     <line x1="21" y1="12" x2="23" y2="12"/>
+                     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                 </svg>
+                 <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                 </svg>
+             </button>
+         </div>
+     </nav>
+
+    <main class="app-shell app-shell--wide">
+        {% if error %}
+        <section class="section-card fade-in">
+            <div class="no-data">
+                <i class="fas fa-exclamation-circle" style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.5;"></i>
+                <h3 style="margin:0 0 0.35rem;font-size:var(--ds-text-md);color:var(--text-primary);">{{ error }}</h3>
+                <p style="margin:0;">Please contact your administrator.</p>
+            </div>
+        </section>
+        {% else %}
+
+        <div class="page-hero fade-in">
+            <div class="hero-row">
+                <div>
+                    <h1 class="page-title"><i class="fas fa-user-graduate" style="color:var(--ds-accent);"></i> Welcome, {{ student.name }}</h1>
+                    <p class="page-subtitle">Class {{ student.student_class }} · Section {{ student.section }} · Roll {{ student.roll_number|default:"N/A" }}</p>
+                    <div class="student-chip terminal-chip visible" id="terminalChip">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>{{ selected_terminal }} Terminal selected</span>
+                    </div>
+                </div>
+                {% if student.image %}
+                <div class="hero-profile"><img src="{{ student.image.url }}" alt="{{ student.name }}"></div>
+                {% else %}
+                <div class="hero-profile-placeholder">{{ student.name|first|upper }}</div>
+                {% endif %}
+            </div>
+            <div class="actions-bar" style="justify-content:flex-start;border-top:none;padding-top:0;margin-top:0.85rem;">
+                <a href="{% url 'core:gpa_forecasting' %}" class="btn ds ds-primary"><i class="fas fa-chart-line"></i> GPA Forecasting</a>
+                <button type="button" class="btn ds ds-ghost" data-open-password-modal><i class="fas fa-lock"></i> Change Password</button>
+            </div>
+        </div>
+
+        <div class="stats-grid fade-in">
+            <div class="stat-card">
+                <div class="stat-icon-wrap accent"><i class="fas fa-book"></i></div>
+                <div class="stat-label">Subjects</div>
+                <div class="stat-value">{{ total_subjects }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap success"><i class="fas fa-trophy"></i></div>
+                <div class="stat-label">Overall Score</div>
+                <div class="stat-value">{{ overall_percentage }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap info"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-label">{{ selected_terminal }} Terminal</div>
+                <div class="stat-value">{{ terminal_marks_obtained|floatformat:0 }}/{{ terminal_total_marks|floatformat:0 }}</div>
+            </div>
+        </div>
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">1</span>
+                <div>
+                    <h2 class="section-title">Select Terminal</h2>
+                    <p class="card-subtitle">Filter the results table below</p>
+                </div>
+            </div>
+            <div class="form-group ds" style="max-width:280px;">
+                <label for="terminalSelect">Terminal / Exam</label>
+                <select id="terminalSelect" onchange="changeTerminal(this.value)">
+                    {% for terminal in terminal_choices %}
+                    <option value="{{ terminal }}" {% if terminal == selected_terminal %}selected{% endif %}>{{ terminal }} Terminal</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <p class="form-hint">Charts below show all terminals; the table reflects your selection.</p>
+        </section>
+
+        {% if has_chart_data %}
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">2</span>
+                    <div>
+                        <h2 class="section-title">Terminal-wise Performance</h2>
+                        <p class="card-subtitle">Your % per terminal — one line per subject</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="terminalChart" aria-label="Terminal-wise performance line chart"></canvas>
+                </div>
+            </section>
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">3</span>
+                    <div>
+                        <h2 class="section-title">Subject-wise Performance</h2>
+                        <p class="card-subtitle">Your % per subject — coloured by terminal</p>
+                    </div>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="subjectChart" aria-label="Subject-wise performance line chart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        {{ terminal_wise_chart|json_script:"terminal-chart-data" }}
+        {{ subject_wise_chart|json_script:"subject-chart-data" }}
+
+        <script>
+        (function() {
+            function cssVar(name, fallback) {
+                return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+            }
+            function chartTheme() {
+                return {
+                    text: cssVar('--text-secondary', '#94a3b8'),
+                    grid: cssVar('--border-color', 'rgba(148,163,184,0.2)'),
+                    title: cssVar('--text-primary', '#e2e8f0'),
+                };
+            }
+            function lineOptions(yLabel) {
+                const theme = chartTheme();
+                return {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: theme.text,
+                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 },
+                                boxWidth: 12,
+                                padding: 14,
+                            },
+                        },
+                        tooltip: {
+                            backgroundColor: cssVar('--bg-card', '#1e293b'),
+                            titleColor: theme.title,
+                            bodyColor: theme.text,
+                            borderColor: theme.grid,
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(ctx) {
+                                    const v = ctx.parsed.y;
+                                    return ' ' + ctx.dataset.label + ': ' + (v != null ? v + '%' : '—');
+                                },
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: theme.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } },
+                            grid: { color: theme.grid },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: yLabel, color: theme.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } },
+                            ticks: { color: theme.text, callback: function(v) { return v + '%'; }, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } },
+                            grid: { color: theme.grid },
+                        },
+                    },
+                };
+            }
+            function buildLineChart(canvasId, dataId, yLabel) {
+                const el = document.getElementById(canvasId);
+                const dataEl = document.getElementById(dataId);
+                if (!el || !dataEl) return null;
+                const data = JSON.parse(dataEl.textContent);
+                data.datasets = data.datasets.map(function(ds) {
+                    return Object.assign({ borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, spanGaps: true }, ds);
+                });
+                return new Chart(el, { type: 'line', data: data, options: lineOptions(yLabel) });
+            }
+            let terminalChart = buildLineChart('terminalChart', 'terminal-chart-data', 'Your %');
+            let subjectChart = buildLineChart('subjectChart', 'subject-chart-data', 'Your %');
+            window.onThemeChange = function() {
+                if (terminalChart) terminalChart.destroy();
+                if (subjectChart) subjectChart.destroy();
+                terminalChart = buildLineChart('terminalChart', 'terminal-chart-data', 'Your %');
+                subjectChart = buildLineChart('subjectChart', 'subject-chart-data', 'Your %');
+            };
+        })();
+        </script>
+        {% endif %}
+
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">{% if has_chart_data %}4{% else %}2{% endif %}</span>
+                <div>
+                    <h2 class="section-title">My Results</h2>
+                    <p class="card-subtitle">{{ selected_terminal }} Terminal — marks entered by your teachers</p>
+                </div>
+            </div>
+            {% if student_results %}
+            <div class="table-wrap">
+                <table class="ds-table">
+                    <colgroup>
+                        <col style="width:3rem">
+                        <col class="student-col">
+                        <col class="num">
+                        <col class="num">
+                        <col class="num">
+                        <col class="num">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="num">S.N.</th>
+                            <th class="student-col">Subject</th>
+                            <th class="num">Terminal</th>
+                            <th class="num">Marks</th>
+                            <th class="num">%</th>
+                            <th class="num">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in student_results %}
+                        <tr>
+                            <td class="num">{{ forloop.counter }}</td>
+                            <td class="student-col"><strong>{{ result.subject.name }}</strong></td>
+                            <td class="num">{{ result.terminal }}</td>
+                            <td class="num"><span class="cell-value">{{ result.marks_obtained|floatformat:1 }}/{{ result.total_marks|floatformat:1 }}</span></td>
+                            <td class="num">
+                                <span class="cell-value">{{ result.percentage|floatformat:1 }}%</span>
+                            </td>
+                            <td class="num">
+                                <span class="grade-badge {% if result.is_pass %}pass{% else %}fail{% endif %}">{{ result.pass_fail }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                <p style="margin:0;">No results for {{ selected_terminal }} Terminal yet.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        {% endif %}
+    </main>
+
+    <script>
+        // Terminal change function
+        function changeTerminal(terminal) {
+            // Reload the page with the selected terminal as a GET parameter
+            const url = new URL(window.location.href);
+            url.searchParams.set('terminal', terminal);
+            window.location.href = url.toString();
+        }
+        
+         // Notifications Dropdown
+         const notificationsBtn = document.getElementById('notificationsBtn');
+         const notificationsPanel = document.getElementById('notificationsPanel');
+         const notificationsList = document.getElementById('notificationsList');
+         const markAllReadBtn = document.getElementById('markAllReadBtn');
+         const notificationBadge = document.getElementById('notificationBadge');
+         
+         if (notificationsBtn) {
+             // Toggle dropdown visibility
+             notificationsBtn.addEventListener('click', function(e) {
+                 e.stopPropagation();
+                 const isVisible = notificationsPanel.style.display === 'block';
+                 notificationsPanel.style.display = isVisible ? 'none' : 'block';
+                 if (!isVisible) {
+                     loadNotifications();
+                 }
+             });
+             
+             // Close dropdown when clicking outside
+             document.addEventListener('click', function(e) {
+                 if (!notificationsPanel.contains(e.target) && e.target !== notificationsBtn) {
+                     notificationsPanel.style.display = 'none';
+                 }
+             });
+             
+             // Prevent dropdown from closing when clicking inside
+             notificationsPanel.addEventListener('click', function(e) {
+                 e.stopPropagation();
+             });
+         }
+         
+         // Load notifications via AJAX
+         async function loadNotifications() {
+             try {
+                 const response = await fetch('/api/student-notifications/?_=' + Date.now());
+                 const data = await response.json();
+                 
+                 if (data.success) {
+                     renderNotifications(data.notifications, data.unread_count);
+                 } else {
+                     notificationsList.innerHTML = '<div class="empty-notifications"><p>No notifications available</p></div>';
+                 }
+             } catch (error) {
+                 console.error('Error loading notifications:', error);
+                 notificationsList.innerHTML = '<div class="empty-notifications"><p>Failed to load notifications</p></div>';
+             }
+         }
+         
+         // Render notifications list
+         function renderNotifications(notifications, unreadCount) {
+             if (!notifications || notifications.length === 0) {
+                 notificationsList.innerHTML = `
+                     <div class="empty-notifications">
+                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                         </svg>
+                         <p>No notifications yet</p>
+                     </div>
+                 `;
+                 if (notificationBadge) notificationBadge.style.display = 'none';
+                 return;
+             }
+             
+             let html = '';
+             notifications.forEach((notif, index) => {
+                 const isUnread = !notif.is_read ? 'unread' : '';
+                 const iconMap = {
+                     'info': '<span class="type-icon type-info">ℹ️</span>',
+                     'success': '<span class="type-icon type-success">✅</span>',
+                     'warning': '<span class="type-icon type-warning">⚠️</span>',
+                     'danger': '<span class="type-icon type-danger">🚨</span>'
+                 };
+                 const icon = iconMap[notif.type] || iconMap['info'];
+                 const timeAgo = getTimeAgo(notif.created_at);
+                 
+                 html += `
+                     <div class="notification-item ${isUnread}" data-id="${notif.id}" onclick="markAsReadAndNavigate(${notif.id}, '${notif.link_url || ''}')">
+                         <div class="notification-title">
+                             ${icon} ${notif.title}
+                         </div>
+                         <div class="notification-message">${notif.message}</div>
+                         <div class="notification-meta">
+                             <span>${timeAgo}</span>
+                             ${notif.sender ? `<span>From: ${notif.sender}</span>` : ''}
+                         </div>
+                     </div>
+                 `;
+             });
+             
+             notificationsList.innerHTML = html;
+             
+             // Update badge
+             if (unreadCount > 0) {
+                 if (notificationBadge) {
+                     notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                     notificationBadge.style.display = 'block';
+                 }
+             } else {
+                 if (notificationBadge) notificationBadge.style.display = 'none';
+             }
+         }
+         
+         // Mark single notification as read and navigate
+         async function markAsReadAndNavigate(notificationId, linkUrl) {
+             // Mark as read immediately for UI feedback
+             const item = notificationsList.querySelector(`[data-id="${notificationId}"]`);
+             if (item) {
+                 item.classList.remove('unread');
+                 item.style.opacity = '0.7';
+             }
+             
+             // Send API call (fire and forget, don't block navigation if link exists)
+             fetch(`/api/mark-notification-read/${notificationId}/`, {
+                 method: 'POST',
+                 headers: {
+                     'X-CSRFToken': '{{ csrf_token }}',
+                     'Content-Type': 'application/json'
+                 }
+             }).catch(err => console.warn('Failed to mark notification read:', err));
+             
+             // Update badge
+             if (notificationBadge) {
+                 const currentCount = parseInt(notificationBadge.textContent) || 0;
+                 const newCount = Math.max(0, currentCount - 1);
+                 notificationBadge.textContent = newCount > 99 ? '99+' : newCount;
+                 if (newCount === 0) notificationBadge.style.display = 'none';
+             }
+             
+             // Navigate if link provided
+             if (linkUrl) {
+                 window.location.href = linkUrl;
+             }
+         }
+         
+         // Mark all as read
+         if (markAllReadBtn) {
+             markAllReadBtn.addEventListener('click', async function() {
+                 try {
+                     const response = await fetch('/api/mark-all-notifications-read/', {
+                         method: 'POST',
+                         headers: {
+                             'X-CSRFToken': '{{ csrf_token }}',
+                             'Content-Type': 'application/json'
+                         }
+                     });
+                     
+                     const data = await response.json();
+                     if (data.success) {
+                         // Mark all items as read in UI
+                         const items = notificationsList.querySelectorAll('.notification-item');
+                         items.forEach(item => {
+                             item.classList.remove('unread');
+                             item.style.opacity = '0.7';
+                         });
+                         if (notificationBadge) notificationBadge.style.display = 'none';
+                         markAllReadBtn.style.display = 'none';
+                     }
+                 } catch (error) {
+                     console.error('Error marking all as read:', error);
+                 }
+             });
+         }
+         
+         // Format time ago
+         function getTimeAgo(dateStr) {
+             const date = new Date(dateStr);
+             const now = new Date();
+             const seconds = Math.floor((now - date) / 1000);
+             
+             if (seconds < 60) return 'Just now';
+             
+             const minutes = Math.floor(seconds / 60);
+             if (minutes < 60) return `${minutes}m ago`;
+             
+             const hours = Math.floor(minutes / 60);
+             if (hours < 24) return `${hours}h ago`;
+             
+             const days = Math.floor(hours / 24);
+             if (days < 7) return `${days}d ago`;
+             
+             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+         }
+         
+          // Periodic refresh of notifications (every 60 seconds)
+          setInterval(loadNotifications, 60000);
+      </script>
+
+    <!-- Service Worker Registration (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('{% static "js/sw.js" %}')
+                    .then(function(reg) { console.log('SW registered:', reg.scope); })
+                    .catch(function(err) { console.log('SW registration failed:', err); });
+            });
+        }
+    </script>
+
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

@@ -1,0 +1,51 @@
+/* Student admin — animated level-dependent fields */
+.student-level-field-wrap {
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.35s ease, margin 0.3s ease, transform 0.3s ease;
+    transform-origin: top center;
+}
+
+.student-level-field-wrap.is-collapsed {
+    opacity: 0;
+    max-height: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    transform: translateY(-8px);
+    pointer-events: none;
+    border: none !important;
+}
+
+.student-level-field-wrap.is-expanded {
+    opacity: 1;
+    max-height: 140px;
+    transform: translateY(0);
+}
+
+.student-level-select {
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.student-level-select.is-updating {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    background-color: rgba(102, 126, 234, 0.04);
+}
+
+.student-level-hint {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+    font-style: italic;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.25s ease, max-height 0.25s ease;
+}
+
+.student-level-hint.is-visible {
+    opacity: 1;
+    max-height: 24px;
+}

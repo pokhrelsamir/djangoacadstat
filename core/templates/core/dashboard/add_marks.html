@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="Add Marks - Academic System" %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        /* Subject cell with inline edit affordance (Step 3 — Added Marks) */
+        .subject-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .row-edit-btn {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color, rgba(0,0,0,0.12));
+            background: var(--bg-card, #fff);
+            color: var(--ds-accent, #4f46e5);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .row-edit-btn:hover {
+            background: var(--ds-accent, #4f46e5);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.28);
+        }
+        .row-edit-btn:active {
+            transform: translateY(0);
+        }
+        .marks-table tr.clickable.selected .row-edit-btn {
+            background: var(--ds-accent, #4f46e5);
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="app-page">
+    {% include 'core/partials/app_navbar.html' %}
+
+    <main class="app-shell app-shell--narrow">
+        <a href="/dashboard/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+
+        <div class="page-hero">
+            <h1 class="page-title">Add Student Marks</h1>
+            <p class="page-subtitle">Select class and section, then choose a student and terminal to enter marks per subject.</p>
+            <div class="student-chip" id="studentChip">
+                <i class="fas fa-user-graduate"></i>
+                <span id="studentChipText"></span>
+            </div>
+        </div>
+
+        <div id="alertBox" style="display:none;"></div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert-banner {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if not has_students or not has_subjects %}
+        <div class="alert-banner warning">
+            <strong>Setup required.</strong>
+            {% if not has_subjects %}No subjects assigned.{% endif %}
+            {% if not has_students %} No students assigned.{% endif %}
+            Contact admin to assign them before adding marks.
+        </div>
+        {% endif %}
+
+        <div class="ds-grid two-col">
+            <section class="section-card hover-lift">
+                <div class="card-head">
+                    <span class="step-badge">1</span>
+                    <div>
+                        <h2 class="section-title">Student &amp; Terminal</h2>
+                        <p class="card-subtitle">Filter by class &amp; section, then choose student and exam</p>
+                    </div>
+                </div>
+                <div class="form-group ds">
+                    <label for="classSelect">Class</label>
+                    <select id="classSelect" {% if not has_students %}disabled{% endif %}>
+                        <option value="">All classes</option>
+                        {% for cls in classes %}
+                        <option value="{{ cls }}">Class {{ cls }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group ds">
+                    <label for="sectionSelect">Section</label>
+                    <select id="sectionSelect" disabled>
+                        <option value="">All sections</option>
+                    </select>
+                    <p class="form-hint">Select a class first to load sections.</p>
+                </div>
+                <div class="form-group ds">
+                    <label for="studentSelect">Student</label>
+                    <select id="studentSelect" {% if not has_students %}disabled{% endif %}>
+                        <option value="">Select student…</option>
+                    </select>
+                </div>
+                <div class="form-group ds">
+                    <label for="terminalSelect">Terminal / Exam</label>
+                    <select id="terminalSelect">
+                        {% for value, label in terminal_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </section>
+
+            <section class="section-card hover-lift" id="subjectCard" style="display:none;">
+                <div class="card-head">
+                    <span class="step-badge">2</span>
+                    <div>
+                        <h2 class="section-title">Marks for Subject</h2>
+                        <p class="card-subtitle">Total marks set by admin</p>
+                    </div>
+                </div>
+                <div class="form-group ds">
+                    <label for="subjectSelect">Subject</label>
+                    <select id="subjectSelect" {% if not has_subjects %}disabled{% endif %}>
+                        <option value="">Select subject…</option>
+                        {% for s in subject_options %}
+                        <option value="{{ s.id }}" data-total="{{ s.total_marks }}">{{ s.name }} ({{ s.code }})</option>
+                        {% empty %}
+                        <option value="" disabled>No subjects assigned</option>
+                        {% endfor %}
+                    </select>
+                    <p class="form-hint">Only subjects assigned to you by admin appear here.</p>
+                </div>
+                <div class="form-row ds">
+                    <div class="form-group ds">
+                        <label for="marksObtained">Marks Obtained</label>
+                        <input type="number" id="marksObtained" placeholder="e.g. 85" min="0" step="0.01">
+                    </div>
+                    <div class="form-group ds">
+                        <label for="totalMarks">Total Marks</label>
+                        <input type="number" id="totalMarks" value="100" readonly disabled>
+                        <div class="total-pill"><i class="fas fa-lock"></i> Admin configured</div>
+                    </div>
+                </div>
+                <button type="button" class="btn ds ds-primary ds-block" id="addMarkBtn">
+                    <i class="fas fa-plus"></i> Add to list
+                </button>
+            </section>
+        </div>
+
+        <div class="info-note" id="editNote" style="display:none;">
+            <i class="fas fa-info-circle"></i>
+            <span>Tap a row below to edit. Use <strong>Add to list</strong> to update the entry.</span>
+        </div>
+
+        <section class="section-card fade-in hover-lift" id="marksTableCard" style="display:none; margin-top:1rem;">
+            <div class="card-head">
+                <span class="step-badge">3</span>
+                <div>
+                    <h2 class="section-title">Added Marks</h2>
+                    <p class="card-subtitle">Review before saving</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="ds-table marks-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th class="center">Obtained</th>
+                            <th class="center">Total</th>
+                            <th class="center">%</th>
+                            <th class="center">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marksTableBody">
+                        <tr class="empty-state">
+                            <td colspan="5"><i class="fas fa-clipboard-list"></i>No marks yet — pick a subject and click Add to list.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions-bar">
+                <button type="button" class="btn ds ds-ghost" id="clearAllBtn"><i class="fas fa-eraser"></i> Clear All</button>
+                <button type="button" class="btn ds ds-success" id="saveAllBtn"><i class="fas fa-save"></i> Save All Marks</button>
+            </div>
+        </section>
+    </main>
+
+    {% if has_students %}
+    {{ student_rows|json_script:"add-marks-students-data" }}
+    {{ sections_by_class|json_script:"add-marks-sections-data" }}
+    {% endif %}
+
+    {% include 'core/partials/theme_script.html' %}
+    <script>
+        const subjectTotalMap = {{ subject_total_map_json|safe }};
+        const subjectNameMap = {{ subject_name_map_json|safe }};
+        const studentsDataEl = document.getElementById('add-marks-students-data');
+        const sectionsDataEl = document.getElementById('add-marks-sections-data');
+        const allStudents = studentsDataEl ? JSON.parse(studentsDataEl.textContent) : [];
+        const sectionsByClass = sectionsDataEl ? JSON.parse(sectionsDataEl.textContent) : {};
+
+        function getCsrfToken() {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta && meta.getAttribute('content')) return meta.getAttribute('content');
+            const match = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
+            return match ? decodeURIComponent(match[2]) : '';
+        }
+        const CSRF_TOKEN = getCsrfToken();
+        let addedMarks = [];
+        let editingSubjectId = null;
+
+        function filteredStudents() {
+            const cls = document.getElementById('classSelect').value;
+            const sec = document.getElementById('sectionSelect').value;
+            return allStudents.filter(function(s) {
+                if (cls && s.student_class !== cls) return false;
+                if (sec && s.section !== sec) return false;
+                return true;
+            });
+        }
+
+        function rebuildStudentOptions() {
+            const studentSelect = document.getElementById('studentSelect');
+            const list = filteredStudents();
+            const prev = studentSelect.value;
+            studentSelect.innerHTML = '<option value="">Select student…</option>';
+            list.forEach(function(s) {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.name + (s.roll_number ? ' (' + s.roll_number + ')' : '') + ' — Class ' + s.student_class + (s.section ? '-' + s.section : '');
+                studentSelect.appendChild(opt);
+            });
+            studentSelect.disabled = list.length === 0;
+            if (prev && list.some(function(s) { return String(s.id) === prev; })) {
+                studentSelect.value = prev;
+            } else if (prev) {
+                studentSelect.value = '';
+                onStudentOrTerminalChange();
+            }
+        }
+
+        function syncSections() {
+            const classSelect = document.getElementById('classSelect');
+            const sectionSelect = document.getElementById('sectionSelect');
+            const cls = classSelect.value;
+            sectionSelect.innerHTML = '<option value="">All sections</option>';
+            if (!cls) {
+                sectionSelect.disabled = true;
+                rebuildStudentOptions();
+                return;
+            }
+            sectionSelect.disabled = false;
+            (sectionsByClass[cls] || []).forEach(function(sec) {
+                const opt = document.createElement('option');
+                opt.value = sec;
+                opt.textContent = 'Section ' + sec;
+                sectionSelect.appendChild(opt);
+            });
+            rebuildStudentOptions();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const classSelect = document.getElementById('classSelect');
+            const sectionSelect = document.getElementById('sectionSelect');
+            if (classSelect) {
+                classSelect.addEventListener('change', function() {
+                    sectionSelect.value = '';
+                    syncSections();
+                });
+            }
+            if (sectionSelect) {
+                sectionSelect.addEventListener('change', rebuildStudentOptions);
+            }
+            syncSections();
+            if (allStudents.length === 1) {
+                classSelect.value = allStudents[0].student_class;
+                syncSections();
+                sectionSelect.value = allStudents[0].section;
+                rebuildStudentOptions();
+                document.getElementById('studentSelect').value = String(allStudents[0].id);
+                onStudentOrTerminalChange();
+            }
+            document.getElementById('studentSelect').addEventListener('change', onStudentOrTerminalChange);
+            document.getElementById('terminalSelect').addEventListener('change', onStudentOrTerminalChange);
+            document.getElementById('subjectSelect').addEventListener('change', onSubjectChange);
+            document.getElementById('addMarkBtn').addEventListener('click', addMarkToTable);
+            document.getElementById('clearAllBtn').addEventListener('click', clearAllMarks);
+            document.getElementById('saveAllBtn').addEventListener('click', saveAllMarks);
+        });
+
+        function updateStudentChip() {
+            const sel = document.getElementById('studentSelect');
+            const chip = document.getElementById('studentChip');
+            const text = document.getElementById('studentChipText');
+            if (sel.value && sel.selectedIndex > 0) {
+                text.textContent = sel.options[sel.selectedIndex].text;
+                chip.classList.add('visible');
+            } else chip.classList.remove('visible');
+        }
+
+        function showAlert(message, type) {
+            if (typeof AcadStatUI !== 'undefined') {
+                AcadStatUI.toast(message, type);
+            } else {
+                const box = document.getElementById('alertBox');
+                box.className = 'alert-banner ' + type;
+                box.textContent = message;
+                box.style.display = 'block';
+                setTimeout(() => { box.style.display = 'none'; }, 4500);
+            }
+        }
+
+        function revealSection(el) {
+            el.style.display = 'block';
+            el.classList.remove('fade-in');
+            void el.offsetWidth;
+            el.classList.add('fade-in');
+        }
+
+        function onSubjectChange() {
+            const subjectId = document.getElementById('subjectSelect').value;
+            const totalInput = document.getElementById('totalMarks');
+            const marksInput = document.getElementById('marksObtained');
+            if (subjectId && subjectTotalMap[subjectId]) {
+                totalInput.value = subjectTotalMap[subjectId];
+                marksInput.max = subjectTotalMap[subjectId];
+            } else {
+                totalInput.value = 100;
+                marksInput.removeAttribute('max');
+            }
+        }
+
+        function onStudentOrTerminalChange() {
+            const studentId = document.getElementById('studentSelect').value;
+            const terminal = document.getElementById('terminalSelect').value;
+            updateStudentChip();
+            editingSubjectId = null;
+            document.getElementById('subjectSelect').value = '';
+            document.getElementById('marksObtained').value = '';
+            document.getElementById('totalMarks').value = 100;
+            if (!studentId) {
+                document.getElementById('subjectCard').style.display = 'none';
+                document.getElementById('marksTableCard').style.display = 'none';
+                document.getElementById('editNote').style.display = 'none';
+                addedMarks = [];
+                return;
+            }
+            revealSection(document.getElementById('subjectCard'));
+            revealSection(document.getElementById('marksTableCard'));
+            document.getElementById('editNote').style.display = 'flex';
+            fetch(`/api/student-terminal-marks/?student_id=${studentId}&terminal=${encodeURIComponent(terminal)}`, {
+                headers: { 'X-CSRFToken': CSRF_TOKEN }
+            }).then(r => r.json()).then(data => {
+                if (!data.success) { showAlert(data.message || 'Failed to load marks', 'error'); addedMarks = []; renderMarksTable(); return; }
+                addedMarks = data.marks.map(m => ({
+                    subject_id: String(m.subject_id), subject_name: m.subject_name,
+                    marks_obtained: m.marks_obtained, total_marks: m.total_marks, result_id: m.id
+                }));
+                renderMarksTable();
+            }).catch(() => { addedMarks = []; renderMarksTable(); });
+        }
+
+        function getGradeClass(pct) { return pct >= 75 ? 'pct-pass' : pct >= 40 ? 'pct-warn' : 'pct-fail'; }
+        function calcGrade(pct) {
+            if (pct >= 90) return 'A+'; if (pct >= 80) return 'A'; if (pct >= 70) return 'B+';
+            if (pct >= 60) return 'B'; if (pct >= 50) return 'C+'; if (pct >= 40) return 'C';
+            if (pct >= 30) return 'D'; return 'F';
+        }
+
+        function renderMarksTable() {
+            const tbody = document.getElementById('marksTableBody');
+            if (!addedMarks.length) {
+                tbody.innerHTML = '<tr class="empty-state"><td colspan="5"><i class="fas fa-clipboard-list"></i>No marks yet — pick a subject and click Add to list.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = addedMarks.map((m, idx) => {
+                const pct = m.total_marks > 0 ? ((m.marks_obtained / m.total_marks) * 100).toFixed(1) : '0.0';
+                const sel = editingSubjectId === m.subject_id ? 'selected' : '';
+                const safeName = String(m.subject_name).replace(/"/g, '&quot;');
+                return `<tr class="clickable ${sel}" onclick="editMarkRow(${idx})">
+                    <td>
+                        <div class="subject-cell">
+                            <button type="button" class="row-edit-btn" title="Edit ${safeName}" aria-label="Edit ${safeName}" onclick="event.stopPropagation(); editMarkRow(${idx})">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <strong>${m.subject_name}</strong>
+                        </div>
+                    </td>
+                    <td class="num">${m.marks_obtained}</td>
+                    <td class="num">${m.total_marks}</td>
+                    <td class="num"><span class="pct-badge ${getGradeClass(parseFloat(pct))}">${pct}%</span></td>
+                    <td class="num">${calcGrade(parseFloat(pct))}</td></tr>`;
+            }).join('');
+        }
+
+        function editMarkRow(idx) {
+            const m = addedMarks[idx]; if (!m) return;
+            editingSubjectId = m.subject_id;
+            document.getElementById('subjectSelect').value = m.subject_id;
+            document.getElementById('marksObtained').value = m.marks_obtained;
+            document.getElementById('totalMarks').value = m.total_marks;
+            renderMarksTable();
+            document.getElementById('subjectCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function addMarkToTable() {
+            const studentId = document.getElementById('studentSelect').value;
+            const subjectId = document.getElementById('subjectSelect').value;
+            const marksVal = document.getElementById('marksObtained').value;
+            const totalMarks = parseFloat(document.getElementById('totalMarks').value) || 100;
+            if (!studentId) return showAlert('Please select a student first.', 'error');
+            if (!subjectId) return showAlert('Please select a subject.', 'error');
+            if (marksVal === '') return showAlert('Please enter marks obtained.', 'error');
+            const marksNum = parseFloat(marksVal);
+            if (isNaN(marksNum) || marksNum < 0) return showAlert('Enter a valid marks value.', 'error');
+            if (marksNum > totalMarks) return showAlert(`Marks cannot exceed total (${totalMarks}).`, 'error');
+            const adminTotal = subjectTotalMap[subjectId];
+            const entry = { subject_id: subjectId, subject_name: subjectNameMap[subjectId] || 'Subject',
+                marks_obtained: marksNum, total_marks: adminTotal || totalMarks, result_id: null };
+            const ex = addedMarks.findIndex(m => m.subject_id === subjectId);
+            if (ex >= 0) { entry.result_id = addedMarks[ex].result_id; addedMarks[ex] = entry; showAlert('Entry updated in list.', 'success'); }
+            else { addedMarks.push(entry); showAlert('Added to list.', 'success'); }
+            editingSubjectId = null;
+            document.getElementById('marksObtained').value = '';
+            renderMarksTable();
+        }
+
+        function clearAllMarks() {
+            if (!confirm('Clear all entries? Unsaved changes will be lost.')) return;
+            addedMarks = []; editingSubjectId = null;
+            document.getElementById('subjectSelect').value = '';
+            document.getElementById('marksObtained').value = '';
+            onSubjectChange(); renderMarksTable();
+        }
+
+        function showSaveResult({ title, message, type = 'success', saved, failed, onClose }) {
+            const okLabel = type === 'success' ? 'Great!' : 'OK';
+            if (typeof AcadStatUI !== 'undefined' && AcadStatUI.showModal) {
+                AcadStatUI.showModal({
+                    title,
+                    message: message || '',
+                    type,
+                    saved,
+                    failed,
+                    okLabel,
+                    onClose
+                });
+                return;
+            }
+            showAlert(title + (message ? ' — ' + message : ''), type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'error');
+            if (typeof onClose === 'function') onClose();
+        }
+
+        async function saveAllMarks() {
+            const studentId = document.getElementById('studentSelect').value;
+            const terminal = document.getElementById('terminalSelect').value;
+            const studentName = document.getElementById('studentSelect').options[document.getElementById('studentSelect').selectedIndex]?.text || 'Student';
+            if (!studentId) return showAlert('Please select a student.', 'error');
+            if (!addedMarks.length) return showAlert('Add at least one mark before saving.', 'error');
+
+            const btn = document.getElementById('saveAllBtn');
+            btn.disabled = true;
+            if (typeof AcadStatUI !== 'undefined') AcadStatUI.setButtonLoading(btn, true);
+            const stopLoading = () => {
+                btn.disabled = false;
+                if (typeof AcadStatUI !== 'undefined') AcadStatUI.setButtonLoading(btn, false);
+            };
+
+            try {
+                const csrfToken = getCsrfToken();
+                if (!csrfToken) {
+                    throw new Error('Security token missing. Please reload the page and try again.');
+                }
+
+                const response = await fetch('/api/add-marks-bulk/', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        marks: addedMarks.map(m => ({
+                            student: parseInt(studentId, 10),
+                            subject: parseInt(m.subject_id, 10),
+                            terminal,
+                            marks_obtained: m.marks_obtained,
+                            total_marks: m.total_marks
+                        }))
+                    })
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                let data = null;
+                if (contentType.includes('application/json')) {
+                    data = await response.json();
+                } else if (!response.ok) {
+                    throw new Error('Your session may have expired. Please reload the page and log in again.');
+                }
+
+                stopLoading();
+
+                if (!response.ok) {
+                    showSaveResult({
+                        title: 'Save Failed',
+                        message: data?.message || (data?.errors ? data.errors.slice(0, 2).join('; ') : `Server error (${response.status}). Please try again.`),
+                        type: 'error',
+                        saved: data?.saved || 0,
+                        failed: data?.failed || addedMarks.length
+                    });
+                    return;
+                }
+
+                const saved = data.saved || 0;
+                const failed = data.failed || 0;
+
+                if (saved > 0 && failed === 0) {
+                    showSaveResult({
+                        title: 'Marks Saved Successfully!',
+                        message: `${saved} mark${saved > 1 ? 's' : ''} saved for ${studentName} (${terminal} terminal).`,
+                        type: 'success',
+                        saved,
+                        failed: 0,
+                        onClose: () => onStudentOrTerminalChange()
+                    });
+                } else if (saved > 0 && failed > 0) {
+                    showSaveResult({
+                        title: 'Partially Saved',
+                        message: `${saved} saved, ${failed} failed. ${data.errors ? data.errors.slice(0, 2).join('; ') : ''}`,
+                        type: 'warning',
+                        saved,
+                        failed,
+                        onClose: () => onStudentOrTerminalChange()
+                    });
+                } else {
+                    showSaveResult({
+                        title: 'Save Failed',
+                        message: data.message || (data.errors ? data.errors.slice(0, 2).join('; ') : 'Could not save marks. Please check entries and try again.'),
+                        type: 'error',
+                        saved: 0,
+                        failed: failed || addedMarks.length
+                    });
+                }
+            } catch (error) {
+                stopLoading();
+                showSaveResult({
+                    title: 'Could Not Save Marks',
+                    message: error.message || 'A network error occurred. Please try again.',
+                    type: 'error'
+                });
+            }
+        }
+    </script>
+</body>
+</html>

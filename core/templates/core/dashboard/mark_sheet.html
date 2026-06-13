@@ -1,0 +1,546 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'core/partials/design_head.html' with page_title="Mark Sheet — AcadStat" %}
+    <link rel="stylesheet" href="{% static 'css/marksheet.css' %}">
+</head>
+<body class="app-page marksheet-page">
+    {% with nav_links='<a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a><a href="/marks-list/"><i class="fas fa-list"></i> Marks</a><a href="/select-mark-sheet/"><i class="fas fa-file-alt"></i> Mark Sheet</a>' %}
+    {% include 'core/partials/app_navbar.html' %}
+    {% endwith %}
+
+    <main class="app-shell app-shell--narrow">
+        <div class="marksheet-toolbar no-print">
+            <a href="/select-mark-sheet/" class="back-link"><i class="fas fa-arrow-left"></i> Back</a>
+            <div class="toolbar-group">
+                {% if selected_student %}
+                <div class="form-group ds" style="margin:0;">
+                    <label for="terminalSelect" style="margin-bottom:0.25rem;">Terminal</label>
+                    <select id="terminalSelect" class="ds" style="padding:0.45rem 0.65rem;font-size:var(--ds-text-sm);" onchange="changeTerminal(this.value)">
+                        <option value="1st" {% if selected_terminal == '1st' %}selected{% endif %}>1st Terminal</option>
+                        <option value="2nd" {% if selected_terminal == '2nd' %}selected{% endif %}>2nd Terminal</option>
+                        <option value="3rd" {% if selected_terminal == '3rd' %}selected{% endif %}>3rd Terminal</option>
+                        <option value="Final" {% if selected_terminal == 'Final' %}selected{% endif %}>Final</option>
+                    </select>
+                </div>
+                {% if not is_student %}
+                <button type="button" class="btn ds ds-ghost" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        {% if selected_student and student_results %}
+        <div class="student-chip visible fade-in no-print" style="margin-bottom:1rem;">
+            <i class="fas fa-user-graduate"></i>
+            <span>{{ selected_student.name }} · Class {{ selected_student.student_class }}-{{ selected_student.section }} · {{ selected_terminal }} Terminal</span>
+        </div>
+
+        <article class="marksheet-doc fade-in ocr-readable" id="marksheetDocument">
+            <header class="marksheet-doc-header">
+                <span class="marksheet-terminal-badge">{{ selected_terminal }} Terminal</span>
+                <div class="college-brand">
+                    <h1>Soch College of IT</h1>
+                    <p class="college-meta">
+                        Ranipauwa, Pokhara · TU Affiliated<br>
+                        sochcollege.edu.np · +977-61574096 / 543120 · info@sochcollege.edu.np
+                    </p>
+                </div>
+                <div class="marksheet-qr">
+                    <div class="marksheet-qr-box" id="marksheetQrBox">
+                        {% if college_qr_code %}
+                        <img src="data:image/png;base64,{{ college_qr_code }}" alt="Verification QR code" id="marksheetQrFallback">
+                        {% endif %}
+                        <canvas id="marksheetQrCanvas" aria-label="Verification QR code"{% if college_qr_code %} hidden{% endif %}></canvas>
+                    </div>
+                    <p class="marksheet-qr-caption no-print">Scan to verify</p>
+                </div>
+            </header>
+
+            <section class="marksheet-section marksheet-section--student">
+                <h2 class="marksheet-section-title"><i class="fas fa-user"></i> Student Information</h2>
+                <dl class="marksheet-details">
+                    <div class="marksheet-detail-row">
+                        <dt>Name</dt>
+                        <dd>{{ selected_student.name }}</dd>
+                    </div>
+                    <div class="marksheet-detail-row">
+                        <dt>Roll No.</dt>
+                        <dd>{{ selected_student.roll_number|default:"N/A" }}</dd>
+                    </div>
+                    <div class="marksheet-detail-row">
+                        <dt>Class</dt>
+                        <dd>{{ selected_student.student_class }}</dd>
+                    </div>
+                    <div class="marksheet-detail-row">
+                        <dt>Section</dt>
+                        <dd>{{ selected_student.section }}</dd>
+                    </div>
+                    <div class="marksheet-detail-row">
+                        <dt>Academic Year</dt>
+                        <dd>{{ academic_year }}</dd>
+                    </div>
+                    <div class="marksheet-detail-row">
+                        <dt>Terminal</dt>
+                        <dd>{{ selected_terminal }}</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="marksheet-section marksheet-section--performance">
+                <h2 class="marksheet-section-title"><i class="fas fa-table"></i> Academic Performance</h2>
+                <div class="table-wrap">
+                    <table class="marksheet-table">
+                        <thead>
+                            <tr>
+                                <th class="col-sn">S.N.</th>
+                                <th class="col-code">Code</th>
+                                <th class="col-subject">Subject</th>
+                                <th class="num col-obt">Obtained</th>
+                                <th class="num col-tot">Total</th>
+                                <th class="num col-pct">%</th>
+                                <th class="num col-grade">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in student_results %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ item.result.subject.code }}</strong></td>
+                                <td>{{ item.result.subject.name }}</td>
+                                <td class="num">{{ item.result.marks_obtained|floatformat:1 }}</td>
+                                <td class="num">{{ item.result.total_marks|floatformat:1 }}</td>
+                                <td class="num">{{ item.percentage|floatformat:1 }}%</td>
+                                <td class="num">
+                                    <span class="marksheet-grade {% if item.grade == 'F' %}fail{% else %}pass{% endif %}">{{ item.grade }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="marksheet-tfoot-total">
+                                <td colspan="3"><strong>Total Percentage/GPA</strong></td>
+                                <td class="num"><strong>{{ total_marks_obtained|floatformat:1 }}</strong></td>
+                                <td class="num"><strong>{{ total_marks|floatformat:1 }}</strong></td>
+                                <td class="num"><strong>{{ overall_percentage|floatformat:1 }}%</strong></td>
+                                <td class="num marksheet-tfoot-gpa-val"><strong>{% if all_passed %}{{ gpa|floatformat:2 }}{% else %}—{% endif %}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </section>
+
+            <section class="marksheet-section marksheet-section--summary">
+                <h2 class="marksheet-section-title"><i class="fas fa-chart-pie"></i> Summary</h2>
+                <div class="marksheet-summary marksheet-summary--compact">
+                    <div class="marksheet-summary-item">
+                        <span class="lbl">Subjects</span>
+                        <span class="val">{{ total_subjects }}</span>
+                    </div>
+                    <div class="marksheet-summary-item">
+                        <span class="lbl">Total Marks</span>
+                        <span class="val">{{ total_marks_obtained|floatformat:1 }}/{{ total_marks|floatformat:1 }}</span>
+                    </div>
+                    <div class="marksheet-summary-item">
+                        <span class="lbl">Overall %</span>
+                        <span class="val {% if overall_percentage >= 40 %}pass{% else %}fail{% endif %}">{{ overall_percentage|floatformat:1 }}%</span>
+                    </div>
+                    <div class="marksheet-summary-item">
+                        <span class="lbl">GPA</span>
+                        <span class="val">{% if all_passed %}{{ gpa|floatformat:2 }}{% else %}—{% endif %}</span>
+                    </div>
+                    <div class="marksheet-summary-item">
+                        <span class="lbl">Result</span>
+                        <span class="val {% if all_passed %}pass{% else %}fail{% endif %}">{% if all_passed %}PASS{% else %}FAIL{% endif %}</span>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="marksheet-section marksheet-section--footer">
+                <div class="marksheet-signatures">
+                    <div class="marksheet-sig-line">Class Teacher</div>
+                    <div class="marksheet-sig-line">Principal</div>
+                    <div class="marksheet-sig-line">Controller of Examination</div>
+                </div>
+                <div class="marksheet-footer-meta">
+                    <span>ID: {{ doc_id }}</span>
+                    <span>Generated: {% now "d M Y" %}</span>
+                    <span>Page 1 of 1</span>
+                </div>
+            </footer>
+        </article>
+
+        {% elif selected_student %}
+
+        {% if is_student and not has_marks %}
+        <!-- ═══ Animated popup dialog for students when no marks exist ═══ -->
+        <style>
+        /* ── Overlay ── */
+        .no-marks-overlay {
+            position: fixed;
+            inset: 0;
+            background: transparent;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: nmFadeIn 0.35s ease-out;
+        }
+        @keyframes nmFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        /* ── Floating particles behind dialog ── */
+        .no-marks-overlay::before,
+        .no-marks-overlay::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.12;
+            animation: nmFloat 6s ease-in-out infinite alternate;
+        }
+        .no-marks-overlay::before {
+            width: 260px; height: 260px;
+            background: #0a0a0a;
+            top: 12%; left: 8%;
+        }
+        .no-marks-overlay::after {
+            width: 200px; height: 200px;
+            background: #27272a;
+            bottom: 10%; right: 10%;
+            animation-delay: -3s;
+        }
+        @keyframes nmFloat {
+            0%   { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-30px) scale(1.08); }
+        }
+
+        /* ── Dialog card ── */
+        .no-marks-dialog {
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--border-color, #e4e4e7);
+            border-radius: 24px;
+            padding: 2.75rem 2rem 2rem;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            box-shadow:
+                0 25px 60px rgba(0,0,0,0.18),
+                0 8px 24px rgba(10,10,10,0.10);
+            animation: nmPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            z-index: 1;
+            overflow: visible;
+        }
+        @keyframes nmPopIn {
+            0%   { transform: scale(0.45) translateY(30px); opacity: 0; }
+            60%  { transform: scale(1.04) translateY(-4px); }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* ── Gradient accent bar ── */
+        .no-marks-dialog .dialog-shimmer {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #0a0a0a, #27272a, #3f3f46, #0a0a0a);
+            background-size: 300% 100%;
+            animation: nmShimmer 2.5s linear infinite;
+            border-radius: 24px 24px 0 0;
+        }
+        @keyframes nmShimmer {
+            0%   { background-position: 300% 0; }
+            100% { background-position: 0% 0; }
+        }
+
+        /* ── Icon area ── */
+        .no-marks-dialog .dialog-icon-wrap {
+            width: 80px; height: 80px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e4e4e7 0%, #d4d4d8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: nmBounce 2s ease-in-out infinite;
+            box-shadow: 0 8px 20px rgba(10, 10, 10, 0.12);
+        }
+        .no-marks-dialog .dialog-icon-wrap .dialog-icon {
+            font-size: 2.2rem;
+            line-height: 1;
+        }
+        @keyframes nmBounce {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-6px); }
+        }
+
+        /* ── Text ── */
+        .no-marks-dialog h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary, #0a0a0a);
+            margin: 0 0 0.4rem;
+        }
+        .no-marks-dialog .dialog-terminal-badge {
+            display: inline-block;
+            background: var(--ds-gradient, linear-gradient(135deg, #0a0a0a 0%, #27272a 100%));
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.75rem;
+            border-radius: 999px;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.02em;
+        }
+        .no-marks-dialog p {
+            font-size: 0.92rem;
+            color: var(--text-secondary, #64748b);
+            line-height: 1.55;
+            margin: 0 0 1.5rem;
+        }
+        .no-marks-dialog p strong { color: var(--text-primary, #0a0a0a); }
+
+        /* ── Buttons ── */
+        .no-marks-dialog .dialog-actions {
+            display: flex;
+            gap: 0.65rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .no-marks-dialog .btn-dialog {
+            border: none;
+            border-radius: 12px;
+            padding: 0.65rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .no-marks-dialog .btn-dialog-primary {
+            background: var(--ds-gradient, linear-gradient(135deg, #0a0a0a 0%, #27272a 100%));
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.20);
+        }
+        .no-marks-dialog .btn-dialog-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.30);
+        }
+        .no-marks-dialog .btn-dialog-secondary {
+            background: var(--bg-primary, #f1f5f9);
+            color: var(--text-secondary, #475569);
+            border: 1px solid var(--border-color, #e2e8f0);
+        }
+        .no-marks-dialog .btn-dialog-secondary:hover {
+            background: var(--border-color, #e2e8f0);
+            transform: translateY(-1px);
+        }
+
+        /* ── Terminal selector in dialog ── */
+        .no-marks-dialog .terminal-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .no-marks-dialog .terminal-selector select {
+            padding: 0.55rem 0.85rem;
+            border: 2px solid var(--border-color, #e2e8f0);
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-primary, #334155);
+            background: var(--input-bg, #f8fafc);
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.6rem center;
+            padding-right: 2rem;
+        }
+        .no-marks-dialog .terminal-selector select:focus {
+            border-color: var(--ds-accent, #0a0a0a);
+            box-shadow: 0 0 0 3px var(--ds-accent-soft, rgba(10,10,10,0.06));
+        }
+        .no-marks-dialog .terminal-selector select option {
+            font-weight: 500;
+        }
+        .no-marks-dialog .btn-dialog-go {
+            background: var(--ds-gradient, linear-gradient(135deg, #0a0a0a 0%, #27272a 100%));
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 0.55rem 1.1rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+        }
+        .no-marks-dialog .btn-dialog-go:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            .no-marks-dialog {
+                padding: 2.25rem 1.25rem 1.5rem;
+                border-radius: 20px;
+                max-width: 96%;
+            }
+            .no-marks-dialog .dialog-icon-wrap {
+                width: 68px; height: 68px;
+            }
+            .no-marks-dialog .dialog-icon-wrap .dialog-icon {
+                font-size: 1.8rem;
+            }
+            .no-marks-dialog h3 { font-size: 1.1rem; }
+            .no-marks-dialog p  { font-size: 0.85rem; }
+            .no-marks-dialog .dialog-actions {
+                flex-direction: column;
+            }
+            .no-marks-dialog .btn-dialog {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        </style>
+
+        <div class="no-marks-overlay" id="noMarksOverlay">
+            <div class="no-marks-dialog" role="dialog" aria-modal="true" aria-labelledby="noMarksTitle">
+                <div class="dialog-shimmer"></div>
+                <div class="dialog-icon-wrap">
+                    <span class="dialog-icon">📋</span>
+                </div>
+                <span class="dialog-terminal-badge">{{ selected_terminal }} Terminal</span>
+                <h3 id="noMarksTitle">No Marks Available</h3>
+                <p>It looks like the teacher hasn't uploaded any subject marks for the <strong>{{ selected_terminal }} Terminal</strong> yet. Please check back later or try a different terminal.</p>
+                <div class="terminal-selector">
+                    <select id="nmTerminalSelect">
+                        <option value="1st" {% if selected_terminal == '1st' %}selected{% endif %}>1st Terminal</option>
+                        <option value="2nd" {% if selected_terminal == '2nd' %}selected{% endif %}>2nd Terminal</option>
+                        <option value="3rd" {% if selected_terminal == '3rd' %}selected{% endif %}>3rd Terminal</option>
+                        <option value="Final" {% if selected_terminal == 'Final' %}selected{% endif %}>Final Terminal</option>
+                    </select>
+                    <button type="button" class="btn-dialog-go" onclick="nmGoToTerminal()">
+                        <i class="fas fa-arrow-right"></i> Go
+                    </button>
+                </div>
+                <div class="dialog-actions">
+                    <button type="button" class="btn-dialog btn-dialog-primary" onclick="handleNoMarksClose()">
+                        <i class="fas fa-check"></i> Got it
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        function handleNoMarksClose() {
+            var overlay = document.getElementById('noMarksOverlay');
+            if (!overlay) return;
+            var dialog = overlay.querySelector('.no-marks-dialog');
+            /* Animate out */
+            overlay.style.transition = 'opacity 0.3s ease';
+            overlay.style.opacity = '0';
+            if (dialog) {
+                dialog.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                dialog.style.transform = 'scale(0.9) translateY(20px)';
+                dialog.style.opacity = '0';
+            }
+            setTimeout(function() { overlay.remove(); }, 320);
+        }
+
+        function nmGoToTerminal() {
+            var sel = document.getElementById('nmTerminalSelect');
+            if (!sel) return;
+            var terminal = sel.value;
+            window.location.href = '/my-marksheet/' + encodeURIComponent(terminal) + '/';
+        }
+        </script>
+
+        {% else %}
+        <section class="section-card fade-in">
+            <div class="empty-state" style="padding:2.5rem 1rem;">
+                <i class="fas fa-file-alt"></i>
+                <p style="font-weight:600;color:var(--text-primary);margin:0.5rem 0 0.25rem;">No marks for {{ selected_terminal }} Terminal</p>
+                <p class="text-muted" style="margin:0 0 1rem;">Add marks from View All Marks, then regenerate this sheet.</p>
+                <div class="actions-bar" style="justify-content:center;border-top:none;padding-top:0;">
+                    <a href="/add-marks/" class="btn ds ds-primary"><i class="fas fa-plus"></i> Add Marks</a>
+                    <a href="/select-mark-sheet/" class="btn ds ds-ghost"><i class="fas fa-redo"></i> Change Selection</a>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        {% else %}
+        <section class="section-card fade-in">
+            <div class="empty-state" style="padding:2.5rem 1rem;">
+                <i class="fas fa-file-alt"></i>
+                <p style="font-weight:600;color:var(--text-primary);">Select a student to generate a marksheet</p>
+                <a href="/select-mark-sheet/" class="btn ds ds-primary" style="margin-top:1rem;"><i class="fas fa-arrow-right"></i> Go to Selection</a>
+            </div>
+        </section>
+        {% endif %}
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+    <input type="hidden" id="isStudentFlag" value="{{ is_student|yesno:'true,false' }}">
+    <script>
+    function changeTerminal(terminal) {
+        var _isStudent = document.getElementById('isStudentFlag').value === 'true';
+        var parts = window.location.pathname.split('/').filter(Boolean);
+        if (_isStudent) {
+            // Student route: /my-marksheet/<terminal>/
+            window.location.href = '/my-marksheet/' + terminal + '/';
+        } else {
+            // Teacher route: /mark-sheet/<student_id>/<terminal>/
+            var idx = parts.indexOf('mark-sheet');
+            if (idx !== -1 && parts[idx + 1]) {
+                window.location.href = '/mark-sheet/' + parts[idx + 1] + '/' + terminal + '/';
+            } else {
+                window.location.href = '/select-mark-sheet/';
+            }
+        }
+    }
+
+    (function() {
+        var verifyUrl = "{{ verify_url|escapejs }}";
+        var canvas = document.getElementById('marksheetQrCanvas');
+        var fallback = document.getElementById('marksheetQrFallback');
+        if (!canvas || typeof QRCode === 'undefined') return;
+        QRCode.toCanvas(canvas, verifyUrl, {
+            width: 88,
+            margin: 1,
+            color: { dark: '#0a0a0a', light: '#ffffff' }
+        }, function(err) {
+            if (!err) {
+                canvas.width = 88;
+                canvas.height = 88;
+                canvas.hidden = false;
+                if (fallback) fallback.hidden = true;
+            }
+        });
+    })();
+    </script>
+
+    {% include 'core/partials/theme_script.html' %}
+</body>
+</html>

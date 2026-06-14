@@ -883,7 +883,6 @@ class SystemConfig(models.Model):
     key = models.CharField(max_length=100, unique=True)
     value = models.CharField(max_length=500, blank=True)
     description = models.CharField(max_length=200, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -905,6 +904,16 @@ class SystemConfig(models.Model):
         obj.value = 'true' if value else 'false'
         obj.description = description or obj.description
         obj.save()
+        return obj
+
+    @classmethod
+    def get(cls, key, default=''):
+        obj = cls.objects.filter(key=key).first()
+        return obj.value if obj else default
+
+    @classmethod
+    def set(cls, key, value):
+        obj, _ = cls.objects.update_or_create(key=key, defaults={'value': str(value)})
         return obj
 
 
@@ -1236,29 +1245,6 @@ class LicenseKey(models.Model):
         self.current_students = Student.objects.filter().count()
         self.current_branches = 1   # Single-branch default; plug in Branch model when added
         self.save(update_fields=['current_teachers', 'current_students', 'current_branches'])
-
-
-class SystemConfig(models.Model):
-    """Key-value configuration store persisted in the database."""
-    key = models.CharField(max_length=100, unique=True)
-    value = models.TextField()
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['key']
-
-    def __str__(self):
-        return self.key
-
-    @classmethod
-    def get(cls, key, default=''):
-        obj = cls.objects.filter(key=key).first()
-        return obj.value if obj else default
-
-    @classmethod
-    def set(cls, key, value):
-        obj, _ = cls.objects.update_or_create(key=key, defaults={'value': str(value)})
-        return obj
 
 
 # ─────────────────────────────────────────────────────────────────────────────

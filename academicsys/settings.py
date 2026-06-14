@@ -12,6 +12,8 @@ ALLOWED_HOSTS = [
 ]
 
 INSTALLED_APPS = [
+    'unfold',
+    'unfold.contrib.inlines',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,9 +56,10 @@ WSGI_APPLICATION = 'academicsys.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'acadstatmain',
-        'USER': 'samir',
-        'PASSWORD': 'pass',
+        'NAME': 'acadstat',
+        'USER': 'sajit',
+       # 'USER': 'shreeadhikari',
+        'PASSWORD': 'acadstat',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -78,6 +81,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 ADMIN_SITE_HEADER = 'Academic System'
 ADMIN_SITE_TITLE = 'Academic Admin'
 ADMIN_INDEX_TITLE = 'Dashboard'
+
+UNFOLD = {
+    'SITE_TITLE': ADMIN_SITE_TITLE,
+    'SITE_HEADER': ADMIN_SITE_HEADER,
+    'SITE_SUBHEADER': ADMIN_INDEX_TITLE,
+    'SITE_URL': '/',
+    'SITE_SYMBOL': 'school',
+    'SHOW_HISTORY': True,
+    'SHOW_VIEW_ON_SITE': True,
+}
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'

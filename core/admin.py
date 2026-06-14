@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, StackedInline, TabularInline
 from core.forms import StudentAdminForm
 from .models import (
     Student, Subject, Result, Teacher, CourseMaterial,
@@ -22,35 +23,35 @@ from .models import (
 
 # ── Inline helpers ────────────────────────────────────────────────────────────
 
-class StudentInline(admin.TabularInline):
+class StudentInline(TabularInline):
     model = Student
     extra = 0
     fields = ('name', 'roll_number', 'level', 'student_class', 'section', 'phone', 'email')
     show_change_link = True
 
 
-class AssignmentSubmissionInline(admin.TabularInline):
+class AssignmentSubmissionInline(TabularInline):
     model = AssignmentSubmission
     extra = 0
     fields = ('student', 'status', 'marks_obtained', 'submitted_at')
     readonly_fields = ('submitted_at',)
 
 
-class StudentAcademicHistoryInline(admin.TabularInline):
+class StudentAcademicHistoryInline(TabularInline):
     model = StudentAcademicHistory
     extra = 0
     fields = ('academic_year', 'previous_class', 'promoted_to_class', 'percentage', 'grade')
     readonly_fields = ('academic_year', 'previous_class', 'promoted_to_class', 'percentage', 'grade')
 
 
-class ParentInline(admin.StackedInline):
+class ParentInline(StackedInline):
     model = Parent
     extra = 0
     fields = ('father_name', 'mother_name', 'guardian_name', 'phone', 'email', 'address', 'relation')
     can_delete = False
 
 
-class FeeInline(admin.TabularInline):
+class FeeInline(TabularInline):
     model = Fee
     extra = 0
     fields = ('fee_type', 'amount', 'amount_paid', 'due_date', 'status')
@@ -60,20 +61,20 @@ class FeeInline(admin.TabularInline):
 # ── Model admin registrations ────────────────────────────────────────────────
 
 @admin.register(EducationLevel)
-class EducationLevelAdmin(admin.ModelAdmin):
+class EducationLevelAdmin(ModelAdmin):
     list_display = ('code', 'name')
     ordering = ('code',)
 
 
 @admin.register(Semester)
-class SemesterAdmin(admin.ModelAdmin):
+class SemesterAdmin(ModelAdmin):
     list_display = ('number', 'label')
     ordering = ('number',)
     list_filter = ('number',)
 
 
 @admin.register(AcademicYear)
-class AcademicYearAdmin(admin.ModelAdmin):
+class AcademicYearAdmin(ModelAdmin):
     list_display = ('name', 'start_date', 'end_date', 'is_current')
     list_editable = ('is_current',)
     ordering = ('-start_date',)
@@ -85,7 +86,7 @@ class AcademicYearAdmin(admin.ModelAdmin):
 
 
 @admin.register(Department)
-class DepartmentAdmin(admin.ModelAdmin):
+class DepartmentAdmin(ModelAdmin):
     list_display = ('name', 'code', 'head', 'is_active')
     list_editable = ('is_active',)
     ordering = ('name',)
@@ -95,7 +96,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(GradeScale)
-class GradeScaleAdmin(admin.ModelAdmin):
+class GradeScaleAdmin(ModelAdmin):
     list_display = ('name', 'pass_mark_percent', 'is_active', 'created_at')
     list_editable = ('pass_mark_percent', 'is_active')
     ordering = ('name',)
@@ -109,7 +110,7 @@ class GradeScaleAdmin(admin.ModelAdmin):
 
 
 @admin.register(Teacher)
-class TeacherAdmin(admin.ModelAdmin):
+class TeacherAdmin(ModelAdmin):
     list_display = (
         'get_full_name', 'email', 'department', 'role', 'is_active', 'joining_date',
         'get_subjects_count', 'get_students_count', 'get_levels_display',
@@ -200,7 +201,7 @@ class TeacherAdmin(admin.ModelAdmin):
 
 
 @admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
+class StudentAdmin(ModelAdmin):
     form = StudentAdminForm
     list_display = (
         'name', 'roll_number', 'level', 'student_class', 'section',
@@ -239,7 +240,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 @admin.register(Parent)
-class ParentAdmin(admin.ModelAdmin):
+class ParentAdmin(ModelAdmin):
     list_display = ('get_student_name', 'father_name', 'guardian_name', 'phone', 'email', 'relation')
     search_fields = ('student__name', 'father_name', 'guardian_name', 'phone', 'email')
     list_filter = ('relation', 'is_primary_contact')
@@ -252,7 +253,7 @@ class ParentAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentAcademicHistory)
-class StudentAcademicHistoryAdmin(admin.ModelAdmin):
+class StudentAcademicHistoryAdmin(ModelAdmin):
     list_display = ('student', 'academic_year', 'previous_class', 'promoted_to_class', 'percentage', 'grade')
     list_filter = ('academic_year', 'grade')
     search_fields = ('student__name', 'previous_class', 'promoted_to_class')
@@ -262,7 +263,7 @@ class StudentAcademicHistoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Attendance)
-class AttendanceAdmin(admin.ModelAdmin):
+class AttendanceAdmin(ModelAdmin):
     list_display = ('student', 'subject', 'date', 'status', 'recorded_by', 'remarks')
     list_filter = ('date', 'status', 'subject', 'recorded_by')
     search_fields = ('student__name',)
@@ -273,7 +274,7 @@ class AttendanceAdmin(admin.ModelAdmin):
 
 
 @admin.register(Assignment)
-class AssignmentAdmin(admin.ModelAdmin):
+class AssignmentAdmin(ModelAdmin):
     list_display = (
         'title', 'subject', 'teacher', 'target_class', 'target_section',
         'due_date', 'total_marks', 'is_published', 'priority', 'submissions_count',
@@ -287,7 +288,7 @@ class AssignmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(AssignmentSubmission)
-class AssignmentSubmissionAdmin(admin.ModelAdmin):
+class AssignmentSubmissionAdmin(ModelAdmin):
     list_display = ('student', 'assignment', 'status', 'score_percentage', 'submitted_at', 'graded_at')
     list_filter = ('status', 'assignment__subject', 'assignment__target_class')
     search_fields = ('student__name', 'assignment__title')
@@ -297,7 +298,7 @@ class AssignmentSubmissionAdmin(admin.ModelAdmin):
 
 
 @admin.register(Exam)
-class ExamAdmin(admin.ModelAdmin):
+class ExamAdmin(ModelAdmin):
     list_display = (
         'title', 'exam_type', 'subject', 'target_class', 'target_section',
         'exam_date', 'start_time', 'total_marks', 'passing_marks', 'is_published',
@@ -309,7 +310,7 @@ class ExamAdmin(admin.ModelAdmin):
 
 
 @admin.register(Fee)
-class FeeAdmin(admin.ModelAdmin):
+class FeeAdmin(ModelAdmin):
     list_display = ('student', 'fee_type', 'amount', 'amount_paid', 'balance', 'due_date', 'status')
     list_filter = ('status', 'fee_type', 'due_date')
     search_fields = ('student__name', 'receipt_number')
@@ -319,7 +320,7 @@ class FeeAdmin(admin.ModelAdmin):
 
 
 @admin.register(Announcement)
-class AnnouncementAdmin(admin.ModelAdmin):
+class AnnouncementAdmin(ModelAdmin):
     list_display = ('title', 'audience', 'priority', 'is_published', 'published_by', 'published_at', 'expires_at')
     list_filter = ('audience', 'priority', 'is_published')
     search_fields = ('title', 'content')
@@ -338,7 +339,7 @@ class AnnouncementAdmin(admin.ModelAdmin):
 
 
 @admin.register(ActivityLog)
-class ActivityLogAdmin(admin.ModelAdmin):
+class ActivityLogAdmin(ModelAdmin):
     list_display = ('user', 'action', 'description', 'timestamp', 'ip_address')
     list_filter = ('action', 'timestamp', 'user')
     search_fields = ('user__username', 'description')
@@ -348,7 +349,7 @@ class ActivityLogAdmin(admin.ModelAdmin):
 
 
 @admin.register(TeacherEvaluation)
-class TeacherEvaluationAdmin(admin.ModelAdmin):
+class TeacherEvaluationAdmin(ModelAdmin):
     list_display = ('teacher', 'evaluator', 'academic_year', 'overall_score', 'created_at')
     list_filter = ('academic_year', 'overall_score', 'teacher__department')
     search_fields = ('teacher__first_name', 'teacher__last_name', 'evaluator__username')
@@ -359,7 +360,7 @@ class TeacherEvaluationAdmin(admin.ModelAdmin):
 
 
 @admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
+class NotificationAdmin(ModelAdmin):
     list_display = ('title', 'recipient', 'notification_type', 'priority', 'is_read', 'created_at', 'sender')
     list_filter = ('notification_type', 'priority', 'is_read', 'created_at')
     search_fields = ('title', 'recipient__name', 'message')
@@ -371,7 +372,7 @@ class NotificationAdmin(admin.ModelAdmin):
 
 
 @admin.register(Subject)
-class SubjectAdmin(admin.ModelAdmin):
+class SubjectAdmin(ModelAdmin):
     list_display = ('name', 'code', 'total_marks', 'pass_marks', 'is_practical')
     search_fields = ('name', 'code')
     ordering = ('name',)
@@ -381,7 +382,7 @@ class SubjectAdmin(admin.ModelAdmin):
 
 
 @admin.register(Result)
-class ResultAdmin(admin.ModelAdmin):
+class ResultAdmin(ModelAdmin):
     list_display = ('student', 'subject', 'terminal', 'marks_obtained', 'total_marks', 'percentage', 'grade', 'created_at')
     list_filter = ('subject', 'terminal', 'created_at')
     search_fields = ('student__name', 'subject__name')
@@ -390,7 +391,7 @@ class ResultAdmin(admin.ModelAdmin):
 
 
 @admin.register(CourseMaterial)
-class CourseMaterialAdmin(admin.ModelAdmin):
+class CourseMaterialAdmin(ModelAdmin):
     list_display = ('title', 'subject', 'teacher', 'upload_date', 'is_active', 'get_file_type')
     list_filter = ('subject', 'teacher', 'upload_date', 'is_active')
     search_fields = ('title', 'description', 'subject__name', 'teacher__first_name', 'teacher__last_name')
@@ -412,7 +413,7 @@ from datetime import datetime
 # ── Result Lock ───────────────────────────────────────────────────────────────
 
 @admin.register(ResultLock)
-class ResultLockAdmin(admin.ModelAdmin):
+class ResultLockAdmin(ModelAdmin):
     list_display = ('result', 'locked_by', 'locked_at', 'reason')
     list_filter = ('locked_at', 'locked_by')
     search_fields = ('result__student__name', 'result__subject__name', 'reason')
@@ -423,7 +424,7 @@ class ResultLockAdmin(admin.ModelAdmin):
 # ── Messages ─────────────────────────────────────────────────────────────────
 
 @admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
+class MessageAdmin(ModelAdmin):
     list_display = ('subject', 'sender_display', 'recipient_display', 'status', 'created_at')
     list_filter = ('status', 'created_at')
     search_fields = ('subject', 'user', 'sender__first_name', 'recipient_student__name')
@@ -442,7 +443,7 @@ class MessageAdmin(admin.ModelAdmin):
 # ── Student Notes ─────────────────────────────────────────────────────────────
 
 @admin.register(StudentNote)
-class StudentNoteAdmin(admin.ModelAdmin):
+class StudentNoteAdmin(ModelAdmin):
     list_display = ('title', 'student', 'priority', 'created_by', 'created_at')
     list_filter = ('priority', 'created_at', 'created_by')
     search_fields = ('title', 'content', 'student__name')
@@ -454,7 +455,7 @@ class StudentNoteAdmin(admin.ModelAdmin):
 # ── ML Predictions ────────────────────────────────────────────────────────────
 
 @admin.register(MLPrediction)
-class MLPredictionAdmin(admin.ModelAdmin):
+class MLPredictionAdmin(ModelAdmin):
     list_display = ('student', 'subject', 'predicted_grade', 'confidence_score', 'actual_grade', 'created_at')
     list_filter = ('predicted_grade', 'subject', 'model_version', 'created_at')
     search_fields = ('student__name', 'subject__name')
@@ -468,7 +469,7 @@ class MLPredictionAdmin(admin.ModelAdmin):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @admin.register(LicenseKey)
-class LicenseKeyAdmin(admin.ModelAdmin):
+class LicenseKeyAdmin(ModelAdmin):
     list_display = ('institution_name', 'key_short', 'max_teachers', 'max_students',
                     'current_teachers', 'current_students', 'is_active', 'expires_at', 'issued_at')
     list_filter = ('is_active', 'expires_at', 'issued_at')
@@ -500,7 +501,7 @@ class LicenseKeyAdmin(admin.ModelAdmin):
 
 
 @admin.register(SystemConfig)
-class SystemConfigAdmin(admin.ModelAdmin):
+class SystemConfigAdmin(ModelAdmin):
     list_display = ('key', 'value_short', 'updated_at')
     search_fields = ('key', 'value')
     ordering = ('key',)
@@ -516,7 +517,7 @@ class SystemConfigAdmin(admin.ModelAdmin):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @admin.register(UserRole)
-class UserRoleAdmin(admin.ModelAdmin):
+class UserRoleAdmin(ModelAdmin):
     list_display = ('name', 'code', 'is_system_role',
                     'can_manage_students', 'can_manage_teachers', 'can_manage_subjects',
                     'can_manage_fees', 'can_manage_exams', 'can_manage_attendance',
@@ -537,13 +538,13 @@ class UserRoleAdmin(admin.ModelAdmin):
 
 
 @admin.register(Branch)
-class BranchAdmin(admin.ModelAdmin):
+class BranchAdmin(ModelAdmin):
     list_display = ('name', 'code', 'is_active')
     search_fields = ('name', 'code')
 
 
 @admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
+class UserProfileAdmin(ModelAdmin):
     list_display = ('user', 'role', 'branch')
     list_filter = ('role', 'branch')
     search_fields = ('user__username', 'user__first_name', 'role__name')
@@ -556,7 +557,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @admin.register(SystemBackup)
-class SystemBackupAdmin(admin.ModelAdmin):
+class SystemBackupAdmin(ModelAdmin):
     list_display = ('filename', 'backup_type', 'size_display', 'status', 'triggered_by', 'created_at')
     list_filter = ('status', 'backup_type', 'created_at')
     search_fields = ('filename', 'triggered_by__username')
@@ -569,7 +570,7 @@ class SystemBackupAdmin(admin.ModelAdmin):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @admin.register(ParentUser)
-class ParentUserAdmin(admin.ModelAdmin):
+class ParentUserAdmin(ModelAdmin):
     list_display = ('user', 'parent_student', 'phone', 'is_verified', 'created_at')
     list_filter = ('is_verified', 'created_at')
     search_fields = ('user__username', 'parent__student__name', 'phone')
@@ -586,7 +587,7 @@ class ParentUserAdmin(admin.ModelAdmin):
 #  A13 — RESULT PUBLICATION WORKFLOW
 # ═════════════════════════════════════════════════════════════════════════════
 
-class ResultSessionEntryInline(admin.TabularInline):
+class ResultSessionEntryInline(TabularInline):
     model = ResultSessionEntry
     extra = 0
     fields = ('result', 'is_locked')
@@ -594,7 +595,7 @@ class ResultSessionEntryInline(admin.TabularInline):
 
 
 @admin.register(ResultPublishSession)
-class ResultPublishSessionAdmin(admin.ModelAdmin):
+class ResultPublishSessionAdmin(ModelAdmin):
     list_display = ('name', 'subject', 'target_class', 'status', 'created_by',
                     'reviewed_by', 'approved_by', 'published_at', 'created_at')
     list_filter = ('status', 'subject', 'target_class', 'academic_year', 'created_at')
@@ -611,7 +612,7 @@ class ResultPublishSessionAdmin(admin.ModelAdmin):
 
 
 @admin.register(ResultSessionEntry)
-class ResultSessionEntryAdmin(admin.ModelAdmin):
+class ResultSessionEntryAdmin(ModelAdmin):
     list_display = ('session', 'result_student', 'result_subject', 'is_locked')
     list_filter = ('is_locked', 'session__status', 'result__subject')
     search_fields = ('result__student__name', 'result__subject__name', 'session__name')
@@ -633,7 +634,7 @@ class ResultSessionEntryAdmin(admin.ModelAdmin):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @admin.register(LessonPlan)
-class LessonPlanAdmin(admin.ModelAdmin):
+class LessonPlanAdmin(ModelAdmin):
     list_display = ('title', 'teacher', 'subject', 'class_section', 'chapter_topic', 'planned_date', 'status', 'teaching_method')
     list_filter = ('subject', 'teacher', 'status', 'class_section', 'teaching_method', 'planned_date')
     search_fields = ('title', 'chapter_topic', 'class_section', 'teacher__first_name', 'teacher__last_name')
@@ -643,7 +644,7 @@ class LessonPlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(SyllabusCoverage)
-class SyllabusCoverageAdmin(admin.ModelAdmin):
+class SyllabusCoverageAdmin(ModelAdmin):
     list_display = ('subject', 'class_section', 'chapter_name', 'planned_order', 'estimated_hours',
                     'actual_hours', 'completion_pct', 'is_completed')
     list_filter = ('subject', 'class_section', 'is_completed')
@@ -657,7 +658,7 @@ class SyllabusCoverageAdmin(admin.ModelAdmin):
 # T3 — TWO-WAY GRADING RUBRICS
 # ═════════════════════════════════════════════════════════════════════════════
 
-class RubricCriterionInline(admin.TabularInline):
+class RubricCriterionInline(TabularInline):
     model = RubricCriterion
     extra = 1
     fields = ('name', 'max_score', 'weight_percent', 'order')
@@ -665,7 +666,7 @@ class RubricCriterionInline(admin.TabularInline):
 
 
 @admin.register(GradingRubric)
-class GradingRubricAdmin(admin.ModelAdmin):
+class GradingRubricAdmin(ModelAdmin):
     list_display = ('name', 'teacher', 'subject', 'is_active', 'created_at', 'get_criteria_count')
     list_filter = ('subject', 'teacher', 'is_active', 'created_at')
     search_fields = ('name', 'description', 'teacher__first_name', 'teacher__last_name')
@@ -679,7 +680,7 @@ class GradingRubricAdmin(admin.ModelAdmin):
 
 
 @admin.register(RubricCriterion)
-class RubricCriterionAdmin(admin.ModelAdmin):
+class RubricCriterionAdmin(ModelAdmin):
     list_display = ('name', 'rubric', 'max_score', 'weight_percent', 'order')
     list_filter = ('rubric__teacher', 'rubric__subject')
     search_fields = ('name', 'rubric__name')
@@ -688,7 +689,7 @@ class RubricCriterionAdmin(admin.ModelAdmin):
 
 
 @admin.register(RubricScoreEntry)
-class RubricScoreEntryAdmin(admin.ModelAdmin):
+class RubricScoreEntryAdmin(ModelAdmin):
     list_display = ('submission', 'criterion', 'score_obtained', 'criterion_max')
     list_filter = ('submission__assignment__subject',)
     search_fields = ('submission__student__name', 'criterion__name')
@@ -702,7 +703,7 @@ class RubricScoreEntryAdmin(admin.ModelAdmin):
 
 
 @admin.register(RubricTemplate)
-class RubricTemplateAdmin(admin.ModelAdmin):
+class RubricTemplateAdmin(ModelAdmin):
     list_display = ('name', 'is_global', 'created_at')
     list_filter = ('is_global', 'created_at')
     search_fields = ('name',)
@@ -714,7 +715,7 @@ class RubricTemplateAdmin(admin.ModelAdmin):
 # T4 — ONLINE EXAM / QUIZ MODULE
 # ═════════════════════════════════════════════════════════════════════════════
 
-class QuestionInline(admin.TabularInline):
+class QuestionInline(TabularInline):
     model = Question
     extra = 0
     fields = ('order', 'question_text', 'question_type', 'marks', 'correct_answer')
@@ -722,7 +723,7 @@ class QuestionInline(admin.TabularInline):
 
 
 @admin.register(OnlineExam)
-class OnlineExamAdmin(admin.ModelAdmin):
+class OnlineExamAdmin(ModelAdmin):
     list_display = ('title', 'subject', 'teacher', 'target_class', 'total_marks', 'passing_marks',
                     'duration_minutes', 'start_at', 'end_at', 'is_published', 'max_attempts')
     list_filter = ('subject', 'teacher', 'target_class', 'is_published', 'start_at')
@@ -734,7 +735,7 @@ class OnlineExamAdmin(admin.ModelAdmin):
 
 
 @admin.register(Question)
-class QuestionAdmin(admin.ModelAdmin):
+class QuestionAdmin(ModelAdmin):
     list_display = ('order', 'online_exam', 'question_type', 'marks', 'correct_answer')
     list_filter = ('question_type', 'online_exam__subject')
     search_fields = ('question_text', 'online_exam__title')
@@ -743,7 +744,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 
 @admin.register(ExamAttempt)
-class ExamAttemptAdmin(admin.ModelAdmin):
+class ExamAttemptAdmin(ModelAdmin):
     list_display = ('student', 'online_exam', 'attempt_number', 'status', 'score_obtained', 'started_at', 'submitted_at')
     list_filter = ('status', 'online_exam__subject', 'online_exam__target_class', 'started_at')
     search_fields = ('student__name', 'online_exam__title')
@@ -753,7 +754,7 @@ class ExamAttemptAdmin(admin.ModelAdmin):
 
 
 @admin.register(ExamAnswer)
-class ExamAnswerAdmin(admin.ModelAdmin):
+class ExamAnswerAdmin(ModelAdmin):
     list_display = ('attempt', 'question', 'selected_option', 'marks_awarded')
     list_filter = ('attempt__online_exam__subject',)
     search_fields = ('attempt__student__name', 'question__question_text')
@@ -765,7 +766,7 @@ class ExamAnswerAdmin(admin.ModelAdmin):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @admin.register(ExamSeatingPlan)
-class ExamSeatingPlanAdmin(admin.ModelAdmin):
+class ExamSeatingPlanAdmin(ModelAdmin):
     list_display = ('room_name', 'exam', 'teacher', 'room_capacity', 'arrangement_type', 'created_at', 'get_allocation_count')
     list_filter = ('exam__subject', 'teacher', 'room_name', 'arrangement_type', 'created_at')
     search_fields = ('room_name', 'exam__title', 'teacher__first_name', 'teacher__last_name')
@@ -778,7 +779,7 @@ class ExamSeatingPlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(SeatAllocation)
-class SeatAllocationAdmin(admin.ModelAdmin):
+class SeatAllocationAdmin(ModelAdmin):
     list_display = ('seat_number', 'student', 'seating_plan', 'row', 'column', 'is_present', 'is_locked')
     list_filter = ('seating_plan__room_name', 'is_present', 'is_locked', 'seating_plan__exam__subject')
     search_fields = ('seat_number', 'student__name', 'seating_plan__exam__title')
@@ -792,7 +793,7 @@ class SeatAllocationAdmin(admin.ModelAdmin):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @admin.register(TeacherLeave)
-class TeacherLeaveAdmin(admin.ModelAdmin):
+class TeacherLeaveAdmin(ModelAdmin):
     list_display = ('teacher', 'leave_type', 'start_date', 'end_date', 'status', 'substitute_teacher', 'approved_by')
     list_filter = ('leave_type', 'status', 'teacher', 'start_date')
     search_fields = ('teacher__first_name', 'teacher__last_name', 'reason', 'approval_reason')
@@ -817,7 +818,7 @@ class TeacherLeaveAdmin(admin.ModelAdmin):
 # ── T8  Question Bank ───────────────────────────────────────────────────────────
 
 @admin.register(QuestionBank)
-class QuestionBankAdmin(admin.ModelAdmin):
+class QuestionBankAdmin(ModelAdmin):
     list_display = ('subject', 'question_type', 'difficulty', 'chapter', 'marks', 'is_active', 'times_used', 'created_at')
     list_filter = ('subject', 'question_type', 'difficulty', 'chapter', 'is_active')
     search_fields = ('question_text', 'chapter', 'tags')
@@ -827,7 +828,7 @@ class QuestionBankAdmin(admin.ModelAdmin):
 
 
 @admin.register(QuestionPaperTemplate)
-class QuestionPaperTemplateAdmin(admin.ModelAdmin):
+class QuestionPaperTemplateAdmin(ModelAdmin):
     list_display = ('name', 'subject', 'total_marks', 'duration_minutes', 'teacher')
     list_filter = ('subject', 'teacher')
     search_fields = ('name', 'subject__name')
@@ -838,7 +839,7 @@ class QuestionPaperTemplateAdmin(admin.ModelAdmin):
 # ── T9  Reminders & Scheduled Tasks ─────────────────────────────────────────────
 
 @admin.register(Reminder)
-class ReminderAdmin(admin.ModelAdmin):
+class ReminderAdmin(ModelAdmin):
     list_display = ('title', 'reminder_type', 'teacher', 'student', 'scheduled_for', 'is_sent', 'is_active')
     list_filter = ('reminder_type', 'is_sent', 'is_active', 'scheduled_for')
     search_fields = ('title', 'message', 'teacher__first_name', 'student__name')
@@ -848,7 +849,7 @@ class ReminderAdmin(admin.ModelAdmin):
 
 
 @admin.register(ScheduledTask)
-class ScheduledTaskAdmin(admin.ModelAdmin):
+class ScheduledTaskAdmin(ModelAdmin):
     list_display = ('task_type', 'scheduled_for', 'is_executed', 'executed_at', 'is_active')
     list_filter = ('task_type', 'is_executed', 'is_active', 'scheduled_for')
     search_fields = ('task_type',)
@@ -862,7 +863,7 @@ class ScheduledTaskAdmin(admin.ModelAdmin):
 #  A3 — INVOICE BILLING / SUBSCRIPTION MODULE
 # ═════════════════════════════════════════════════════════════════════════════
 
-class InvoiceInline(admin.TabularInline):
+class InvoiceInline(TabularInline):
     model = Invoice
     extra = 0
     fields = ('invoice_number', 'amount', 'tax_amount', 'total_amount', 'status', 'issue_date', 'due_date')
@@ -870,7 +871,7 @@ class InvoiceInline(admin.TabularInline):
 
 
 @admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
+class SubscriptionAdmin(ModelAdmin):
     list_display = ('institution', 'plan', 'monthly_price', 'is_active', 'auto_renew', 'started_at', 'expires_at')
     list_filter = ('plan', 'is_active', 'auto_renew')
     search_fields = ('institution',)
@@ -879,7 +880,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 
 @admin.register(Invoice)
-class InvoiceAdmin(admin.ModelAdmin):
+class InvoiceAdmin(ModelAdmin):
     list_display = ('invoice_number', 'issued_to', 'amount', 'tax_amount', 'total_amount', 'status', 'issue_date', 'paid_date')
     list_filter = ('status', 'issue_date', 'paid_date')
     search_fields = ('invoice_number', 'issued_to')
@@ -900,7 +901,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 #  A9 — CERTIFICATE GENERATOR
 # ═════════════════════════════════════════════════════════════════════════════
 
-class CertificateInline(admin.TabularInline):
+class CertificateInline(TabularInline):
     model = Certificate
     extra = 0
     fields = ('certificate_number', 'certificate_type', 'issued_date', 'status')
@@ -908,7 +909,7 @@ class CertificateInline(admin.TabularInline):
 
 
 @admin.register(CertificateTemplate)
-class CertificateTemplateAdmin(admin.ModelAdmin):
+class CertificateTemplateAdmin(ModelAdmin):
     list_display = ('name', 'is_active', 'created_at')
     list_filter = ('is_active',)
     search_fields = ('name',)
@@ -916,7 +917,7 @@ class CertificateTemplateAdmin(admin.ModelAdmin):
 
 
 @admin.register(Certificate)
-class CertificateAdmin(admin.ModelAdmin):
+class CertificateAdmin(ModelAdmin):
     list_display = ('certificate_number', 'student', 'certificate_type', 'status', 'issued_date', 'issued_by')
     list_filter = ('certificate_type', 'status', 'issued_date')
     search_fields = ('certificate_number', 'student__name')
@@ -942,7 +943,7 @@ class CertificateAdmin(admin.ModelAdmin):
 #  A14 — API KEY & WEBHOOK SYSTEM
 # ═════════════════════════════════════════════════════════════════════════════
 
-class WebhookDeliveryLogInline(admin.TabularInline):
+class WebhookDeliveryLogInline(TabularInline):
     model = WebhookDeliveryLog
     extra = 0
     fields = ('event_type', 'success', 'response_code', 'attempt', 'delivered_at')
@@ -951,7 +952,7 @@ class WebhookDeliveryLogInline(admin.TabularInline):
 
 
 @admin.register(APIKey)
-class APIKeyAdmin(admin.ModelAdmin):
+class APIKeyAdmin(ModelAdmin):
     list_display = ('name', 'key_masked', 'prefix', 'scopes_preview', 'is_active', 'last_used_at', 'expires_at')
     list_filter = ('is_active', 'created_at')
     search_fields = ('name', 'key', 'prefix')
@@ -970,7 +971,7 @@ class APIKeyAdmin(admin.ModelAdmin):
 
 
 @admin.register(WebhookEndpoint)
-class WebhookEndpointAdmin(admin.ModelAdmin):
+class WebhookEndpointAdmin(ModelAdmin):
     list_display = ('url', 'secret_masked', 'is_active', 'events_preview', 'retry_count', 'last_triggered_at', 'created_at')
     list_filter = ('is_active', 'created_at')
     search_fields = ('url',)
@@ -990,7 +991,7 @@ class WebhookEndpointAdmin(admin.ModelAdmin):
 
 
 @admin.register(WebhookDeliveryLog)
-class WebhookDeliveryLogAdmin(admin.ModelAdmin):
+class WebhookDeliveryLogAdmin(ModelAdmin):
     list_display = ('endpoint', 'event_type', 'success', 'response_code', 'attempt', 'delivered_at')
     list_filter = ('success', 'event_type', 'delivered_at')
     search_fields = ('endpoint__url', 'event_type')
@@ -1004,7 +1005,7 @@ class WebhookDeliveryLogAdmin(admin.ModelAdmin):
 #  A5 — SUPPORT TICKET SYSTEM
 # ═════════════════════════════════════════════════════════════════════════════
 
-class TicketCommentInline(admin.TabularInline):
+class TicketCommentInline(TabularInline):
     model = TicketComment
     extra = 0
     fields = ('author', 'body_short', 'is_internal', 'created_at')
@@ -1017,7 +1018,7 @@ class TicketCommentInline(admin.TabularInline):
 
 
 @admin.register(SupportTicket)
-class SupportTicketAdmin(admin.ModelAdmin):
+class SupportTicketAdmin(ModelAdmin):
     list_display = ('ticket_id', 'title', 'category', 'priority', 'status', 'reported_by', 'assigned_to', 'created_at')
     list_filter = ('category', 'priority', 'status', 'created_at')
     search_fields = ('ticket_id', 'title', 'description', 'reported_by__username')
@@ -1030,7 +1031,7 @@ class SupportTicketAdmin(admin.ModelAdmin):
 
 
 @admin.register(TicketComment)
-class TicketCommentAdmin(admin.ModelAdmin):
+class TicketCommentAdmin(ModelAdmin):
     list_display = ('ticket', 'author', 'body_short', 'is_internal', 'created_at')
     list_filter = ('is_internal', 'created_at')
     search_fields = ('ticket__ticket_id', 'body', 'author__username')
@@ -1047,7 +1048,7 @@ class TicketCommentAdmin(admin.ModelAdmin):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @admin.register(SSOProvider)
-class SSOProviderAdmin(admin.ModelAdmin):
+class SSOProviderAdmin(ModelAdmin):
     list_display = ('name', 'provider_type', 'is_active', 'created_at')
     list_filter = ('provider_type', 'is_active', 'created_at')
     search_fields = ('name', 'client_id')

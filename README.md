@@ -1,6 +1,6 @@
 # AcadStat — Student Result and Performance Analysis System
 
-Django-based academic management system for student performance, attendance, exams, and reporting.
+Django-based academic management system for student performance,analysis and result generation.
 
 ## Project Folder Structure
 
@@ -63,5 +63,3 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
-
-See [docs/Workflow.md](docs/Workflow.md) for full setup and feature documentation.

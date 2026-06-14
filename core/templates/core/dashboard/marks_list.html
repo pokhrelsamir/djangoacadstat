@@ -307,7 +307,7 @@
     padding: 1rem;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
 }
 
 .dm-delete-overlay.active {
@@ -319,8 +319,23 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(6px);
+    background:
+        radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.13), transparent 34rem),
+        rgba(10, 10, 10, 0.08);
+    backdrop-filter: blur(3px) saturate(1.08);
+    -webkit-backdrop-filter: blur(3px) saturate(1.08);
+}
+
+[data-theme="light"] .dm-delete-overlay::before {
+    background:
+        radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.5), transparent 34rem),
+        rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .dm-delete-overlay::before {
+    background:
+        radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.08), transparent 34rem),
+        rgba(10, 10, 10, 0.10);
 }
 
 .dm-delete-card {
@@ -328,15 +343,22 @@
     z-index: 1;
     width: 100%;
     max-width: 400px;
-    background: var(--bg-card, #ffffff);
-    border: 1px solid var(--border-color, #e4e4e7);
-    border-radius: 24px;
-    padding: 2.5rem 1.75rem 1.75rem;
+    background: var(--app-glass-bg, var(--bg-card, #ffffff));
+    border: 1px solid var(--app-glass-border, var(--border-color, #e4e4e7));
+    border-radius: var(--ds-radius, 14px);
+    padding: 2.35rem 1.65rem 1.55rem;
     text-align: center;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(10, 10, 10, 0.10);
-    transform: scale(0.45) translateY(30px);
+    box-shadow: var(--app-glass-shadow, 0 22px 54px rgba(0, 0, 0, 0.18));
+    backdrop-filter: blur(18px) saturate(1.12);
+    -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    transform: translateY(18px) scale(0.94);
     opacity: 0;
-    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    transition:
+        transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.22s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease,
+        background 0.25s ease;
 }
 
 .dm-delete-overlay.active .dm-delete-card {
@@ -345,19 +367,19 @@
 }
 
 .dm-delete-card.dm-state-success {
-    animation: dmStateToSuccess 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: dmStateToSuccess 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     border-color: rgba(16, 185, 129, 0.35);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(16, 185, 129, 0.12);
+    box-shadow: var(--app-glass-shadow, 0 22px 54px rgba(0, 0, 0, 0.18)), 0 0 0 1px rgba(16, 185, 129, 0.10);
 }
 
 .dm-delete-card.dm-state-confirm {
-    border-color: var(--border-color, #e4e4e7);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(10, 10, 10, 0.10);
+    border-color: var(--app-glass-border, var(--border-color, #e4e4e7));
+    box-shadow: var(--app-glass-shadow, 0 22px 54px rgba(0, 0, 0, 0.18));
 }
 
 @keyframes dmStateToSuccess {
     0%   { transform: scale(1) translateY(0); opacity: 1; }
-    40%  { transform: scale(1.02) translateY(-4px); opacity: 0.85; }
+    42%  { transform: scale(1.018) translateY(-3px); opacity: 0.95; }
     100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
@@ -386,6 +408,25 @@
     animation: dmBounce 2s ease-in-out infinite;
 }
 
+.dm-delete-icon,
+.dm-delete-title,
+.dm-delete-text,
+.dm-delete-actions {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.dm-delete-card.dm-state-switching .dm-delete-icon,
+.dm-delete-card.dm-state-switching .dm-delete-title,
+.dm-delete-card.dm-state-switching .dm-delete-text,
+.dm-delete-card.dm-state-switching .dm-delete-actions {
+    opacity: 0;
+    transform: translateY(7px) scale(0.98);
+}
+
+.dm-delete-card.dm-state-success .dm-delete-icon {
+    animation: dmSuccessPop 0.46s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .dm-delete-title {
     font-size: 1.15rem;
     font-weight: 700;
@@ -408,24 +449,27 @@
 .dm-delete-cancel {
     flex: 1;
     padding: 0.7rem;
-    border-radius: 12px;
+    border-radius: var(--ds-radius-sm, 10px);
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    border: none;
-    background: #f1f5f9;
-    color: #475569;
-    transition: all 0.25s ease;
+    border: 1px solid var(--app-glass-border, var(--border-color, #e4e4e7));
+    background: var(--app-glass-bg-soft, var(--bg-secondary, #f1f5f9));
+    color: var(--text-primary, #475569);
+    transition: transform 0.2s ease, background 0.25s ease, border-color 0.25s ease;
 }
 
 .dm-delete-cancel:hover {
-    background: #e2e8f0;
+    background: var(--bg-card-hover, #e2e8f0);
+    border-color: var(--app-glass-border-hover, var(--border-color, #d4d4d8));
+    transform: translateY(-1px);
 }
 
 .dm-delete-confirm {
     flex: 1;
+    min-height: 42px;
     padding: 0.7rem;
-    border-radius: 12px;
+    border-radius: var(--ds-radius-sm, 10px);
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
@@ -434,11 +478,31 @@
     background: linear-gradient(135deg, #ef4444, #dc2626);
     box-shadow: 0 4px 14px rgba(239, 68, 68, 0.30);
     transition: transform 0.2s ease, box-shadow 0.25s ease, background 0.35s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.dm-delete-confirm svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    display: block;
 }
 
 .dm-delete-confirm:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 20px rgba(239, 68, 68, 0.40);
+}
+
+.dm-delete-confirm:disabled {
+    cursor: wait;
+    opacity: 0.78;
+    transform: none;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.22);
 }
 
 .dm-delete-card.dm-state-success .dm-delete-confirm {
@@ -460,9 +524,14 @@
     border-radius: 0 0 24px 24px;
     transform-origin: left;
     transform: scaleX(1);
+    opacity: 0;
 }
 
-.dm-delete-overlay.active .dm-delete-timer {
+.dm-delete-card.dm-state-success .dm-delete-timer {
+    opacity: 1;
+}
+
+.dm-delete-overlay.active .dm-delete-card.dm-state-success .dm-delete-timer {
     animation: dmCountdown 3s linear forwards;
 }
 
@@ -479,6 +548,12 @@
 @keyframes dmBounce {
     0%, 100% { transform: translateY(0); }
     50%      { transform: translateY(-6px); }
+}
+
+@keyframes dmSuccessPop {
+    0%   { transform: scale(0.82); }
+    58%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
 }
 
 @keyframes dmCountdown {
@@ -1189,41 +1264,253 @@
     /* Toast Notifications */
     .toast-notification {
         position: fixed;
-        bottom: 30px;
-        right: 30px;
+        left: 50%;
+        bottom: 28px;
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 16px 24px;
-        border-radius: 12px;
-        background: white;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-        transform: translateY(100px);
+        max-width: min(92vw, 440px);
+        padding: 0.9rem 1rem;
+        border-radius: var(--ds-radius, 14px);
+        border: 1px solid var(--app-glass-border, var(--border-color));
+        background: var(--app-glass-bg, var(--bg-card));
+        color: var(--text-primary);
+        box-shadow: var(--app-glass-shadow, 0 10px 40px rgba(0,0,0,0.15));
+        backdrop-filter: blur(16px) saturate(1.08);
+        -webkit-backdrop-filter: blur(16px) saturate(1.08);
+        transform: translate(-50%, 22px) scale(0.98);
         opacity: 0;
-        transition: all 0.3s ease;
-        z-index: 9999;
-        font-weight: 500;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
+        z-index: 10002;
+        font-size: var(--ds-text-sm);
+        font-weight: 600;
+        line-height: 1.45;
     }
     
     .toast-notification.show {
-        transform: translateY(0);
+        transform: translate(-50%, 0) scale(1);
         opacity: 1;
     }
     
     .toast-notification.toast-success {
-        border-left: 4px solid #10b981;
+        border-color: rgba(16, 185, 129, 0.38);
     }
     
     .toast-notification.toast-success svg {
         color: #10b981;
+        flex: 0 0 auto;
     }
     
     .toast-notification.toast-error {
-        border-left: 4px solid #ef4444;
+        border-color: rgba(239, 68, 68, 0.38);
     }
     
     .toast-notification.toast-error svg {
         color: #ef4444;
+        flex: 0 0 auto;
+    }
+
+    .toast-notification span {
+        color: var(--text-primary);
+        overflow-wrap: anywhere;
+    }
+
+    /* AcadStat theme pass for teacher marks list */
+    .marks-page-wrapper {
+        color: var(--text-primary);
+    }
+
+    .marks-header,
+    .filter-section,
+    .table-container,
+    .modal-content,
+    .dm-delete-card {
+        background: var(--app-glass-bg, var(--bg-card)) !important;
+        border: 1px solid var(--app-glass-border, var(--border-color)) !important;
+        box-shadow: var(--app-glass-shadow, var(--shadow-sm)) !important;
+        backdrop-filter: blur(16px) saturate(1.08);
+        -webkit-backdrop-filter: blur(16px) saturate(1.08);
+    }
+
+    .marks-header,
+    .filter-section {
+        border-radius: var(--ds-radius);
+        padding: 1rem;
+    }
+
+    .back-btn,
+    .search-box,
+    .stat-badge,
+    .subject-badge,
+    .terminal-badge,
+    .percentage-badge,
+    .terminal-select-option label {
+        background: var(--app-glass-bg-soft, var(--bg-secondary)) !important;
+        border: 1px solid var(--app-glass-border, var(--border-color)) !important;
+        color: var(--text-primary) !important;
+        box-shadow: none !important;
+    }
+
+    .back-btn:hover,
+    .terminal-select-option label:hover {
+        border-color: var(--app-glass-border-hover, var(--text-muted)) !important;
+        background: var(--bg-card-hover) !important;
+    }
+
+    .search-box input {
+        background: transparent !important;
+        color: var(--text-primary) !important;
+    }
+
+    .search-box input::placeholder,
+    .search-box svg,
+    .stat-badge,
+    .date-cell,
+    .modal-close {
+        color: var(--text-muted) !important;
+    }
+
+    .table-container {
+        overflow: hidden;
+    }
+
+    .marks-table tbody tr {
+        background: transparent !important;
+    }
+
+    .marks-table tbody tr:hover {
+        background: var(--bg-card-hover) !important;
+    }
+
+    .student-avatar,
+    .add-btn,
+    .empty-btn,
+    .btn-save {
+        background: var(--ds-gradient) !important;
+        color: #ffffff !important;
+    }
+
+    .add-btn[style] {
+        background: linear-gradient(135deg, #27272a, #0a0a0a) !important;
+    }
+
+    .marksheet-btn,
+    .edit-btn,
+    .delete-btn,
+    .action-btn {
+        background: var(--app-glass-bg-soft, var(--bg-secondary)) !important;
+        border: 1px solid var(--app-glass-border, var(--border-color)) !important;
+        color: var(--text-primary) !important;
+        box-shadow: none !important;
+    }
+
+    .marksheet-btn:hover,
+    .edit-btn:hover,
+    .delete-btn:hover {
+        background: var(--ds-gradient) !important;
+        border-color: var(--app-glass-border-hover, var(--text-muted)) !important;
+        color: #ffffff !important;
+        transform: translateY(-2px) scale(1.04);
+    }
+
+    .delete-btn:hover {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    }
+
+    .percentage-badge.pass {
+        border-color: rgba(16, 185, 129, 0.36) !important;
+        color: var(--ds-success) !important;
+    }
+
+    .percentage-badge.fail {
+        border-color: rgba(239, 68, 68, 0.36) !important;
+        color: var(--ds-danger) !important;
+    }
+
+    .modal-overlay {
+        background:
+            radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.12), transparent 34rem),
+            rgba(10, 10, 10, 0.08) !important;
+        backdrop-filter: blur(3px) saturate(1.08);
+        -webkit-backdrop-filter: blur(3px) saturate(1.08);
+    }
+
+    .modal-header h3,
+    .edit-form label,
+    .empty-content h3 {
+        color: var(--text-primary) !important;
+    }
+
+    .empty-content p,
+    #terminalModalStudent {
+        color: var(--text-muted) !important;
+    }
+
+    .edit-form input,
+    .readonly-input {
+        background: var(--app-glass-bg-soft, var(--bg-secondary)) !important;
+        border: 1px solid var(--app-glass-border, var(--border-color)) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .edit-form input:focus {
+        border-color: var(--app-glass-border-hover, var(--text-muted)) !important;
+        box-shadow: 0 0 0 3px var(--ds-accent-soft) !important;
+    }
+
+    .btn-cancel,
+    .dm-delete-cancel {
+        background: var(--app-glass-bg-soft, var(--bg-secondary)) !important;
+        border: 1px solid var(--app-glass-border, var(--border-color)) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .btn-cancel:hover,
+    .dm-delete-cancel:hover {
+        background: var(--bg-card-hover) !important;
+    }
+
+    .dm-delete-overlay::before {
+        background:
+            radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.12), transparent 34rem),
+            rgba(10, 10, 10, 0.08) !important;
+    }
+
+    [data-theme="light"] .dm-delete-overlay::before,
+    [data-theme="light"] .modal-overlay {
+        background:
+            radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.48), transparent 34rem),
+            rgba(255, 255, 255, 0.08) !important;
+    }
+
+    [data-theme="dark"] .dm-delete-overlay::before,
+    [data-theme="dark"] .modal-overlay {
+        background:
+            radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.08), transparent 34rem),
+            rgba(10, 10, 10, 0.10) !important;
+    }
+
+    .dm-delete-title,
+    .dm-delete-text {
+        color: var(--text-primary) !important;
+    }
+
+    .dm-delete-text {
+        color: var(--text-secondary) !important;
+    }
+
+    .dm-delete-card.dm-state-success {
+        border-color: rgba(16, 185, 129, 0.38) !important;
+    }
+
+    .dm-delete-card.dm-state-confirm {
+        border-color: var(--app-glass-border, var(--border-color)) !important;
+    }
+
+    .terminal-select-option input:checked + label {
+        background: var(--ds-gradient) !important;
+        color: #ffffff !important;
+        border-color: transparent !important;
     }
 </style>
 
@@ -1304,15 +1591,20 @@
 
     // Delete Marks
     function deleteMarks(id) {
+        clearTimeout(window._dsDeleteTimeout);
+        resetDeleteModalContent();
         document.getElementById('deleteMarkId').value = id;
-        document.getElementById('deleteModal').classList.add('active');
+        requestAnimationFrame(function() {
+            document.getElementById('deleteModal').classList.add('active');
+        });
     }
 
     function closeDeleteModal() {
         var modal = document.getElementById('deleteModal');
         if (!modal) return;
+        clearTimeout(window._dsDeleteTimeout);
         modal.classList.remove('active');
-        resetDeleteModalContent();
+        setTimeout(resetDeleteModalContent, 260);
     }
 
     function resetDeleteModalContent() {
@@ -1326,7 +1618,7 @@
 
         if (!card || !icon || !title || !text || !actions) return;
 
-        card.classList.remove('dm-state-success');
+        card.classList.remove('dm-state-success', 'dm-state-switching');
         card.classList.add('dm-state-confirm');
 
         icon.style.background = '';
@@ -1377,53 +1669,59 @@
         if (!modal || !card || !icon || !title || !text || !actions) return;
 
         modal.classList.add('active');
-
-        card.classList.remove('dm-state-confirm');
-        card.classList.add('dm-state-success');
-
-        icon.style.background = 'linear-gradient(135deg, #d1fae5, #a7f3d0)';
-        icon.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.18)';
-        icon.innerHTML = `
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-        `;
-
-        if (bar) {
-            bar.style.background = 'linear-gradient(90deg, #10b981, #059669, #34d399, #10b981)';
-            bar.style.animation = 'dmShimmer 2.5s linear infinite';
-            bar.style.backgroundSize = '300% 100%';
-        }
-
-        title.textContent = 'Deleted Successfully!';
-        text.textContent = message;
-
-        actions.innerHTML = `
-            <button type="button" class="dm-delete-confirm" id="deleteConfOkBtn" style="flex:1;">Ok</button>
-        `;
-        var confirmBtn = actions.querySelector('#deleteConfOkBtn');
-        if (confirmBtn) {
-            confirmBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            confirmBtn.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.30)';
-            confirmBtn.onclick = function() { closeDeleteModal(); };
-        }
-
-        if (timer) {
-            timer.classList.add('dm-delete-timer');
-            timer.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
-            timer.style.animation = 'none';
-            timer.offsetHeight;
-            timer.style.animation = 'dmCountdown 3s linear forwards';
-            timer.style.transform = 'scaleX(1)';
-        }
-
         clearTimeout(window._dsDeleteTimeout);
-        window._dsDeleteTimeout = setTimeout(function() {
-            card.classList.remove('dm-state-success');
-            card.classList.add('dm-state-confirm');
-            closeDeleteModal();
-        }, 3200);
+
+        card.classList.add('dm-state-switching');
+
+        setTimeout(function() {
+            card.classList.remove('dm-state-confirm');
+            card.classList.add('dm-state-success');
+
+            icon.style.background = 'linear-gradient(135deg, #d1fae5, #a7f3d0)';
+            icon.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.18)';
+            icon.innerHTML = `
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            `;
+
+            if (bar) {
+                bar.style.background = 'linear-gradient(90deg, #10b981, #059669, #34d399, #10b981)';
+                bar.style.animation = 'dmShimmer 2.5s linear infinite';
+                bar.style.backgroundSize = '300% 100%';
+            }
+
+            title.textContent = 'Deleted Successfully!';
+            text.textContent = message;
+
+            actions.innerHTML = `
+                <button type="button" class="dm-delete-confirm" id="deleteConfOkBtn" style="flex:1;">Ok</button>
+            `;
+            var confirmBtn = actions.querySelector('#deleteConfOkBtn');
+            if (confirmBtn) {
+                confirmBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                confirmBtn.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.30)';
+                confirmBtn.onclick = function() { closeDeleteModal(); };
+            }
+
+            requestAnimationFrame(function() {
+                card.classList.remove('dm-state-switching');
+
+                if (timer) {
+                    timer.classList.add('dm-delete-timer');
+                    timer.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+                    timer.style.animation = 'none';
+                    timer.style.transform = 'scaleX(1)';
+                    timer.offsetHeight;
+                    timer.style.animation = 'dmCountdown 3s linear forwards';
+                }
+            });
+
+            window._dsDeleteTimeout = setTimeout(function() {
+                closeDeleteModal();
+            }, 3200);
+        }, 190);
     }
 
     // Terminal Selection Modal for Mark Sheet
@@ -1459,6 +1757,13 @@
     // Confirm Delete
     function confirmDelete() {
         var id = document.getElementById('deleteMarkId').value;
+        var confirmBtn = document.getElementById('deleteConfirmBtn');
+
+        if (confirmBtn && confirmBtn.disabled) return;
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = 'Deleting...';
+        }
         
         fetch('/delete-marks/' + id + '/', {
             method: 'POST',
@@ -1493,11 +1798,19 @@
                 }
                 showSuccessInDeleteModal(data.message || 'Marks deleted successfully');
             } else {
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    resetDeleteModalContent();
+                }
                 showToast((data && data.message) || 'Error deleting record', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                resetDeleteModalContent();
+            }
             showToast('Error deleting record. Please try again.', 'error');
         });
     }

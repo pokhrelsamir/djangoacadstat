@@ -7411,6 +7411,250 @@ def _analytics_line_dataset(label, data, color, fill=True):
     }
 
 
+def _build_teacher_enhanced_insights(
+    teacher,
+    filtered_qs,
+    stats_qs,
+    pct_list,
+    avg_pct,
+    highest_pct,
+    lowest_pct,
+    pass_rate,
+    pass_count,
+    total,
+    below_40,
+    terminal,
+    run_terminals,
+    chart_subjects,
+    analysis_mode,
+    selected_student,
+    class_section_raw,
+    subject_breakdown_chart,
+    regression_chart,
+    trend_rows,
+    distribution_chart,
+):
+    """Build teacher-facing insight cards from the same filtered graph data."""
+    insights = {
+        "summary": [],
+        "performance": {},
+        "subject_spotlight": [],
+        "trend_analysis": [],
+        "comparative": [],
+        "recommendations": [],
+        "grade_breakdown": [],
+        "milestones": [],
+        "consistency": {},
+    }
+
+    if analysis_mode == "single" and selected_student:
+        scope_label = f"{selected_student.name} (Class {selected_student.student_class}-{selected_student.section})"
+        learner_label = selected_student.name
+    elif analysis_mode == "bulk" and class_section_raw and "|" in class_section_raw:
+        cls, sec = class_section_raw.split("|", 1)
+        scope_label = f"Class {cls}-{sec}"
+        learner_label = "this section"
+    else:
+        scope_label = "all assigned students"
+        learner_label = "your assigned students"
+
+    terminal_label = "all terminals" if terminal == "all" else f"{terminal} Terminal"
+    insights["summary"].append(
+        f"Analysing <strong>{scope_label}</strong> across <strong>{terminal_label}</strong> using marks from your assigned subjects."
+    )
+
+    if total == 0:
+        insights["performance"] = {
+            "label": "No Data",
+            "badge": "neutral",
+            "icon": "fa-chart-line",
+            "description": "No marks match these filters yet. Apply a broader filter or add marks before reading graph patterns.",
+            "avg_pct": 0,
+        }
+        insights["recommendations"] = [
+            "<strong>Start with data coverage:</strong> record marks for the selected subject, terminal, or class section so the graphs can produce reliable guidance."
+        ]
+        return insights
+
+    if avg_pct >= 85:
+        label, badge, icon = "Excellent Class Signal", "excellent", "fa-trophy"
+        desc = f"The filtered group is averaging {avg_pct}%. The graphs are showing strong mastery; your next move is enrichment and challenge."
+    elif avg_pct >= 70:
+        label, badge, icon = "Good Progress", "good", "fa-thumbs-up"
+        desc = f"The average is {avg_pct}%. The group has a healthy base, so targeted polishing can move more learners into the excellent band."
+    elif avg_pct >= 55:
+        label, badge, icon = "Mixed Performance", "satisfactory", "fa-adjust"
+        desc = f"The average is {avg_pct}%. The graphs likely contain both secure learners and learners who need a clearer reteach path."
+    elif avg_pct >= 40:
+        label, badge, icon = "Needs Focus", "needs-improvement", "fa-exclamation-circle"
+        desc = f"The average is {avg_pct}%. Prioritize core concepts, short practice cycles, and quick checks for understanding."
+    else:
+        label, badge, icon = "Critical Support Needed", "critical", "fa-times-circle"
+        desc = f"The average is {avg_pct}%. Treat this as an intervention signal: revisit fundamentals before moving ahead."
+
+    insights["performance"] = {
+        "label": label,
+        "badge": badge,
+        "icon": icon,
+        "description": desc,
+        "avg_pct": avg_pct,
+    }
+
+    subject_snapshot = []
+    subject_breakdown_values = subject_breakdown_chart["datasets"][0]["data"]
+    for subj, pct in zip(chart_subjects, subject_breakdown_values):
+        if pct is not None:
+            subject_snapshot.append((subj, pct))
+
+    sorted_subjects = sorted(subject_snapshot, key=lambda item: item[1], reverse=True)
+    if sorted_subjects:
+        best_subj, best_avg = sorted_subjects[0]
+        focus_subj, focus_avg = sorted_subjects[-1]
+        insights["subject_spotlight"].append({
+            "type": "strength",
+            "icon": "fa-arrow-up",
+            "message": f"<strong>Strongest subject signal:</strong> {best_subj.name} is leading at {best_avg}%. Use this as the model for what successful answers look like.",
+        })
+        if len(sorted_subjects) > 1:
+            gap = round(best_avg - focus_avg, 1)
+            insights["subject_spotlight"].append({
+                "type": "weakness",
+                "icon": "fa-arrow-down",
+                "message": f"<strong>Teaching focus:</strong> {focus_subj.name} is at {focus_avg}%, with a {gap}% gap from the strongest subject.",
+            })
+
+        excellent = sum(1 for _, v in sorted_subjects if v >= 80)
+        secure = sum(1 for _, v in sorted_subjects if 60 <= v < 80)
+        watch = sum(1 for _, v in sorted_subjects if v < 60)
+        insights["grade_breakdown"] = [
+            {"label": "Subjects 80%+", "count": excellent, "color": "#10b981"},
+            {"label": "Subjects 60-79%", "count": secure, "color": "#f59e0b"},
+            {"label": "Subjects below 60%", "count": watch, "color": "#ef4444"},
+        ]
+
+    if len(run_terminals) >= 2:
+        term_averages = []
+        for t in run_terminals:
+            term_avg = _analytics_avg_pct(stats_qs.filter(terminal=t))
+            if term_avg is not None:
+                term_averages.append((t, term_avg))
+
+        if len(term_averages) >= 2:
+            first_term, first_avg = term_averages[0]
+            last_term, last_avg = term_averages[-1]
+            delta = round(last_avg - first_avg, 1)
+            if delta > 5:
+                trend_icon = "fa-rocket"
+                trend_msg = f"<strong>Terminal-wise performance is rising:</strong> +{delta}% from {first_term} to {last_term}. Keep the current teaching rhythm and add challenge work."
+            elif delta > 2:
+                trend_icon = "fa-arrow-up"
+                trend_msg = f"<strong>Slight upward movement:</strong> +{delta}% across terminals. Small gains are visible; reinforce the routines that produced them."
+            elif delta > -2:
+                trend_icon = "fa-equals"
+                trend_msg = f"<strong>Stable terminal pattern:</strong> {delta}% change. This is consistent, but the next goal is lifting the middle band."
+            elif delta > -5:
+                trend_icon = "fa-arrow-down"
+                trend_msg = f"<strong>Mild decline:</strong> {delta}% from {first_term} to {last_term}. Check which topic or assessment type caused the dip."
+            else:
+                trend_icon = "fa-exclamation-triangle"
+                trend_msg = f"<strong>Clear decline:</strong> {delta}% across terminals. Pause for reteaching and a shorter diagnostic assessment."
+
+            insights["trend_analysis"].append({
+                "icon": trend_icon,
+                "message": trend_msg,
+                "delta": delta,
+            })
+
+    if pct_list:
+        mean_pct = sum(pct_list) / len(pct_list)
+        variance = sum((p - mean_pct) ** 2 for p in pct_list) / len(pct_list)
+        std_dev = round(variance ** 0.5, 1)
+        if std_dev < 8:
+            cons_label, cons_icon, cons_color = "Very Consistent", "fa-check-circle", "#10b981"
+            cons_desc = f"Scores vary by about +/-{std_dev}%. The group is moving together, so whole-class refinement should work well."
+        elif std_dev < 15:
+            cons_label, cons_icon, cons_color = "Moderately Varied", "fa-adjust", "#f59e0b"
+            cons_desc = f"Scores vary by about +/-{std_dev}%. Use flexible groups: one for consolidation, one for extension."
+        else:
+            cons_label, cons_icon, cons_color = "Highly Varied", "fa-chart-bar", "#ef4444"
+            cons_desc = f"Scores vary by about +/-{std_dev}%. The chart is asking for differentiated support, not one-size-fits-all teaching."
+
+        insights["consistency"] = {
+            "label": cons_label,
+            "icon": cons_icon,
+            "color": cons_color,
+            "std_dev": std_dev,
+            "description": cons_desc,
+        }
+
+    baseline_qs = Result.objects.filter(
+        student__in=teacher.students.all(),
+        subject__in=teacher.subjects.all(),
+    )
+    if terminal != "all":
+        baseline_qs = baseline_qs.filter(terminal=terminal)
+    baseline_avg = _analytics_avg_pct(baseline_qs)
+    if baseline_avg is not None:
+        diff = round(avg_pct - baseline_avg, 1)
+        if diff > 5:
+            comp_msg = f"<strong>Above your overall teaching baseline:</strong> this filter is {diff}% higher than your assigned-student average ({baseline_avg}%). Capture what is working here."
+        elif diff > 0:
+            comp_msg = f"<strong>Slightly above baseline:</strong> this filter is {diff}% above your assigned-student average ({baseline_avg}%)."
+        elif diff > -5:
+            comp_msg = f"<strong>Close to baseline:</strong> this filter is {abs(diff)}% below your assigned-student average ({baseline_avg}%)."
+        else:
+            comp_msg = f"<strong>Below baseline:</strong> this filter is {abs(diff)}% behind your assigned-student average ({baseline_avg}%). Make it your next support priority."
+        insights["comparative"].append({"message": comp_msg, "diff": diff})
+
+    dist_counts = distribution_chart["datasets"][0]["data"]
+    if len(dist_counts) >= 4:
+        insights["milestones"].append(f"<strong>Score distribution:</strong> {dist_counts[3]} excellent, {dist_counts[2]} secure, {dist_counts[1]} foundation, {dist_counts[0]} below pass.")
+    if pass_rate == 100:
+        insights["milestones"].append("<strong>Perfect pass rate:</strong> every result in this filter is at or above 40%.")
+    elif pass_rate >= 80:
+        insights["milestones"].append(f"<strong>Strong pass base:</strong> {pass_count} of {total} results are passing.")
+    if highest_pct >= 95:
+        insights["milestones"].append(f"<strong>High ceiling visible:</strong> at least one result reached {highest_pct}%.")
+    if below_40 == 0:
+        insights["milestones"].append("<strong>No below-pass result:</strong> the current filter has no mark under 40%.")
+
+    improving_count = sum(1 for row in trend_rows if row["arrow"] == "up")
+    declining_count = sum(1 for row in trend_rows if row["arrow"] == "down")
+    if improving_count:
+        insights["milestones"].append(f"<strong>Improvement signal:</strong> {improving_count} learner trend{'s' if improving_count != 1 else ''} point upward.")
+    if declining_count:
+        insights["milestones"].append(f"<strong>Watch list:</strong> {declining_count} learner trend{'s' if declining_count != 1 else ''} point downward.")
+
+    recommendations = []
+    if below_40:
+        recommendations.append(
+            f"<strong>Reteach the pass-border group:</strong> start with the {below_40} below-pass result{'s' if below_40 != 1 else ''}; use a 10-minute diagnostic, reteach one skill, then reassess quickly."
+        )
+    if sorted_subjects and sorted_subjects[-1][1] < 60:
+        recommendations.append(
+            f"<strong>Plan the next mini-lesson around {sorted_subjects[-1][0].name}:</strong> it is the weakest subject signal in the current graph."
+        )
+    if insights.get("consistency", {}).get("std_dev", 0) >= 15:
+        recommendations.append(
+            "<strong>Differentiate the next activity:</strong> use three groups: recovery, practice, and extension."
+        )
+    if regression_chart.get("slope") is not None and regression_chart["slope"] < -0.5:
+        recommendations.append(
+            "<strong>Respond to the regression dip:</strong> compare the last two terminals and identify the topic, question type, or attendance pattern behind the drop."
+        )
+    if avg_pct >= 75 and below_40 == 0:
+        recommendations.append(
+            "<strong>Raise the challenge:</strong> add application questions, peer explanation, or a higher-order task to prevent the group from plateauing."
+        )
+    if not recommendations:
+        recommendations.append(
+            f"<strong>Keep the teaching cycle tight:</strong> use the graphs to pick one target for {learner_label}, teach it, and check progress in the next mark entry."
+        )
+
+    insights["recommendations"] = recommendations
+    return insights
+
+
 @teacher_required
 def subject_analytics(request):
     teacher = request.teacher
@@ -7704,6 +7948,112 @@ def subject_analytics(request):
             "arrow": arrow,
         })
 
+    teacher_enriched_insights = _build_teacher_enhanced_insights(
+        teacher=teacher,
+        filtered_qs=filtered_qs,
+        stats_qs=stats_qs,
+        pct_list=pct_list,
+        avg_pct=avg_pct,
+        highest_pct=highest_pct,
+        lowest_pct=lowest_pct,
+        pass_rate=pass_rate,
+        pass_count=pass_count,
+        total=total,
+        below_40=below_40,
+        terminal=terminal,
+        run_terminals=run_terminals,
+        chart_subjects=chart_subjects,
+        analysis_mode=analysis_mode,
+        selected_student=selected_student,
+        class_section_raw=class_section_raw,
+        subject_breakdown_chart=subject_breakdown_chart,
+        regression_chart=regression_chart,
+        trend_rows=trend_rows,
+        distribution_chart=distribution_chart,
+    )
+
+    subject_snapshot = []
+    subject_breakdown_values = subject_breakdown_chart["datasets"][0]["data"]
+    for subj, pct in zip(chart_subjects, subject_breakdown_values):
+        if pct is not None:
+            subject_snapshot.append({"name": subj.name, "pct": pct})
+    strongest_subject = max(subject_snapshot, key=lambda item: item["pct"]) if subject_snapshot else None
+    focus_subject = min(subject_snapshot, key=lambda item: item["pct"]) if subject_snapshot else None
+
+    distribution_counts = distribution_chart["datasets"][0]["data"]
+    excellence_count = distribution_counts[3] if len(distribution_counts) > 3 else 0
+    secure_count = distribution_counts[2] if len(distribution_counts) > 2 else 0
+    foundation_count = distribution_counts[1] if len(distribution_counts) > 1 else 0
+    improving_count = sum(1 for row in trend_rows if row["arrow"] == "up")
+    declining_count = sum(1 for row in trend_rows if row["arrow"] == "down")
+    stable_count = sum(1 for row in trend_rows if row["arrow"] == "same")
+    slope = regression_chart.get("slope")
+
+    if analysis_mode == "single" and selected_student:
+        audience_label = selected_student.name
+        overview_prefix = f"{selected_student.name}'s graph"
+    else:
+        audience_label = "this group"
+        overview_prefix = "This class graph"
+
+    if pass_rate >= 90:
+        pass_message = f"Strong achievement: {pass_rate}% pass rate means most learners are already above the 40% benchmark."
+    elif pass_rate >= 70:
+        pass_message = f"Healthy base: {pass_rate}% pass rate shows the class is moving well, with a smaller group needing support."
+    else:
+        pass_message = f"Priority area: {pass_rate}% pass rate means the next teaching cycle should protect the basics first."
+
+    if slope is None:
+        trend_message = "Trend line needs more terminal data before it can confidently show direction."
+    elif slope > 0.5:
+        trend_message = f"The regression line is rising by about {slope}% per terminal, so the pattern is improving over time."
+    elif slope < -0.5:
+        trend_message = f"The regression line is falling by about {abs(slope)}% per terminal, so this is a good moment for early intervention."
+    else:
+        trend_message = "The regression line is steady, which means performance is not swinging wildly between terminals."
+
+    if strongest_subject and focus_subject and strongest_subject["name"] != focus_subject["name"]:
+        subject_message = (
+            f"{strongest_subject['name']} is the current bright spot at {strongest_subject['pct']}%, "
+            f"while {focus_subject['name']} needs the clearest next push at {focus_subject['pct']}%."
+        )
+    elif strongest_subject:
+        subject_message = f"{strongest_subject['name']} is the main subject in view, currently sitting at {strongest_subject['pct']}%."
+    else:
+        subject_message = "Subject breakdown will become more useful once marks are available for the selected filters."
+
+    if below_40:
+        recommendation_message = (
+            f"Start with the {below_40} result{'s' if below_40 != 1 else ''} below 40%: reteach the smallest missing skill, "
+            "give a short practice set, then check again quickly."
+        )
+    elif avg_pct >= 75:
+        recommendation_message = "Raise the ceiling: give challenge questions, peer explanation tasks, and one applied problem to stretch confident learners."
+    else:
+        recommendation_message = "Keep the momentum steady: revisit common mistakes, group similar learners, and use a quick exit ticket after revision."
+
+    teacher_graph_summary = {
+        "headline": (
+            f"{overview_prefix} is averaging {avg_pct}% across {total} result"
+            f"{'s' if total != 1 else ''}. The highest point is {highest_pct}% and the lowest point is {lowest_pct}%."
+        ),
+        "graph_reading": [
+            f"Terminal-wise performance shows how {audience_label} moves from one terminal to the next, not just the final score.",
+            f"Score distribution shows where the marks are clustered: {excellence_count} excellent, {secure_count} secure, {foundation_count} foundation, and {below_40} below pass.",
+            trend_message,
+        ],
+        "achievements": [
+            pass_message,
+            subject_message,
+            f"Trend table signal: {improving_count} improving, {stable_count} steady, and {declining_count} declining learner pattern{'s' if analysis_mode == 'bulk' else ''}.",
+        ],
+        "recommendations": [
+            recommendation_message,
+            "Use the weakest subject or grade band as tomorrow's mini-lesson, then use the strongest area as the model answer standard.",
+            "When a chart looks flat, look for consistency; when it drops, look for the exact topic taught before that terminal.",
+        ],
+    }
+
     return render(request, "core/dashboard/subject_analytics.html", {
         "subject_obj": Subject.objects.filter(id=subject_id).first() if subject_id is not None else None,
         "subject_id": subject_id_raw,
@@ -7724,6 +8074,8 @@ def subject_analytics(request):
         "below_40": below_40,
         "trend_rows": trend_rows,
         "insight_lines": insight_lines,
+        "teacher_graph_summary": teacher_graph_summary,
+        "teacher_enriched_insights": teacher_enriched_insights,
         "available_subjects": all_subjects,
         "terminals": terminals,
         "is_teacher": True,
@@ -8732,4 +9084,3 @@ def activity_log_flat(user, action, description=''):
         NotificationService.log_activity(user, action, description)
     except Exception:
         pass
-

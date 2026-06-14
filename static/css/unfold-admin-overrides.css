@@ -1,0 +1,24 @@
+/* Admin login — black/white text for light and dark themes */
+.login h1,
+.login h2 {
+    color: #0a0a0a;
+}
+.dark .login h1,
+.dark .login h2,
+html.dark .login h1,
+html.dark .login h2 {
+    color: #fafafa;
+}
+.login label,
+.login .help,
+.login .errornote {
+    color: #27272a;
+}
+.dark .login label,
+.dark .login .help,
+.dark .login .errornote,
+html.dark .login label,
+html.dark .login .help,
+html.dark .login .errornote {
+    color: #d4d4d8;
+}

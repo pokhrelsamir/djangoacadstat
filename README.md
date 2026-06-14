@@ -1,4 +1,4 @@
-# AcadStat — Academic Statistics System
+# AcadStat — Student Result and Performance Analysis System
 
 Django-based academic management system for student performance, attendance, exams, and reporting.
 

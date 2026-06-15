@@ -6,7 +6,33 @@
     <style>
         .gpa-hero-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.85rem; }
         .chart-wrap { position: relative; width: 100%; min-height: 260px; }
-        .chart-wrap canvas { max-height: 300px; }
+        .chart-wrap canvas { max-height: 320px; }
+        .chart-wrap.compact { min-height: 230px; }
+        .forecast-kpi {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .forecast-kpi .mini-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--ds-radius-sm);
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+        }
+        .mini-label {
+            color: var(--text-muted);
+            font-size: var(--ds-text-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .mini-value {
+            color: var(--text-primary);
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin-top: 0.2rem;
+            font-variant-numeric: tabular-nums;
+        }
         .risk-banner {
             display: flex; align-items: flex-start; gap: 0.75rem;
             padding: 0.85rem 1rem; border-radius: var(--ds-radius-sm);
@@ -42,10 +68,17 @@
             margin-top: 0.75rem;
         }
         .strength-item {
-            display: flex; align-items: center; justify-content: space-between;
+            display: grid; grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center; justify-content: space-between;
             gap: 0.75rem; padding: 0.65rem 0;
             border-bottom: 1px solid var(--border-color);
             font-size: var(--ds-text-sm);
+        }
+        .strength-meta { color: var(--text-muted); font-size: var(--ds-text-xs); margin-top: 0.15rem; }
+        .trend-pill {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            margin-left: 0.4rem; color: var(--text-muted);
+            font-size: var(--ds-text-xs);
         }
         .strength-item:last-child { border-bottom: none; }
         .strength-badge {
@@ -55,9 +88,27 @@
         .strength-badge.strong { background: rgba(16,185,129,0.15); color: var(--ds-success); }
         .strength-badge.average { background: rgba(245,158,11,0.15); color: var(--ds-warning); }
         .strength-badge.weak { background: rgba(239,68,68,0.12); color: var(--ds-danger); }
-        .metric-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: var(--ds-text-sm); }
+        .metric-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: var(--ds-text-sm); gap: 1rem; }
         .metric-row .lbl { color: var(--text-muted); }
         .metric-row .val { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+        .recommendation-list {
+            display: grid;
+            gap: 0.6rem;
+            margin-top: 0.75rem;
+        }
+        .recommendation-item {
+            display: flex;
+            gap: 0.55rem;
+            align-items: flex-start;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--ds-radius-sm);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: var(--ds-text-sm);
+            line-height: 1.45;
+        }
+        .recommendation-item i { color: var(--ds-accent); margin-top: 0.15rem; }
         @media (max-width: 480px) {
             .gpa-hero-actions .btn.ds { width: 100%; }
         }
@@ -105,6 +156,12 @@
                 <p class="text-muted" style="margin:0.25rem 0 0;">/ 4.0 scale</p>
             </div>
             <div class="stat-card">
+                <div class="stat-icon-wrap info"><i class="fas fa-chart-simple"></i></div>
+                <div class="stat-label">Projected CGPA</div>
+                <div class="stat-value">{{ projected_cgpa }}</div>
+                <p class="text-muted" style="margin:0.25rem 0 0;">trend-based</p>
+            </div>
+            <div class="stat-card">
                 <div class="stat-icon-wrap success"><i class="fas fa-bullseye"></i></div>
                 <div class="stat-label">Target CGPA</div>
                 <div class="stat-value">{{ target_cgpa }}</div>
@@ -129,7 +186,7 @@
                 <span class="step-badge">1</span>
                 <div>
                     <h2 class="section-title">Goal System</h2>
-                    <p class="card-subtitle">Set your target CGPA</p>
+                    <p class="card-subtitle">Set your target CGPA and compare it with the temporal forecast</p>
                 </div>
             </div>
             <form method="get" class="form-row ds" style="max-width:480px;">
@@ -150,6 +207,24 @@
             <div class="metric-row">
                 <span class="lbl">Remaining credits (est.)</span><span class="val">{{ remaining_credits }}</span>
             </div>
+            <div class="forecast-kpi">
+                <div class="mini-card">
+                    <div class="mini-label">Backtest Samples</div>
+                    <div class="mini-value">{{ validation.sample_size }}</div>
+                </div>
+                <div class="mini-card">
+                    <div class="mini-label">Mean Error</div>
+                    <div class="mini-value">{% if validation.mae != None %}{{ validation.mae }}{% else %}—{% endif %}</div>
+                </div>
+                <div class="mini-card">
+                    <div class="mini-label">Reliability</div>
+                    <div class="mini-value">{% if validation.reliability_score != None %}{{ validation.reliability_score }}%{% else %}—{% endif %}</div>
+                </div>
+            </div>
+            <div class="output-pill">
+                <i class="fas fa-shield-halved" style="color:var(--ds-accent);"></i>
+                {{ validation.message }}
+            </div>
         </section>
 
         {% if has_data %}
@@ -158,8 +233,8 @@
                 <div class="card-head">
                     <span class="step-badge">2</span>
                     <div>
-                        <h2 class="section-title">Semester GPA Trend</h2>
-                        <p class="card-subtitle">GPA by terminal period (from your marks)</p>
+                        <h2 class="section-title">Observed vs Forecast GPA</h2>
+                        <p class="card-subtitle">Terminal GPA from teacher marks with projected future periods</p>
                     </div>
                 </div>
                 <div class="chart-wrap">
@@ -171,7 +246,7 @@
                     <span class="step-badge">3</span>
                     <div>
                         <h2 class="section-title">CGPA Growth Curve</h2>
-                        <p class="card-subtitle">Cumulative GPA over completed periods</p>
+                        <p class="card-subtitle">Observed cumulative GPA plus projected CGPA trajectory</p>
                     </div>
                 </div>
                 <div class="chart-wrap">
@@ -229,12 +304,46 @@
             </section>
         </div>
 
+        <div class="ds-grid two-col fade-in">
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">6</span>
+                    <div>
+                        <h2 class="section-title">Subject Strength Map</h2>
+                        <p class="card-subtitle">Average percentage by subject, colored by risk band</p>
+                    </div>
+                </div>
+                <div class="chart-wrap compact">
+                    <canvas id="subjectStrengthChart"></canvas>
+                </div>
+            </section>
+            <section class="section-card">
+                <div class="card-head">
+                    <span class="step-badge">7</span>
+                    <div>
+                        <h2 class="section-title">Forecast Validation</h2>
+                        <p class="card-subtitle">Rolling one-step prediction compared with actual terminal GPA</p>
+                    </div>
+                </div>
+                {% if validation.points %}
+                <div class="chart-wrap compact">
+                    <canvas id="validationChart"></canvas>
+                </div>
+                {% else %}
+                <div class="empty-state" style="padding:1.5rem 0;">
+                    <i class="fas fa-chart-line"></i>
+                    <p style="margin:0;">More completed terminals are needed for visual backtesting.</p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
         <section class="section-card fade-in">
             <div class="card-head">
-                <span class="step-badge">6</span>
+                <span class="step-badge">8</span>
                 <div>
                     <h2 class="section-title">CGPA Engine — Period Breakdown</h2>
-                    <p class="card-subtitle">Semester-wise GPA aggregation from teacher-entered marks</p>
+                    <p class="card-subtitle">Terminal-wise GPA aggregation from teacher-entered subject marks</p>
                 </div>
             </div>
             <div class="table-wrap">
@@ -245,6 +354,8 @@
                             <th class="num">Terminal</th>
                             <th class="num">Subjects</th>
                             <th class="num">Credits</th>
+                            <th class="num">Avg %</th>
+                            <th class="num">Fails</th>
                             <th class="num">GPA</th>
                         </tr>
                     </thead>
@@ -255,6 +366,8 @@
                             <td class="num">{{ p.terminal }}</td>
                             <td class="num">{{ p.subject_count }}</td>
                             <td class="num">{{ p.credits }}</td>
+                            <td class="num">{{ p.overall_pct }}%</td>
+                            <td class="num">{{ p.failed_subjects }}</td>
                             <td class="num"><span class="cell-value">{{ p.gpa }}</span></td>
                         </tr>
                         {% endfor %}
@@ -265,10 +378,10 @@
 
         <section class="section-card fade-in">
             <div class="card-head">
-                <span class="step-badge">7</span>
+                <span class="step-badge">9</span>
                 <div>
                     <h2 class="section-title">Subject Strength Analyzer</h2>
-                    <p class="card-subtitle">≥70% strong · 50–69% average · &lt;50% weak</p>
+                    <p class="card-subtitle">Temporal subject trends from all teacher-entered terminal marks</p>
                 </div>
             </div>
             {% if strengths %}
@@ -277,7 +390,14 @@
                 <div class="strength-item">
                     <div>
                         <strong>{{ s.subject }}</strong>
-                        <span class="text-muted" style="margin-left:0.35rem;">{{ s.average_pct }}%</span>
+                        <span class="text-muted" style="margin-left:0.35rem;">avg {{ s.average_pct }}%</span>
+                        <span class="trend-pill">
+                            {% if s.trend == 'improving' %}<i class="fas fa-arrow-up" style="color:var(--ds-success);"></i>
+                            {% elif s.trend == 'declining' %}<i class="fas fa-arrow-down" style="color:var(--ds-danger);"></i>
+                            {% else %}<i class="fas fa-minus" style="color:var(--text-muted);"></i>{% endif %}
+                            {{ s.trend }}
+                        </span>
+                        <div class="strength-meta">Latest {{ s.latest_pct }}% · {{ s.samples }} mark{{ s.samples|pluralize }} · trend {{ s.trend_delta }}</div>
                     </div>
                     <span class="strength-badge {{ s.level }}">{{ s.label }}</span>
                 </div>
@@ -288,8 +408,28 @@
             {% endif %}
         </section>
 
+        <section class="section-card fade-in">
+            <div class="card-head">
+                <span class="step-badge">10</span>
+                <div>
+                    <h2 class="section-title">Optimization Notes</h2>
+                    <p class="card-subtitle">Actionable guidance from the forecasting model</p>
+                </div>
+            </div>
+            <div class="recommendation-list">
+                {% for item in recommendations %}
+                <div class="recommendation-item">
+                    <i class="fas fa-circle-check"></i>
+                    <span>{{ item }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
         {{ semester_gpa_chart|json_script:"semester-gpa-chart" }}
         {{ cgpa_growth_chart|json_script:"cgpa-growth-chart" }}
+        {{ subject_strength_chart|json_script:"subject-strength-chart" }}
+        {{ validation_chart|json_script:"validation-chart" }}
 
         <script>
         (function() {
@@ -300,11 +440,23 @@
             function lineOpts(yl) {
                 const t = chartTheme();
                 return {
-                    responsive: true, maintainAspectRatio: true,
+                    responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { position: 'bottom', labels: { color: t.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 }, boxWidth: 12 } },
-                        tooltip: { backgroundColor: cssVar('--bg-card', '#1e293b'), titleColor: t.title, bodyColor: t.text, borderColor: t.grid, borderWidth: 1 }
+                        tooltip: {
+                            backgroundColor: cssVar('--bg-card', '#1e293b'),
+                            titleColor: t.title,
+                            bodyColor: t.text,
+                            borderColor: t.grid,
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(ctx) {
+                                    const value = ctx.parsed.y;
+                                    return ' ' + ctx.dataset.label + ': ' + (value == null ? '—' : value.toFixed(2));
+                                }
+                            }
+                        }
                     },
                     scales: {
                         x: { ticks: { color: t.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } }, grid: { color: t.grid } },
@@ -312,19 +464,44 @@
                     }
                 };
             }
+            function barOpts(yl) {
+                const t = chartTheme();
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: cssVar('--bg-card', '#1e293b'), titleColor: t.title, bodyColor: t.text, borderColor: t.grid, borderWidth: 1 }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, max: 100, title: { display: true, text: yl, color: t.text }, ticks: { color: t.text, callback: function(v) { return v + '%'; } }, grid: { color: t.grid } },
+                        y: { ticks: { color: t.text, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11 } }, grid: { display: false } }
+                    }
+                };
+            }
             function build(id, dataId, yl) {
                 const el = document.getElementById(id), dEl = document.getElementById(dataId);
                 if (!el || !dEl) return null;
                 const data = JSON.parse(dEl.textContent);
-                data.datasets = data.datasets.map(ds => Object.assign({ borderWidth: 2.5, pointRadius: 4, spanGaps: true }, ds));
+                data.datasets = data.datasets.map(ds => Object.assign({ borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6, spanGaps: true }, ds));
                 return new Chart(el, { type: 'line', data, options: lineOpts(yl) });
+            }
+            function buildBar(id, dataId, yl) {
+                const el = document.getElementById(id), dEl = document.getElementById(dataId);
+                if (!el || !dEl) return null;
+                return new Chart(el, { type: 'bar', data: JSON.parse(dEl.textContent), options: barOpts(yl) });
             }
             let c1 = build('semesterGpaChart', 'semester-gpa-chart', 'GPA');
             let c2 = build('cgpaGrowthChart', 'cgpa-growth-chart', 'CGPA');
+            let c3 = buildBar('subjectStrengthChart', 'subject-strength-chart', 'Average %');
+            let c4 = build('validationChart', 'validation-chart', 'GPA');
             window.onThemeChange = function() {
-                if (c1) c1.destroy(); if (c2) c2.destroy();
+                if (c1) c1.destroy(); if (c2) c2.destroy(); if (c3) c3.destroy(); if (c4) c4.destroy();
                 c1 = build('semesterGpaChart', 'semester-gpa-chart', 'GPA');
                 c2 = build('cgpaGrowthChart', 'cgpa-growth-chart', 'CGPA');
+                c3 = buildBar('subjectStrengthChart', 'subject-strength-chart', 'Average %');
+                c4 = build('validationChart', 'validation-chart', 'GPA');
             };
         })();
         </script>

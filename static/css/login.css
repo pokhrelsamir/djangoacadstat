@@ -681,7 +681,8 @@ html[data-theme="light"] .login-visual-content p {
         font-size: 0.85rem;
 
         display: -webkit-box;
-
+        
+        line-clamp: 2;
         -webkit-line-clamp: 2;
 
         -webkit-box-orient: vertical;

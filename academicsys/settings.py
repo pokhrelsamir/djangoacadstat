@@ -4,11 +4,13 @@ from django.templatetags.static import static
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+IS_VERCEL = os.environ.get('VERCEL') == '1'
+
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
     'dev-secret-key-for-local-development-only-change-in-production-2026'
 )
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in ('true', '1', 'yes')
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False' if IS_VERCEL else 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = [
     host.strip()
@@ -29,12 +31,12 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', str(not DEBUG)).lower() in ('true', '1', 'yes')
-SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', str(not DEBUG)).lower() in ('true', '1', 'yes')
-CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', str(not DEBUG)).lower() in ('true', '1', 'yes')
-SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_SECURE_HSTS_SECONDS', '31536000' if not DEBUG else '0'))
-SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', str(not DEBUG)).lower() in ('true', '1', 'yes')
-SECURE_HSTS_PRELOAD = os.environ.get('DJANGO_SECURE_HSTS_PRELOAD', str(not DEBUG)).lower() in ('true', '1', 'yes')
+SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', str(IS_VERCEL)).lower() in ('true', '1', 'yes')
+SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', str(IS_VERCEL)).lower() in ('true', '1', 'yes')
+CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', str(IS_VERCEL)).lower() in ('true', '1', 'yes')
+SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_SECURE_HSTS_SECONDS', '31536000' if IS_VERCEL else '0'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', str(IS_VERCEL)).lower() in ('true', '1', 'yes')
+SECURE_HSTS_PRELOAD = os.environ.get('DJANGO_SECURE_HSTS_PRELOAD', str(IS_VERCEL)).lower() in ('true', '1', 'yes')
 
 INSTALLED_APPS = [
     'unfold',

@@ -15,6 +15,8 @@ class Subject(models.Model):
     total_marks = models.PositiveIntegerField(default=100, help_text="Default total marks for this subject")
     is_practical = models.BooleanField(default=False, help_text="Is this a practical/internal subject")
     pass_marks = models.PositiveIntegerField(default=40, help_text="Minimum marks to pass")
+    # Note: Class model defined below; using forward reference in M2M
+    classes = models.ManyToManyField('Class', related_name='subjects', blank=True, help_text="Leave empty to assign to all classes")
 
     class Meta:
         ordering = ['name']
@@ -62,7 +64,47 @@ class Semester(models.Model):
         return f'Semester {self.number}'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 4. ACADEMIC YEAR MODEL
+# 4. CLASS/SECTION MODEL
+# ─────────────────────────────────────────────────────────────────────────────
+class Class(models.Model):
+    LEVEL_CHOICES = [
+        ('school', 'School Level (1-10)'),
+        ('college', 'College Level (XI-XII)'),
+        ('bachelor', 'Bachelor Level'),
+    ]
+
+    name = models.CharField(
+        max_length=20,
+        help_text="Class/Grade designation (e.g., 1, 5, 10, XI, XII, Semester 1)"
+    )
+    section = models.CharField(
+        max_length=5,
+        help_text="Section/Division (e.g., A, B, C)"
+    )
+    level = models.CharField(
+        max_length=20,
+        choices=LEVEL_CHOICES,
+        help_text="Education level for this class"
+    )
+    capacity = models.PositiveIntegerField(default=50, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('name', 'section', 'level')]
+        ordering = ['level', 'name', 'section']
+        verbose_name = 'Class/Section'
+        verbose_name_plural = 'Classes/Sections'
+
+    def __str__(self):
+        return f"{self.name} - Section {self.section}"
+
+    @property
+    def student_count(self):
+        return self.students.count()
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. ACADEMIC YEAR MODEL
 # ─────────────────────────────────────────────────────────────────────────────
 class AcademicYear(models.Model):
     name = models.CharField(max_length=20, unique=True, help_text="e.g. 2025-2026")
@@ -215,6 +257,7 @@ class Student(models.Model):
     student_class = models.CharField(max_length=20, help_text="Class/Division (e.g., 1, 5, 10, XI, XII, etc.)")
     section = models.CharField(max_length=5)
     semester = models.CharField(max_length=20, null=True, blank=True, help_text="Semester for Bachelor level (1-8)")
+    class_section = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', help_text="Normalized class/section reference")
     date_of_birth = models.DateField(null=True, blank=True)
     image = models.ImageField(upload_to='student_images/', null=True, blank=True, help_text="Student photo")
     created_at = models.DateTimeField(auto_now_add=True)

@@ -2,7 +2,7 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin, StackedInline, TabularInline
 from core.forms import StudentAdminForm
 from .models import (
-    Student, Subject, Result, Teacher, CourseMaterial,
+    Student, Subject, Result, Teacher, CourseMaterial, Class,
     EducationLevel, Semester, AcademicYear, Department,
     GradeScale, Parent, StudentAcademicHistory, Attendance,
     Assignment, AssignmentSubmission, Exam, Fee,
@@ -58,6 +58,14 @@ class FeeInline(TabularInline):
     readonly_fields = ('status',)
 
 
+class SubjectInline(TabularInline):
+    model = Subject.classes.through
+    extra = 0
+    fields = ('subject',)
+    verbose_name = 'Subject'
+    verbose_name_plural = 'Subjects'
+
+
 # ── Model admin registrations ────────────────────────────────────────────────
 
 @admin.register(EducationLevel)
@@ -71,6 +79,22 @@ class SemesterAdmin(ModelAdmin):
     list_display = ('number', 'label')
     ordering = ('number',)
     list_filter = ('number',)
+
+
+@admin.register(Class)
+class ClassAdmin(ModelAdmin):
+    list_display = ('name', 'section', 'level', 'capacity', 'student_count', 'is_active')
+    list_editable = ('is_active',)
+    ordering = ('level', 'name', 'section')
+    list_filter = ('level', 'is_active')
+    search_fields = ('name', 'section')
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'section', 'level', 'capacity', 'is_active')
+        }),
+    )
+    inlines = [StudentInline]
+    readonly_fields = ('created_at',)
 
 
 @admin.register(AcademicYear)
@@ -204,18 +228,18 @@ class TeacherAdmin(ModelAdmin):
 class StudentAdmin(ModelAdmin):
     form = StudentAdminForm
     list_display = (
-        'name', 'roll_number', 'level', 'student_class', 'section',
+        'name', 'roll_number', 'get_class_display', 'level',
         'semester', 'phone', 'email', 'attendance_percentage',
         'get_teachers_count', 'get_parent_count',
     )
     search_fields = ('name', 'roll_number', 'phone', 'email')
-    list_filter = ('level', 'student_class', 'section', 'semester', 'academic_year', 'teachers', 'is_promoted')
-    ordering = ('student_class', 'name')
+    list_filter = ('level', 'class_section', 'semester', 'academic_year', 'teachers', 'is_promoted')
+    ordering = ('class_section', 'name')
     filter_horizontal = ('teachers',)
     inlines = [ParentInline, StudentAcademicHistoryInline, FeeInline]
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'roll_number', 'level', 'student_class', 'section',
+            'fields': ('name', 'roll_number', 'level', 'class_section', 'student_class', 'section',
                        'semester', 'date_of_birth', 'gender', 'blood_group',
                        'admission_date', 'academic_year', 'house', 'scholarship', 'is_promoted')
         }),
@@ -229,6 +253,12 @@ class StudentAdmin(ModelAdmin):
     class Media:
         css = {'all': ('css/student_admin.css',)}
         js = ('js/student_admin.js',)
+
+    def get_class_display(self, obj):
+        if obj.class_section:
+            return f"{obj.class_section.name} - Section {obj.class_section.section}"
+        return f"{obj.student_class} - {obj.section}" if obj.student_class else "-"
+    get_class_display.short_description = 'Class'
 
     def get_teachers_count(self, obj):
         return obj.teachers.count()
@@ -373,12 +403,24 @@ class NotificationAdmin(ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(ModelAdmin):
-    list_display = ('name', 'code', 'total_marks', 'pass_marks', 'is_practical')
+    list_display = ('name', 'code', 'total_marks', 'pass_marks', 'is_practical', 'get_classes_display')
     search_fields = ('name', 'code')
     ordering = ('name',)
+    filter_horizontal = ('classes',)
     fieldsets = (
         (None, {'fields': ('name', 'code', 'total_marks', 'pass_marks', 'is_practical')}),
+        ('Class Assignments', {
+            'fields': ('classes',),
+            'description': 'Leave empty to assign this subject to all classes'
+        }),
     )
+
+    def get_classes_display(self, obj):
+        classes = obj.classes.all()
+        if not classes.exists():
+            return "All Classes"
+        return ", ".join([str(c) for c in classes[:3]]) + ("..." if classes.count() > 3 else "")
+    get_classes_display.short_description = 'Assigned to'
 
 
 @admin.register(Result)

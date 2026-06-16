@@ -69,6 +69,7 @@ urlpatterns = [
 
     # ── Course Materials ──────────────────────────────────────────────────────
     path('course-materials/', views.course_materials, name='course_materials'),
+    path('view-materials/', views.view_course_materials, name='view_materials'),
     path('view-materials/', views.view_course_materials, name='view_caterials'),
     path('delete-material/<int:material_id>/', views.delete_course_material, name='delete_course_material'),
     path('notes/', views.student_notes_view, name='student_notes'),

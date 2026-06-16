@@ -138,6 +138,109 @@
              text-align: center;
              border-top: 1px solid var(--border-color);
          }
+
+         .navbar.app-nav-style .lg-nav-inner {
+             overflow: visible !important;
+         }
+
+         .notifications-dropdown {
+             position: relative;
+             z-index: 3000;
+             display: inline-flex;
+             align-items: center;
+         }
+
+         .notifications-btn {
+             pointer-events: auto;
+             display: inline-flex;
+             align-items: center;
+             justify-content: center;
+         }
+
+          #notificationsPanel {
+              position: fixed !important;
+              top: 72px !important;
+              right: 1.25rem !important;
+              width: min(420px, calc(100vw - 2rem)) !important;
+              max-height: min(560px, calc(100vh - 96px)) !important;
+              overflow-y: auto !important;
+               background: #ffffff !important;
+              color: #111827 !important;
+              border: 1px solid rgba(209, 213, 219, 0.6) !important;
+              border-radius: 12px !important;
+              box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.3) inset !important;
+              z-index: 5000 !important;
+              margin-top: 0 !important;
+              isolation: isolate;
+          }
+
+          html[data-theme="dark"] #notificationsPanel {
+               background: #0f172a !important;
+              color: #f8fafc !important;
+              border-color: rgba(51, 65, 85, 0.6) !important;
+              box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+          }
+
+         #notificationsPanel .notifications-header {
+             background: inherit !important;
+             color: inherit !important;
+             position: sticky;
+             top: 0;
+             z-index: 1;
+         }
+
+         #notificationsPanel .notification-title {
+             color: inherit;
+         }
+
+         #notificationsPanel .notification-message,
+         #notificationsPanel .notification-meta,
+         #notificationsPanel .empty-notifications {
+             color: #4b5563;
+         }
+
+         html[data-theme="dark"] #notificationsPanel .notification-message,
+         html[data-theme="dark"] #notificationsPanel .notification-meta,
+         html[data-theme="dark"] #notificationsPanel .empty-notifications {
+             color: #cbd5e1;
+         }
+
+         #notificationsPanel .notification-item {
+             background: transparent !important;
+         }
+
+         #notificationsPanel .notification-item:hover {
+             background: #f3f4f6 !important;
+         }
+
+         html[data-theme="dark"] #notificationsPanel .notification-item:hover {
+             background: #1e293b !important;
+         }
+
+         #notificationsPanel .notification-item.unread {
+             background: #eef2ff !important;
+         }
+
+         html[data-theme="dark"] #notificationsPanel .notification-item.unread {
+             background: #172554 !important;
+         }
+
+          #notificationsOverlay {
+              display: none;
+              position: fixed;
+              inset: 0;
+              background: transparent;
+              z-index: 2999;
+          }
+
+          @media (max-width: 640px) {
+              #notificationsPanel {
+                  top: 68px !important;
+                  right: 0.75rem !important;
+                  left: 0.75rem !important;
+                  width: auto !important;
+              }
+          }
         
     </style>
 </head>
@@ -159,7 +262,7 @@
              
              <!-- Notifications Dropdown -->
              <div class="notifications-dropdown" id="notificationsDropdown" style="position: relative; display: inline-block;">
-                 <button class="notifications-btn" id="notificationsBtn" aria-label="Notifications" style="position: relative; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 10px; padding: 0.5rem 0.75rem; cursor: pointer; color: var(--text-primary); transition: all 0.3s ease;">
+                 <button type="button" class="notifications-btn" id="notificationsBtn" aria-label="Notifications" style="position: relative; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 10px; padding: 0.5rem 0.75rem; cursor: pointer; color: var(--text-primary); transition: all 0.3s ease;">
                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -170,7 +273,7 @@
                  </button>
                  
                  <!-- Notifications Panel -->
-                 <div id="notificationsPanel" style="display: none; position: absolute; top: 100%; right: 0; width: 380px; max-height: 500px; overflow-y: auto; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; margin-top: 0.5rem;">
+                 <div id="notificationsPanel" style="display: none;">
                      <div class="notifications-header" style="padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                          <h4 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-primary);">Notifications</h4>
                          {% if total_unread > 0 %}
@@ -202,6 +305,9 @@
              </button>
          </div>
      </nav>
+
+    <!-- Notification overlay backdrop -->
+    <div id="notificationsOverlay"></div>
 
     <main class="app-shell app-shell--wide">
         {% if error %}
@@ -456,14 +562,31 @@
          const notificationsList = document.getElementById('notificationsList');
          const markAllReadBtn = document.getElementById('markAllReadBtn');
          const notificationBadge = document.getElementById('notificationBadge');
+         let notificationBadgeCleared = false;
          
+         const notificationsOverlay = document.getElementById('notificationsOverlay');
+
+         function openNotificationsPanel() {
+             notificationsPanel.style.display = 'block';
+             if (notificationsOverlay) notificationsOverlay.style.display = 'block';
+         }
+
+         function closeNotificationsPanel() {
+             notificationsPanel.style.display = 'none';
+             if (notificationsOverlay) notificationsOverlay.style.display = 'none';
+         }
+
          if (notificationsBtn) {
              // Toggle dropdown visibility
              notificationsBtn.addEventListener('click', function(e) {
                  e.stopPropagation();
                  const isVisible = notificationsPanel.style.display === 'block';
-                 notificationsPanel.style.display = isVisible ? 'none' : 'block';
-                 if (!isVisible) {
+                 if (isVisible) {
+                     closeNotificationsPanel();
+                 } else {
+                     openNotificationsPanel();
+                     clearNotificationBadge();
+                     markAllNotificationsReadSilently();
                      loadNotifications();
                  }
              });
@@ -471,9 +594,16 @@
              // Close dropdown when clicking outside
              document.addEventListener('click', function(e) {
                  if (!notificationsPanel.contains(e.target) && e.target !== notificationsBtn) {
-                     notificationsPanel.style.display = 'none';
+                     closeNotificationsPanel();
                  }
              });
+
+             // Close dropdown when clicking the overlay
+             if (notificationsOverlay) {
+                 notificationsOverlay.addEventListener('click', function() {
+                     closeNotificationsPanel();
+                 });
+             }
              
              // Prevent dropdown from closing when clicking inside
              notificationsPanel.addEventListener('click', function(e) {
@@ -488,7 +618,7 @@
                  const data = await response.json();
                  
                  if (data.success) {
-                     renderNotifications(data.notifications, data.unread_count);
+                     renderClickableNotifications(data.notifications, data.unread_count);
                  } else {
                      notificationsList.innerHTML = '<div class="empty-notifications"><p>No notifications available</p></div>';
                  }
@@ -496,6 +626,76 @@
                  console.error('Error loading notifications:', error);
                  notificationsList.innerHTML = '<div class="empty-notifications"><p>Failed to load notifications</p></div>';
              }
+         }
+
+         function renderClickableNotifications(notifications, unreadCount) {
+             if (!notifications || notifications.length === 0) {
+                 notificationsList.innerHTML = `
+                     <div class="empty-notifications">
+                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                         </svg>
+                         <p>No notifications yet</p>
+                     </div>
+                 `;
+                 if (notificationBadge) notificationBadge.style.display = 'none';
+                 return;
+             }
+
+             const iconMap = {
+                 info: '<span class="type-icon type-info">i</span>',
+                 success: '<span class="type-icon type-success">OK</span>',
+                 warning: '<span class="type-icon type-warning">!</span>',
+                 danger: '<span class="type-icon type-danger">!</span>'
+             };
+
+             notificationsList.innerHTML = notifications.map((notif) => {
+                 const isUnread = !notif.is_read ? 'unread' : '';
+                 const icon = iconMap[notif.type] || iconMap.info;
+                 const linkUrl = normalizeNotificationUrl(notif.link_url);
+                 const tagName = linkUrl ? 'a' : 'button';
+                 const hrefAttr = linkUrl ? `href="${escapeAttribute(linkUrl)}"` : 'type="button"';
+                 const sender = notif.sender ? `<span>From: ${escapeHtml(notif.sender)}</span>` : '';
+
+                 return `
+                     <${tagName} class="notification-item ${isUnread}" data-id="${notif.id}" data-link-url="${escapeAttribute(linkUrl)}" ${hrefAttr} style="display:block;width:100%;text-align:left;text-decoration:none;background:transparent;border:0;color:inherit;">
+                         <div class="notification-title">${icon} ${escapeHtml(notif.title)}</div>
+                         <div class="notification-message">${escapeHtml(notif.message)}</div>
+                         <div class="notification-meta">
+                             <span>${getTimeAgo(notif.created_at)}</span>
+                             ${sender}
+                         </div>
+                     </${tagName}>
+                 `;
+             }).join('');
+
+             if (notificationBadge && !notificationBadgeCleared) {
+                 if (unreadCount > 0) {
+                     notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                     notificationBadge.style.display = 'block';
+                 } else {
+                     notificationBadge.style.display = 'none';
+                 }
+             }
+         }
+
+         function clearNotificationBadge() {
+             notificationBadgeCleared = true;
+             if (notificationBadge) {
+                 notificationBadge.textContent = '';
+                 notificationBadge.style.display = 'none';
+             }
+         }
+
+         function markAllNotificationsReadSilently() {
+             fetch('/api/mark-all-notifications-read/', {
+                 method: 'POST',
+                 headers: {
+                     'X-CSRFToken': '{{ csrf_token }}',
+                     'Content-Type': 'application/json'
+                 }
+             }).catch(err => console.warn('Failed to mark notifications read:', err));
          }
          
          // Render notifications list
@@ -584,6 +784,17 @@
                  window.location.href = linkUrl;
              }
          }
+
+         notificationsList?.addEventListener('click', function(e) {
+             const item = e.target.closest('.notification-item');
+             if (!item) return;
+
+             const notificationId = parseInt(item.dataset.id, 10);
+             if (!notificationId) return;
+
+             e.preventDefault();
+             markAsReadAndNavigate(notificationId, item.dataset.linkUrl || '');
+         });
          
          // Mark all as read
          if (markAllReadBtn) {
@@ -632,6 +843,30 @@
              if (days < 7) return `${days}d ago`;
              
              return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+         }
+
+         function normalizeNotificationUrl(url) {
+             if (!url) return '';
+             if (url.startsWith('/') || url.startsWith('http://') || url.startsWith('https://')) {
+                 return url;
+             }
+             return '';
+         }
+
+         function escapeHtml(value) {
+             return String(value || '').replace(/[&<>"']/g, function(char) {
+                 return {
+                     '&': '&amp;',
+                     '<': '&lt;',
+                     '>': '&gt;',
+                     '"': '&quot;',
+                     "'": '&#39;'
+                 }[char];
+             });
+         }
+
+         function escapeAttribute(value) {
+             return escapeHtml(value).replace(/`/g, '&#96;');
          }
          
           // Periodic refresh of notifications (every 60 seconds)

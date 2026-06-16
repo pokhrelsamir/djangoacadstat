@@ -2216,6 +2216,7 @@ def student_notifications(request):
     
     notifications = []
     for n in recent:
+        link_url = n.link_url or ('/view-materials/' if n.material_id else '')
         notifications.append({
             'id': n.id,
             'title': n.title,
@@ -2224,7 +2225,7 @@ def student_notifications(request):
             'priority': n.priority,
             'is_read': n.is_read,
             'created_at': n.created_at.strftime('%b %d, %Y %I:%M %p'),
-            'link_url': n.link_url or '',
+            'link_url': link_url,
             'sender': n.sender.get_full_name() if n.sender else None,
         })
     

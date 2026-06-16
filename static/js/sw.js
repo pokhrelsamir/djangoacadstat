@@ -1,4 +1,4 @@
-const CACHE_NAME = 'acadstat-v1';
+const CACHE_NAME = 'acadstat-v2';
 const OFFLINE_URL = '/';
 const ASSETS_TO_CACHE = [
     '/',
@@ -70,15 +70,12 @@ self.addEventListener('fetch', event => {
 
     // HTML pages → stale-while-revalidate
     event.respondWith(
-        caches.match(request).then(cached => {
-            const networkFetch = fetch(request).then(resp => {
-                if (resp.ok) {
-                    caches.open(CACHE_NAME).then(cache => cache.put(request, resp.clone()));
-                }
-                return resp;
-            }).catch(() => cached);
-            return cached || networkFetch;
-        })
+        fetch(request).then(resp => {
+            if (resp.ok) {
+                caches.open(CACHE_NAME).then(cache => cache.put(request, resp.clone()));
+            }
+            return resp;
+        }).catch(() => caches.match(request).then(cached => cached || caches.match(OFFLINE_URL)))
     );
 });
 

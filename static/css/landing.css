@@ -126,7 +126,7 @@
 .landing-hero-bg {
     position: absolute;
     inset: 0;
-    background: url('../images/tu/tu-6-web.jpg') center/cover no-repeat;
+    background: url('../images/tu/homesection.svg') center/cover no-repeat;
     z-index: 0;
 }
 

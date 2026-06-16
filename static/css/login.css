@@ -270,7 +270,7 @@ html[data-theme="dark"] .login-top-bar .theme-toggle .moon-icon {
 
     overflow: hidden;
 
-    background: var(--tu-hero-7, url('../images/tu/tu-7.png')) center/cover no-repeat;
+    background: var(--tu-hero-7, url('../images/tu/cc.png')) center/cover no-repeat;
 
 }
 

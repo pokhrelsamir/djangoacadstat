@@ -30,7 +30,8 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+if IS_VERCEL:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', str(IS_VERCEL)).lower() in ('true', '1', 'yes')
 SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', str(IS_VERCEL)).lower() in ('true', '1', 'yes')
 CSRF_COOKIE_SECURE = os.environ.get('DJANGO_CSRF_COOKIE_SECURE', str(IS_VERCEL)).lower() in ('true', '1', 'yes')

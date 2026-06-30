@@ -98,6 +98,16 @@
     color: var(--text-muted);
 }
 
+.marksheet-page .app-shell {
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    will-change: opacity, transform;
+}
+
+.marksheet-page.marksheet-leaving .app-shell {
+    opacity: 0.98;
+    transform: translateX(-4px);
+}
+
 /* ── Official document tokens (paper stays light; shell adapts) ── */
 .marksheet-doc {
     --ms-paper: #ffffff;

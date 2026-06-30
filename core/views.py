@@ -7765,8 +7765,11 @@ def _build_teacher_enhanced_insights(
 
 
 @teacher_required
-def subject_analytics(request):
-    teacher = request.teacher
+def _build_subject_analytics_context(request, teacher):
+    """
+    Shared helper: parse GET parameters and build the full analytics context dict.
+    Used by the HTML view, PPTX export, and PDF export.
+    """
     subject_id_raw = request.GET.get("subject", "").strip()
     terminal = request.GET.get("terminal", "all")
     analysis_mode = request.GET.get("analysis_mode", "bulk")
@@ -8163,7 +8166,7 @@ def subject_analytics(request):
         ],
     }
 
-    return render(request, "core/dashboard/subject_analytics.html", {
+    context = {
         "subject_obj": Subject.objects.filter(id=subject_id).first() if subject_id is not None else None,
         "subject_id": subject_id_raw,
         "terminal": terminal,
@@ -8182,6 +8185,12 @@ def subject_analytics(request):
         "pass_count": pass_count,
         "below_40": below_40,
         "trend_rows": trend_rows,
+        "subject_snapshot": subject_snapshot,
+        "strongest_subject": strongest_subject,
+        "focus_subject": focus_subject,
+        "improving_count": improving_count,
+        "declining_count": declining_count,
+        "stable_count": stable_count,
         "insight_lines": insight_lines,
         "teacher_graph_summary": teacher_graph_summary,
         "teacher_enriched_insights": teacher_enriched_insights,
@@ -8211,7 +8220,28 @@ def subject_analytics(request):
                 for i, t in enumerate(run_terminals)
             ],
         },
-    })
+    }
+    return context
+
+
+@teacher_required
+def subject_analytics(request):
+    teacher = request.teacher
+
+    # If download was requested, handle export
+    if request.GET.get("download") == "1":
+        download_format = request.GET.get("download_format", "pptx")
+        context = _build_subject_analytics_context(request, teacher)
+        if download_format == "pdf":
+            from core.presentation_export import export_subject_analytics_pdf
+            return export_subject_analytics_pdf(request, context)
+        else:
+            from core.presentation_export import export_subject_analytics_pptx
+            return export_subject_analytics_pptx(request, context)
+
+    # Normal HTML view
+    context = _build_subject_analytics_context(request, teacher)
+    return render(request, "core/dashboard/subject_analytics.html", context)
 
 
 # %% A12 AUTOMATED DIGESTS (admin-triggered) %%

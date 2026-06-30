@@ -42,6 +42,18 @@
 
         }
 
+        @media (min-width: 900px) {
+
+            .analytics-filter-row--wide {
+
+                align-items: end;
+
+                grid-template-columns: minmax(18rem, 1fr) minmax(30rem, auto);
+
+            }
+
+        }
+
         .mode-badge {
 
             display: inline-flex;
@@ -801,6 +813,187 @@
 
         .filter-mode-panel.active { display: block; }
 
+        .filter-action-group {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 0.5rem;
+
+            flex-wrap: wrap;
+
+            justify-content: flex-start;
+
+            margin-bottom: 0.9rem;
+
+            padding-top: calc(var(--ds-text-xs) * 1.2 + 0.4rem);
+
+        }
+
+        @media (min-width: 900px) {
+
+            .analytics-filter-row--wide .filter-action-group {
+
+                grid-column: auto;
+
+                flex-wrap: nowrap;
+
+                align-self: end;
+
+            }
+
+        }
+
+        .filter-action-group .btn.ds {
+
+            min-height: 2.52rem;
+
+        }
+
+        .analytics-apply-button {
+
+            flex: 0 0 auto;
+
+            min-width: 8.2rem;
+
+        }
+
+        .download-group {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 0.3rem;
+
+            flex-wrap: nowrap;
+
+            flex: 0 1 auto;
+
+            justify-content: flex-start;
+
+            min-height: 2.52rem;
+
+            padding: 0.16rem 0.18rem;
+
+            border: 1px solid color-mix(in srgb, var(--ds-accent) 18%, var(--border-color));
+
+            border-radius: var(--ds-radius-sm);
+
+            background: color-mix(in srgb, var(--ds-accent-soft) 58%, var(--bg-card));
+
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+
+        }
+
+        .download-label {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 0.25rem;
+
+            color: var(--ds-accent);
+
+            font-size: 0.69rem;
+
+            font-weight: 700;
+
+            white-space: nowrap;
+
+            padding: 0 0.18rem 0 0.28rem;
+
+        }
+
+        .download-format-select {
+
+            flex: 0 0 9.15rem;
+
+            min-height: 2.18rem;
+
+            padding: 0.28rem 0.48rem;
+
+            border: 1px solid color-mix(in srgb, var(--ds-accent) 24%, var(--border-color));
+
+            border-radius: var(--ds-radius-sm);
+
+            background: var(--bg-card);
+
+            color: var(--text-primary);
+
+            font-size: 0.74rem;
+
+            font-weight: 600;
+
+        }
+
+        .download-button {
+
+            flex: 0 0 auto;
+
+            min-height: 2.18rem !important;
+
+            padding: 0.3rem 0.58rem !important;
+
+            border-color: var(--ds-accent) !important;
+
+            background: var(--ds-gradient) !important;
+
+            color: #fff !important;
+
+            font-size: 0.74rem !important;
+
+            font-weight: 700;
+
+            box-shadow: 0 5px 12px color-mix(in srgb, var(--ds-accent) 18%, transparent);
+
+        }
+
+        .download-button.is-loading {
+
+            opacity: 0.82;
+
+            pointer-events: none;
+
+        }
+
+        @media (max-width: 640px) {
+
+            .filter-action-group,
+            .download-group {
+
+                align-items: stretch;
+
+                flex-direction: column;
+
+            }
+
+            .filter-action-group {
+
+                padding-top: 0;
+
+            }
+
+            .analytics-apply-button,
+            .download-button,
+            .download-format-select {
+
+                flex: 1 1 auto;
+
+                width: 100%;
+
+            }
+
+            .download-label {
+
+                align-self: flex-start;
+
+            }
+
+        }
+
         .regression-note {
 
             font-size: var(--ds-text-xs);
@@ -1067,9 +1260,24 @@
 
                     </div>
 
-                    <div class="form-group ds" style="display:flex;align-items:flex-end;">
+                    <div class="form-group ds filter-action-group">
 
-                        <button type="submit" class="btn ds ds-primary ds-block"><i class="fas fa-filter"></i> Apply Filters</button>
+                        <button type="submit" class="btn ds ds-primary analytics-apply-button"><i class="fas fa-filter"></i> Apply Filters</button>
+
+                        <div class="download-group">
+                            <span class="download-label">
+                                <i class="fas fa-download"></i> Download:
+                            </span>
+                            <select name="download_format" class="ds download-format-select" aria-label="Download report format">
+                                <option value="pptx">PowerPoint (.pptx)</option>
+                                <option value="pdf">PDF report (.pdf)</option>
+                            </select>
+                            <button type="submit" name="download" value="1"
+                                    class="btn ds ds-success download-button"
+                                    title="Download a presentation/report generated from the currently applied filters.">
+                                <i class="fas fa-file-powerpoint"></i> Download
+                            </button>
+                        </div>
 
                     </div>
 
@@ -2197,6 +2405,52 @@
             const classSelect = document.getElementById('classSectionFilter');
 
             const studentSelect = document.getElementById('studentFilter');
+
+            const filterForm = document.getElementById('analyticsFilterForm');
+
+            const downloadFormatSelect = filterForm ? filterForm.querySelector('select[name="download_format"]') : null;
+
+            const downloadButton = filterForm ? filterForm.querySelector('button[name="download"]') : null;
+
+
+
+            function syncDownloadButtonIcon() {
+
+                if (!downloadButton || !downloadFormatSelect) return;
+
+                const iconClass = downloadFormatSelect.value === 'pdf' ? 'fa-file-pdf' : 'fa-file-powerpoint';
+
+                downloadButton.innerHTML = '<i class="fas ' + iconClass + '"></i> Download';
+
+            }
+
+
+
+            if (downloadFormatSelect) {
+
+                downloadFormatSelect.addEventListener('change', syncDownloadButtonIcon);
+
+                syncDownloadButtonIcon();
+
+            }
+
+
+
+            if (filterForm && downloadButton) {
+
+                filterForm.addEventListener('submit', function(event) {
+
+                    if (event.submitter !== downloadButton) return;
+
+                    downloadButton.classList.add('is-loading');
+
+                    downloadButton.setAttribute('aria-busy', 'true');
+
+                    downloadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+                });
+
+            }
 
 
 

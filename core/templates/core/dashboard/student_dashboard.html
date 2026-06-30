@@ -3,6 +3,16 @@
 <html lang="en">
 <head>
     {% include 'core/partials/design_head.html' with page_title="My Dashboard - Academic System" %}
+    <script>
+    (function() {
+        try {
+            if (sessionStorage.getItem('acadstat:dashboardReturn') === '1') {
+                sessionStorage.removeItem('acadstat:dashboardReturn');
+                document.documentElement.classList.add('dashboard-returning');
+            }
+        } catch (err) {}
+    })();
+    </script>
 <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta name="theme-color" content="#667eea">
 

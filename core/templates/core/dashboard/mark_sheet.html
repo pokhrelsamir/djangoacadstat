@@ -19,7 +19,11 @@
 
     <main class="app-shell app-shell--narrow">
         <div class="marksheet-toolbar no-print">
+            {% if is_student %}
+            <a href="/dashboard/" class="back-link" data-dashboard-back><i class="fas fa-arrow-left"></i> Back</a>
+            {% else %}
             <a href="/select-mark-sheet/" class="back-link"><i class="fas fa-arrow-left"></i> Back</a>
+            {% endif %}
             <div class="toolbar-group">
                 {% if selected_student %}
                 <div class="form-group ds" style="margin:0;">
@@ -507,6 +511,22 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
     <input type="hidden" id="isStudentFlag" value="{{ is_student|yesno:'true,false' }}">
     <script>
+    (function() {
+        var backLink = document.querySelector('[data-dashboard-back]');
+        if (!backLink) return;
+        backLink.addEventListener('click', function(event) {
+            if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            try {
+                sessionStorage.setItem('acadstat:dashboardReturn', '1');
+            } catch (err) {}
+            document.body.classList.add('marksheet-leaving');
+            window.setTimeout(function() {
+                window.location.href = backLink.href;
+            }, 90);
+        });
+    })();
+
     function changeTerminal(terminal) {
         var _isStudent = document.getElementById('isStudentFlag').value === 'true';
         var parts = window.location.pathname.split('/').filter(Boolean);

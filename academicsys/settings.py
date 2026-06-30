@@ -42,12 +42,19 @@ SECURE_HSTS_PRELOAD = os.environ.get('DJANGO_SECURE_HSTS_PRELOAD', str(IS_VERCEL
 INSTALLED_APPS = [
     'unfold',
     'unfold.contrib.inlines',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # API
+    'rest_framework',
+    'drf_spectacular',
+
+    # Project
     'core.apps.CoreConfig',
 ]
 
@@ -178,6 +185,17 @@ UNFOLD = {
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 
+    'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'AcadStat API',
+    'DESCRIPTION': 'Academic Management System API',
+    'VERSION': '1.0.0',
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

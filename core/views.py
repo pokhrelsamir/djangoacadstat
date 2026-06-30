@@ -1,4 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .forms import (ResultForm, GradeScaleForm, TeacherEvaluationForm, InvoiceQuickCreateForm,
@@ -1306,26 +1309,50 @@ def api_subject_students_marks(request, subject_id):
 
 # 📤 API: Get Student Info
 @login_required
+@extend_schema(
+    summary="Student information",
+    description="Returns complete student profile data"
+)
 def student_info(request, student_id):
+    """Return complete student profile data as JSON."""
     try:
-        student = get_object_or_404(Student, id=student_id)
-        image_url = None
-        if student.image:
-            image_url = student.image.url
-        
-        return JsonResponse({
-            'success': True,
-            'student': {
-                'id': student.id,
-                'name': student.name,
-                'roll_number': student.roll_number,
-                'class': student.student_class,
-                'section': student.section,
-                'image_url': image_url
-            }
-        })
-    except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=404)
+        student = Student.objects.select_related('academic_year').get(id=student_id)
+    except Student.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Student not found'}, status=404)
+
+    results = student.result_set.select_related('subject').all()
+    total_obtained = sum(r.marks_obtained for r in results)
+    total_possible = sum(r.total_marks for r in results)
+    overall_percentage = round((total_obtained / total_possible * 100), 1) if total_possible > 0 else 0
+
+    data = {
+        'id': student.id,
+        'name': student.name,
+        'roll_number': student.roll_number or '',
+        'student_class': student.student_class,
+        'section': student.section,
+        'level': student.get_level_display(),
+        'level_code': student.level,
+        'semester': student.semester or '',
+        'email': student.email or '',
+        'phone': student.phone or '',
+        'date_of_birth': str(student.date_of_birth) if student.date_of_birth else '',
+        'gender': student.gender or '',
+        'blood_group': student.blood_group or '',
+        'admission_date': str(student.admission_date) if student.admission_date else '',
+        'attendance_percentage': student.attendance_percentage,
+        'overall_percentage': overall_percentage,
+        'total_results': results.count(),
+        'total_subjects': results.values('subject').distinct().count(),
+    }
+
+    # Teacher permission check — teachers can only see their own students
+    teacher = get_teacher_profile(request.user)
+    if teacher and not teacher.is_admin:
+        if not teacher.students.filter(id=student.id).exists():
+            return JsonResponse({'success': False, 'message': 'Access denied'}, status=403)
+
+    return JsonResponse({'success': True, 'student': data})
 
 
 # 📋 MARKS LIST
@@ -2176,12 +2203,15 @@ def generate_recommendations(student, results, percentage, weak_subjects):
 
 
 @login_required
+@extend_schema(
+    summary="Student notifications",
+    description="Returns unread notifications"
+)
 def student_notifications(request):
-    """Get all notifications for the logged-in student - excludes notifications for deleted materials"""
-    from core.notification_service import NotificationService
+    from core.models import Notification, Student
     from django.db.models import Q
     
-    # Get student
+    # Resolve the student from the logged-in user
     student = None
     if hasattr(request, 'student'):
         student = request.student
@@ -2192,10 +2222,6 @@ def student_notifications(request):
         except Student.DoesNotExist:
             students = Student.objects.filter(name__icontains=username)
             if students.count() == 1:
-                student = students.first()
-            elif students.count() == 0:
-                return JsonResponse({'success': True, 'notifications': [], 'unread_count': 0})
-            else:
                 student = students.first()
     
     if not student:
@@ -2228,12 +2254,6 @@ def student_notifications(request):
             'link_url': link_url,
             'sender': n.sender.get_full_name() if n.sender else None,
         })
-    
-    return JsonResponse({
-        'success': True,
-        'notifications': notifications,
-        'unread_count': unread_count
-    })
     
     return JsonResponse({
         'success': True,
@@ -3696,37 +3716,52 @@ def teacher_evaluation_view(request, teacher_id=None):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @login_required
+@extend_schema(
+    summary="Student performance chart",
+    description="Returns GPA and performance analytics data"
+)
+
+@extend_schema(
+    summary="Student performance chart",
+    description="Returns GPA and analytics data"
+)
 def student_chart_data(request, student_id):
-    """Return chart data for a single student — for student-profile analytics"""
-    from django.db.models import Avg
+    """Return student chart data as JSON for dashboard graphs."""
     student = get_object_or_404(Student, id=student_id)
-    results = student.result_set.select_related('subject').all()
+    results = Result.objects.filter(student=student).select_related('subject')
+    
+    terminals = ['1st', '2nd', '3rd', 'Final']
+    subject_names = []
+    seen = set()
+    for r in results.order_by('subject__name'):
+        if r.subject_id not in seen:
+            seen.add(r.subject_id)
+            subject_names.append(r.subject.name)
 
-    subject_labels = []
-    subject_scores = []
-    for subj in Subject.objects.all():
-        s_res = results.filter(subject=subj)
-        if s_res.exists():
-            obt = sum(r.marks_obtained for r in s_res)
-            pos = sum(r.total_marks for r in s_res)
-            p = round((obt / pos * 100), 1) if pos > 0 else 0
-            subject_labels.append(subj.name)
-            subject_scores.append(p)
+    terminal_avgs = {}
+    for t in terminals:
+        term_results = results.filter(terminal=t)
+        if term_results.exists():
+            avg = term_results.aggregate(avg=Avg('marks_obtained'))['avg'] or 0
+            terminal_avgs[t] = round(float(avg), 1)
+        else:
+            terminal_avgs[t] = None
 
-    term_stats = []
-    for term in ['1st', '2nd', '3rd', 'Final']:
-        tr = results.filter(terminal=term)
-        if tr.exists():
-            obt = sum(r.marks_obtained for r in tr)
-            pos = sum(r.total_marks for r in tr)
-            term_stats.append({
-                'terminal': term, 'percentage': round((obt / pos * 100), 1) if pos > 0 else 0,
-            })
+    subject_avgs = []
+    for name in subject_names:
+        subj_results = results.filter(subject__name=name)
+        if subj_results.exists():
+            avg = subj_results.aggregate(avg=Avg('marks_obtained'))['avg'] or 0
+            subject_avgs.append({'subject': name, 'average': round(float(avg), 1)})
+        else:
+            subject_avgs.append({'subject': name, 'average': 0})
 
     return JsonResponse({
-        'subject_labels': subject_labels,
-        'subject_scores': subject_scores,
-        'term_stats': term_stats,
+        'success': True,
+        'student': student.name,
+        'terminals': terminals,
+        'terminal_averages': terminal_avgs,
+        'subject_averages': subject_avgs,
     })
 
 
@@ -4489,17 +4524,42 @@ def teacher_share_note_with_class(request):
 
 
 @login_required
+@extend_schema(
+    summary="Global search API",
+    description="Search students, subjects, and academic records"
+)
+
+@extend_schema(
+    summary="Global search",
+    description="Search academic records"
+)
 def api_search(request):
+    """Global search API — returns students, teachers, and subjects matching query."""
     q = request.GET.get('q', '').strip()
-    out = {'students': [], 'teachers': [], 'subjects': []}
-    if q and len(q) >= 1:
-        for s in Student.objects.filter(name__icontains=q)[:8]:
-            out['students'].append({'id': s.id, 'name': s.name, 'class': s.student_class, 'roll': s.roll_number})
-        for t in Teacher.objects.filter(first_name__icontains=q)[:5]:
-            out['teachers'].append({'id': t.id, 'name': t.get_full_name(), 'dept': t.department.name if t.department else ''})
-        for sub in Subject.objects.filter(name__icontains=q)[:5]:
-            out['subjects'].append({'id': sub.id, 'name': sub.name, 'code': sub.code})
-    return JsonResponse(out)
+    if not q or len(q) < 2:
+        return JsonResponse({'success': False, 'message': 'Query too short'}, status=400)
+
+    students = list(Student.objects.filter(
+        Q(name__icontains=q) | Q(roll_number__icontains=q)
+    ).values('id', 'name', 'roll_number', 'student_class', 'section')[:10])
+
+    teachers = list(Teacher.objects.filter(
+        Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(email__icontains=q)
+    ).values('id', 'first_name', 'last_name', 'email')[:10])
+
+    subjects = list(Subject.objects.filter(
+        Q(name__icontains=q) | Q(code__icontains=q)
+    ).values('id', 'name', 'code')[:10])
+
+    return JsonResponse({
+        'success': True,
+        'query': q,
+        'results': {
+            'students': students,
+            'teachers': teachers,
+            'subjects': subjects,
+        },
+    })
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -4507,53 +4567,101 @@ def api_search(request):
 # ═════════════════════════════════════════════════════════════════════════════
 
 @login_required
+@extend_schema(
+    summary="Get student results",
+    description="Returns academic results and marks"
+)
+
+@extend_schema(
+    summary="Get results",
+    description="Returns student marks and academic results"
+)
 def api_results(request):
-    teacher = get_teacher_profile(request.user)
-    qs = Result.objects.select_related('student', 'subject')
-    if teacher:
-        qs = qs.filter(subject__in=teacher.subjects.all(), student__in=teacher.students.all())
-    student_id = request.GET.get('student_id')
+    """Return all results with optional filters."""
+    student_id = request.GET.get('student_id', '')
+    subject_id = request.GET.get('subject_id', '')
+    terminal = request.GET.get('terminal', '')
+
+    qs = Result.objects.select_related('student', 'subject').all()
     if student_id:
         qs = qs.filter(student_id=student_id)
-    results = [{
-        'id': r.id, 'student': r.student.name, 'student_id': r.student.id,
-        'subject': r.subject.name, 'terminal': r.terminal,
-        'marks_obtained': r.marks_obtained, 'total_marks': r.total_marks,
-        'percentage': r.percentage, 'grade': r.grade,
-    } for r in qs.order_by('-created_at')[:200]]
-    return JsonResponse({'results': results})
+    if subject_id:
+        qs = qs.filter(subject_id=subject_id)
+    if terminal:
+        qs = qs.filter(terminal=terminal)
+
+    data = []
+    for r in qs[:200]:
+        data.append({
+            'id': r.id,
+            'student': r.student.name,
+            'student_id': r.student_id,
+            'subject': r.subject.name,
+            'subject_id': r.subject_id,
+            'terminal': r.terminal,
+            'marks_obtained': r.marks_obtained,
+            'total_marks': r.total_marks,
+            'percentage': r.percentage,
+            'grade': r.grade,
+            'created_at': r.created_at.strftime('%Y-%m-%d'),
+        })
+    return JsonResponse({'success': True, 'results': data})
 
 
 @login_required
+@extend_schema(
+    summary="Get result detail",
+    description="Returns specific result information"
+)
 def api_result_detail(request, result_id):
-    r = get_object_or_404(Result, id=result_id)
-    teacher = get_teacher_profile(request.user)
-    if teacher and not (teacher.can_access_subject(r.subject) and teacher.students.filter(id=r.student.id).exists()):
-        return JsonResponse({'error': 'Forbidden'}, status=403)
-    return JsonResponse({
-        'id': r.id, 'student': r.student.name, 'subject': r.subject.name,
-        'terminal': r.terminal, 'marks_obtained': r.marks_obtained,
-        'total_marks': r.total_marks, 'percentage': r.percentage, 'grade': r.grade,
-    })
+    """Return a single result record by ID."""
+    result = get_object_or_404(Result, id=result_id)
+    data = {
+        'id': result.id,
+        'student': result.student.name,
+        'student_id': result.student_id,
+        'subject': result.subject.name,
+        'subject_id': result.subject_id,
+        'terminal': result.terminal,
+        'marks_obtained': result.marks_obtained,
+        'total_marks': result.total_marks,
+        'percentage': result.percentage,
+        'grade': result.grade,
+        'created_at': result.created_at.strftime('%Y-%m-%d'),
+    }
+    return JsonResponse({'success': True, 'result': data})
 
 
 @login_required
+@extend_schema(
+    summary="Get all students",
+    description="Returns all students registered in AcadStat system"
+)
+
+@extend_schema(
+    summary="Get all students",
+    description="Returns all students in AcadStat"
+)
 def api_students(request):
+    """Return all students as JSON."""
+    student_id = request.GET.get('student_id', '')
     qs = Student.objects.all()
-    teacher = get_teacher_profile(request.user)
-    if teacher:
-        qs = qs.filter(teacher=teacher)
-    level = request.GET.get('level', '')
-    cls = request.GET.get('student_class', '')
-    search_q = request.GET.get('search', '')
-    if level:
-        qs = qs.filter(level=level)
-    if cls:
-        qs = qs.filter(student_class=cls)
-    if search_q:
-        qs = qs.filter(Q(name__icontains=search_q) | Q(roll_number__icontains=search_q))
-    data = list(qs.order_by('name')[:100].values('id', 'name', 'roll_number', 'student_class', 'section', 'level', 'email'))
-    return JsonResponse({'students': data})
+    if student_id:
+        qs = qs.filter(id=student_id)
+
+    data = []
+    for s in qs[:200]:
+        data.append({
+            'id': s.id,
+            'name': s.name,
+            'roll_number': s.roll_number or '',
+            'student_class': s.student_class,
+            'section': s.section,
+            'level': s.get_level_display(),
+            'email': s.email or '',
+            'phone': s.phone or '',
+        })
+    return JsonResponse({'success': True, 'students': data})
 
 
 @login_required

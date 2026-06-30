@@ -172,6 +172,8 @@
               z-index: 5000 !important;
               margin-top: 0 !important;
               isolation: isolate;
+              transform: translateZ(0);
+              pointer-events: auto;
           }
 
           html[data-theme="dark"] #notificationsPanel {
@@ -225,13 +227,22 @@
              background: #172554 !important;
          }
 
-          #notificationsOverlay {
-              display: none;
-              position: fixed;
-              inset: 0;
-              background: transparent;
-              z-index: 2999;
-          }
+           #notificationsOverlay {
+               display: none;
+               position: fixed;
+               inset: 0;
+               background: rgba(0, 0, 0, 0.45);
+               backdrop-filter: blur(4px);
+               -webkit-backdrop-filter: blur(4px);
+               z-index: 4999;
+               touch-action: none;
+           }
+
+           html[data-theme="dark"] #notificationsOverlay {
+               background: rgba(0, 0, 0, 0.6);
+               backdrop-filter: blur(6px);
+               -webkit-backdrop-filter: blur(6px);
+           }
 
           @media (max-width: 640px) {
               #notificationsPanel {
@@ -253,9 +264,8 @@
              <a href="/">Home</a>
              {% if user.is_authenticated %}
                  <a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a>
-                 <a href="{% url 'core:student_analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a>
-                 <a href="{% url 'core:student_my_mark_sheet' %}"><i class="fas fa-file-alt"></i> My MarkSheet</a>
-                 <a href="/logout/">Logout</a>
+                  <a href="{% url 'core:student_analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a>
+                  <a href="/logout/">Logout</a>
              {% else %}
                  <a href="/login/">Login</a>
              {% endif %}
@@ -271,20 +281,6 @@
                      <span class="notification-badge" id="notificationBadge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center;">{{ total_unread }}</span>
                      {% endif %}
                  </button>
-                 
-                 <!-- Notifications Panel -->
-                 <div id="notificationsPanel" style="display: none;">
-                     <div class="notifications-header" style="padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                         <h4 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-primary);">Notifications</h4>
-                         {% if total_unread > 0 %}
-                         <button id="markAllReadBtn" style="background: none; border: none; color: #667eea; font-size: 0.8rem; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(102,126,234,0.1)'" onmouseout="this.style.background='transparent'">Mark all read</button>
-                         {% endif %}
-                     </div>
-                     <div id="notificationsList" style="padding: 0.5rem;">
-                         <!-- Notifications will be loaded here by JS -->
-                         <div style="padding: 1rem; text-align: center; color: var(--text-secondary);">Loading notifications...</div>
-                     </div>
-                 </div>
              </div>
              
              <button class="theme-toggle ds-toggle" id="themeToggle" aria-label="Toggle theme">
@@ -308,6 +304,20 @@
 
     <!-- Notification overlay backdrop -->
     <div id="notificationsOverlay"></div>
+
+    <!-- Notifications Panel (moved to body level to avoid stacking context issues) -->
+    <div id="notificationsPanel" style="display: none;">
+        <div class="notifications-header" style="padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-primary);">Notifications</h4>
+            {% if total_unread > 0 %}
+            <button id="markAllReadBtn" style="background: none; border: none; color: #667eea; font-size: 0.8rem; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(102,126,234,0.1)'" onmouseout="this.style.background='transparent'">Mark all read</button>
+            {% endif %}
+        </div>
+        <div id="notificationsList" style="padding: 0.5rem;">
+            <!-- Notifications will be loaded here by JS -->
+            <div style="padding: 1rem; text-align: center; color: var(--text-secondary);">Loading notifications...</div>
+        </div>
+    </div>
 
     <main class="app-shell app-shell--wide">
         {% if error %}
@@ -568,12 +578,18 @@
 
          function openNotificationsPanel() {
              notificationsPanel.style.display = 'block';
-             if (notificationsOverlay) notificationsOverlay.style.display = 'block';
+             if (notificationsOverlay) {
+                 notificationsOverlay.style.display = 'block';
+                 document.body.style.overflow = 'hidden';
+             }
          }
 
          function closeNotificationsPanel() {
              notificationsPanel.style.display = 'none';
-             if (notificationsOverlay) notificationsOverlay.style.display = 'none';
+             if (notificationsOverlay) {
+                 notificationsOverlay.style.display = 'none';
+                 document.body.style.overflow = '';
+             }
          }
 
          if (notificationsBtn) {

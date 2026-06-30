@@ -7,9 +7,15 @@
     <link rel="stylesheet" href="{% static 'css/marksheet.css' %}">
 </head>
 <body class="app-page marksheet-page">
+    {% if is_student %}
+    {% with nav_links='<a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a><a href="/my-marksheet/1st/"><i class="fas fa-file-alt"></i> My MarkSheet</a>' %}
+    {% include 'core/partials/app_navbar.html' %}
+    {% endwith %}
+    {% else %}
     {% with nav_links='<a href="/dashboard/"><i class="fas fa-th-large"></i> Dashboard</a><a href="/marks-list/"><i class="fas fa-list"></i> Marks</a><a href="/select-mark-sheet/"><i class="fas fa-file-alt"></i> Mark Sheet</a>' %}
     {% include 'core/partials/app_navbar.html' %}
     {% endwith %}
+    {% endif %}
 
     <main class="app-shell app-shell--narrow">
         <div class="marksheet-toolbar no-print">
@@ -50,15 +56,12 @@
                         sochcollege.edu.np · +977-61574096 / 543120 · info@sochcollege.edu.np
                     </p>
                 </div>
-                <div class="marksheet-qr">
-                    <div class="marksheet-qr-box" id="marksheetQrBox">
-                        {% if college_qr_code %}
-                        <img src="data:image/png;base64,{{ college_qr_code }}" alt="Verification QR code" id="marksheetQrFallback">
-                        {% endif %}
-                        <canvas id="marksheetQrCanvas" aria-label="Verification QR code"{% if college_qr_code %} hidden{% endif %}></canvas>
+                    <div class="marksheet-qr">
+                        <div class="marksheet-qr-box">
+                            <img src="/media/qrcode.png" alt="Verification QR Code">
+                        </div>
+                        <p class="marksheet-qr-caption no-print">Scan to verify</p>
                     </div>
-                    <p class="marksheet-qr-caption no-print">Scan to verify</p>
-                </div>
             </header>
 
             <section class="marksheet-section marksheet-section--student">

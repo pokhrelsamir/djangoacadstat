@@ -1,8 +1,11 @@
 from pathlib import Path
 import os
-from django.templatetags.static import static
+from dotenv import load_dotenv
+from django.templatetags.static import static 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
 
 IS_VERCEL = os.environ.get('VERCEL') == '1'
 
@@ -104,9 +107,9 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('POSTGRES_DB', 'acadstatmain'),
-            'USER': os.environ.get('POSTGRES_USER', 'samir'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'pass'),
+            'NAME': os.environ.get('POSTGRES_DB', 'acadstat'),
+            'USER': os.environ.get('POSTGRES_USER', 'sajit'),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'acadstat'),
             'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
             'PORT': os.environ.get('POSTGRES_PORT', '5432'),
         }

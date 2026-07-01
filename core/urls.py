@@ -224,4 +224,10 @@ urlpatterns = [
     # ── A12 Automated Digests ──────────────────────────────────────────────
     path('admin/trigger-weekly-digest/', views.trigger_weekly_digest, name='trigger_weekly_digest'),
     path('admin/trigger-monthly-report/', views.trigger_monthly_report, name='trigger_monthly_report'),
+
+    path(
+    "student-ai-recommendation/",
+    views.generate_ai_recommendation,
+    name="student_ai_recommendation",
+    ),
 ]

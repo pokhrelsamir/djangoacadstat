@@ -383,6 +383,198 @@
             gap: 0.45rem;
             align-items: center;
         }
+
+        .ai-card {
+            margin-top: 1.25rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: var(--ds-radius);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1.1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--ds-accent-soft) 0%, transparent 75%);
+        }
+
+        .ai-header-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: var(--ds-gradient);
+            color: #ffffff;
+            font-size: 0.95rem;
+        }
+
+        .ai-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: var(--ds-text-md);
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .ai-header p {
+            margin: 0.2rem 0 0;
+            color: var(--text-muted);
+            font-size: var(--ds-text-sm);
+            line-height: 1.5;
+        }
+
+        .ai-body {
+            display: grid;
+            gap: 1rem;
+            padding: 1.25rem;
+        }
+
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .ai-box {
+            position: relative;
+            padding: 1rem 1.05rem 1rem 1.15rem;
+            border: 1px solid var(--border-color);
+            border-left-width: 4px;
+            border-radius: var(--ds-radius-sm);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .ai-box h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin: 0 0 0.65rem;
+            color: var(--text-primary);
+            font-size: var(--ds-text-sm);
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .ai-box h4 i {
+            width: 18px;
+            text-align: center;
+            font-size: 0.86rem;
+        }
+
+        .ai-box p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: var(--ds-text-sm);
+            line-height: 1.7;
+        }
+
+        .ai-box ul {
+            display: grid;
+            gap: 0.55rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .ai-box li {
+            position: relative;
+            padding-left: 1rem;
+            color: var(--text-secondary);
+            font-size: var(--ds-text-sm);
+            line-height: 1.65;
+        }
+
+        .ai-box li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.67em;
+            width: 5px;
+            height: 5px;
+            border-radius: 999px;
+            background: currentColor;
+            opacity: 0.45;
+        }
+
+        .ai-summary { border-left-color: var(--ds-accent); }
+        .ai-strength { border-left-color: var(--ds-success); }
+        .ai-weakness { border-left-color: var(--ds-danger); }
+        .ai-recommend { border-left-color: #3b82f6; }
+        .ai-motivation { border-left-color: var(--ds-warning); }
+        .ai-error { border-left-color: var(--ds-danger); }
+
+        .ai-strength h4 i { color: var(--ds-success); }
+        .ai-weakness h4 i,
+        .ai-error h4 i { color: var(--ds-danger); }
+        .ai-recommend h4 i { color: #3b82f6; }
+        .ai-motivation h4 i { color: var(--ds-warning); }
+
+        .ai-empty {
+            margin: 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .ai-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 42px;
+            padding: 0.68rem 1rem;
+            border: 1px solid transparent;
+            border-radius: var(--ds-radius-sm);
+            background: var(--ds-gradient);
+            color: #ffffff;
+            font-size: var(--ds-text-sm);
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
+        }
+
+        .ai-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .ai-action-btn:focus-visible {
+            outline: 3px solid rgba(59, 130, 246, 0.28);
+            outline-offset: 2px;
+        }
+
+        .ai-action-btn:disabled {
+            cursor: wait;
+            opacity: 0.72;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .ai-action-btn i {
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 640px) {
+            .ai-header,
+            .ai-body {
+                padding: 1rem;
+            }
+
+            .ai-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
     </style>
 </head>
 <body class="app-page">
@@ -640,9 +832,55 @@
         {% endif %}
         {% endif %}
 
+        <div class="card shadow-sm mb-4">
+            <section class="section-card fade-in" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+                <span class="step-badge">2</span>
+                <h5 class="mb-0">
+                    Performance Recommendations
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <p class="text-muted">
+                    Generate personalized study recommendations based on your academic performance.
+                </p>
+
+                <button
+                    id="generateRecommendationBtn"
+                    type="button"
+                    class="ai-action-btn">
+                    <i class="fas fa-magic"></i>
+                    <span>Generate Recommendations</span>
+                </button>
+
+               <div id="recommendationLoading"
+                    style="display:none;text-align:center;padding:30px;">
+
+                    <div class="spinner-border text-primary"></div>
+
+                    <div style="margin-top:15px;">
+                        Analyzing academic performance...
+                    </div>
+
+                </div>
+
+                <div
+                    id="recommendationContainer"
+                    class="mt-4"
+                    style="display:none;">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
         <section class="section-card fade-in">
             <div class="card-head">
-                <span class="step-badge">2</span>
+                <span class="step-badge">3</span>
                 <div>
                     <h2 class="section-title">Subject Trend Overlap</h2>
                     <p class="card-subtitle">Terminals vs percentage — each subject plotted on the same axes so you can compare progress side by side</p>
@@ -667,7 +905,7 @@
         <div class="ds-grid two-col fade-in">
             <section class="section-card">
                 <div class="card-head">
-                    <span class="step-badge">3</span>
+                    <span class="step-badge">4</span>
                     <div>
                         <h2 class="section-title">Terminal-wise Performance</h2>
                         <p class="card-subtitle">Your average % per terminal across subjects</p>
@@ -680,7 +918,7 @@
 
             <section class="section-card">
                 <div class="card-head">
-                    <span class="step-badge">4</span>
+                    <span class="step-badge">5</span>
                     <div>
                         <h2 class="section-title">Subject-wise Performance</h2>
                         <p class="card-subtitle">Your % per subject — coloured by terminal</p>
@@ -702,7 +940,7 @@
         <div class="ds-grid two-col fade-in">
             <section class="section-card">
                 <div class="card-head">
-                    <span class="step-badge">5</span>
+                    <span class="step-badge">6</span>
                     <div>
                         <h2 class="section-title">Score Distribution</h2>
                         <p class="card-subtitle">How your results are spread across grade bands</p>
@@ -715,7 +953,7 @@
 
             <section class="section-card">
                 <div class="card-head">
-                    <span class="step-badge">6</span>
+                    <span class="step-badge">7</span>
                     <div>
                         <h2 class="section-title">Pass / Fail Ratio</h2>
                         <p class="card-subtitle">Results at or above 40% pass threshold</p>
@@ -729,7 +967,7 @@
 
         <section class="section-card fade-in">
             <div class="card-head">
-                <span class="step-badge">7</span>
+                <span class="step-badge">8</span>
                 <div>
                     <h2 class="section-title">Regression Trend Analysis</h2>
                     <p class="card-subtitle">{{ regression_chart.title }} — linear fit across terminals</p>
@@ -752,7 +990,7 @@
         <div class="ds-grid two-col fade-in">
             <section class="section-card">
                 <div class="card-head">
-                    <span class="step-badge">8</span>
+                    <span class="step-badge">9</span>
                     <div>
                         <h2 class="section-title">Subject Breakdown</h2>
                         <p class="card-subtitle">Per-subject performance snapshot</p>
@@ -765,7 +1003,7 @@
 
             <section class="section-card">
                 <div class="card-head">
-                    <span class="step-badge">9</span>
+                    <span class="step-badge">10</span>
                     <div>
                         <h2 class="section-title">You vs Section Average</h2>
                         <p class="card-subtitle">Compare your progress against classmates in your section</p>
@@ -779,7 +1017,7 @@
 
         <section class="section-card fade-in">
             <div class="card-head">
-                <span class="step-badge">10</span>
+                <span class="step-badge">11</span>
                 <div>
                     <h2 class="section-title">Subject Trends Table</h2>
                     <p class="card-subtitle">Your percentage marks by terminal — track improvement at a glance</p>
@@ -1059,6 +1297,139 @@
             initCharts();
             window.onThemeChange = function() { destroyCharts(); initCharts(); };
         })();
+
+        function escapeRecommendationText(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function renderRecommendationList(items) {
+            const values = Array.isArray(items) ? items.filter(Boolean) : [];
+            if (!values.length) {
+                return '<p class="ai-empty">No details available yet.</p>';
+            }
+
+            return `<ul>${values.map(item => `<li>${escapeRecommendationText(item)}</li>`).join("")}</ul>`;
+        }
+
+        function renderRecommendationCard(ai) {
+            const recommendation = ai || {};
+            return `
+                <div class="ai-card">
+                    <div class="ai-header">
+                        <span class="ai-header-icon"><i class="fas fa-robot"></i></span>
+                        <div>
+                            <h3>Academic Performance Recommendations</h3>
+                            <p>Personalized recommendations generated from your academic records.</p>
+                        </div>
+                    </div>
+
+                    <div class="ai-body">
+                        <div class="ai-box ai-summary">
+                            <h4><i class="fas fa-chart-line"></i> Performance Summary</h4>
+                            <p>${escapeRecommendationText(recommendation.summary || "No summary available yet.")}</p>
+                        </div>
+
+                        <div class="ai-grid">
+                            <div class="ai-box ai-strength">
+                                <h4><i class="fas fa-check-circle"></i> Strengths</h4>
+                                ${renderRecommendationList(recommendation.strengths)}
+                            </div>
+
+                            <div class="ai-box ai-weakness">
+                                <h4><i class="fas fa-arrow-up"></i> Areas to Improve</h4>
+                                ${renderRecommendationList(recommendation.weaknesses)}
+                            </div>
+                        </div>
+
+                        <div class="ai-box ai-recommend">
+                            <h4><i class="fas fa-lightbulb"></i> Study Recommendations</h4>
+                            ${renderRecommendationList(recommendation.recommendations)}
+                        </div>
+
+                        <div class="ai-box ai-motivation">
+                            <h4><i class="fas fa-star"></i> Motivation</h4>
+                            <p>${escapeRecommendationText(recommendation.motivation || "Keep going step by step. Your next result is another chance to improve.")}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.getElementById("generateRecommendationBtn").addEventListener("click", async function () {
+
+            const button = this;
+            const buttonLabel = button.querySelector("span");
+            const buttonIcon = button.querySelector("i");
+
+            const loading = document.getElementById("recommendationLoading");
+
+            const container = document.getElementById("recommendationContainer");
+
+            button.disabled = true;
+            button.setAttribute("aria-busy", "true");
+            buttonIcon.className = "fas fa-spinner fa-spin";
+            buttonLabel.textContent = "Generating...";
+
+            loading.style.display = "block";
+
+            container.style.display = "none";
+
+            try {
+
+                const response = await fetch("/student-ai-recommendation/");
+
+                const data = await response.json();
+
+                loading.style.display = "none";
+
+                button.disabled = false;
+                button.removeAttribute("aria-busy");
+                buttonIcon.className = "fas fa-redo";
+                buttonLabel.textContent = "Regenerate Recommendations";
+
+                if (!data.success) {
+                    throw new Error(data.error || "Unable to generate recommendations.");
+                }
+
+                const ai = data.data;
+
+                container.style.display = "block";
+
+                container.innerHTML = renderRecommendationCard(ai);
+
+            }
+
+            catch (error) {
+
+                loading.style.display = "none";
+
+                button.disabled = false;
+                button.removeAttribute("aria-busy");
+                buttonIcon.className = "fas fa-redo";
+                buttonLabel.textContent = "Try Again";
+
+                container.style.display = "block";
+
+                container.innerHTML = `
+                    <div class="ai-card">
+                        <div class="ai-body">
+                            <div class="ai-box ai-error">
+                                <h4><i class="fas fa-exclamation-circle"></i> Recommendation unavailable</h4>
+                                <p>${escapeRecommendationText(error.message || "Unable to generate recommendations.")}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            }
+
+        });
+        
         </script>
 
         {% else %}

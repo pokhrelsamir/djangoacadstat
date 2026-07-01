@@ -58,6 +58,8 @@ from reportlab.platypus import SimpleDocTemplate, Table as RLTable, TableStyle, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm
+from .gemini_service import generate_student_recommendation
+
 try:
     import face_recognition
     HAS_FACE_RECOGNITION = True
@@ -9223,3 +9225,76 @@ def activity_log_flat(user, action, description=''):
         NotificationService.log_activity(user, action, description)
     except Exception:
         pass
+
+@login_required
+def generate_ai_recommendation(request):
+    """
+    Generate AI recommendation for the logged-in student.
+    """
+
+    if get_teacher_profile(request.user):
+        return JsonResponse({
+            "success": False,
+            "message": "Only students can use AI recommendations."
+        })
+
+    student = get_student_for_user(request.user)
+
+    if not student:
+        return JsonResponse({
+            "success": False,
+            "message": "Student profile not found."
+        })
+
+    # Get all results
+    results = Result.objects.filter(student=student).select_related("subject")
+
+    if not results.exists():
+        return JsonResponse({
+            "success": False,
+            "message": "No results available."
+        })
+
+    # Build subject list for Gemini
+    subject_lines = []
+
+    percentages = []
+
+    for r in results:
+
+        percentage = round((r.marks_obtained / r.total_marks) * 100, 1)
+
+        percentages.append(percentage)
+
+        subject_lines.append(
+            f"{r.subject.name} ({r.terminal}) : "
+            f"{r.marks_obtained}/{r.total_marks} "
+            f"({percentage}%)"
+        )
+
+    avg_pct = round(sum(percentages) / len(percentages), 1)
+    highest_pct = max(percentages)
+    lowest_pct = min(percentages)
+
+    pass_rate = round(
+        len([p for p in percentages if p >= 40]) / len(percentages) * 100,
+        1
+    )
+
+    analytics_data = {
+        "avg_pct": avg_pct,
+        "highest_pct": highest_pct,
+        "lowest_pct": lowest_pct,
+        "pass_rate": pass_rate,
+        "subjects": "\n".join(subject_lines),
+    }
+
+    ai_response = generate_student_recommendation(
+        student,
+        analytics_data,
+    )
+
+    return JsonResponse({
+        "success": True,
+        "data": ai_response
+    })

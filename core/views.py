@@ -11,8 +11,10 @@ from .forms import (ResultForm, GradeScaleForm, TeacherEvaluationForm, InvoiceQu
                     CertificateTemplateForm, TicketCommentForm, ParentUserForm,
                     UserRoleForm, UserProfileForm, ResultPublishSessionForm, ResultSessionRemarkForm)
 from .models import (
-    Result, Student, Subject, Teacher, CourseMaterial, Notification,
-    GradeScale, TeacherEvaluation, ActivityLog,
+    CORE_MODEL_PRIORITY,
+    Student, Subject, Teacher, Department, Result, EducationLevel,
+    Semester, Class, GradeScale, Assignment, Notification, Announcement,
+    CourseMaterial, TeacherEvaluation, ActivityLog,
     LessonPlan, SyllabusCoverage,
     GradingRubric, RubricCriterion, RubricScoreEntry, RubricTemplate,
     OnlineExam, Question, ExamAttempt, ExamAnswer,
@@ -27,8 +29,7 @@ from .models import (
     Parent,
 )
 from core.models import (
-    Assignment, Attendance, Exam, Fee, Announcement, StudentNote, MLPrediction,
-    EducationLevel, Department, Semester, AcademicYear,
+    Attendance, Exam, Fee, StudentNote, MLPrediction, AcademicYear,
 )
 # missing new models
 from core.models import (

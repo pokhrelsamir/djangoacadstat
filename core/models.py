@@ -6,6 +6,24 @@ import uuid
 from django.db.models import Q
 from decimal import Decimal
 
+
+# Core academic priority order used by admin, views, forms, and documentation.
+
+CORE_MODEL_PRIORITY = (
+    'Student',
+    'Subject',
+    'Teacher',
+    'Department',
+    'Result',
+    'EducationLevel',
+    'Semester',
+    'Class',
+    'GradeScale',
+    'Assignment',
+    'Notification',
+    'Announcement',
+)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. SUBJECT MODEL
 # ─────────────────────────────────────────────────────────────────────────────

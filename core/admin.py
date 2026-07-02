@@ -2,6 +2,7 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin, StackedInline, TabularInline
 from core.forms import StudentAdminForm
 from .models import (
+    CORE_MODEL_PRIORITY,
     Student, Subject, Result, Teacher, CourseMaterial, Class,
     EducationLevel, Semester, AcademicYear, Department,
     GradeScale, Parent, StudentAcademicHistory, Attendance,
@@ -1101,5 +1102,44 @@ class SSOProviderAdmin(ModelAdmin):
         (None, {'fields': ('name', 'provider_type', 'is_active')}),
         ('Credentials', {'fields': ('client_id', 'client_secret')}),
     )
+
+
+# Keep the admin focused on the academic building blocks, in project priority order.
+# Hidden models remain registered so relations, inlines, and existing data keep working.
+CORE_ADMIN_MODEL_SORT = {name: index for index, name in enumerate(CORE_MODEL_PRIORITY)}
+VISIBLE_CORE_ADMIN_MODEL_NAMES = set(CORE_MODEL_PRIORITY)
+VISIBLE_CORE_ADMIN_MODELS = {
+    model
+    for model in (globals().get(name) for name in VISIBLE_CORE_ADMIN_MODEL_NAMES)
+    if model is not None
+}
+
+
+def _hide_from_admin_index(self, request):
+    return {}
+
+
+for model, model_admin in list(admin.site._registry.items()):
+    if model._meta.app_label == 'core' and model not in VISIBLE_CORE_ADMIN_MODELS:
+        model_admin.get_model_perms = _hide_from_admin_index.__get__(model_admin, model_admin.__class__)
+
+
+_original_get_app_list = admin.site.get_app_list
+
+
+def _priority_get_app_list(request, app_label=None):
+    app_list = _original_get_app_list(request, app_label)
+    for app in app_list:
+        if app.get('app_label') == 'core':
+            app['models'].sort(
+                key=lambda model: (
+                    CORE_ADMIN_MODEL_SORT.get(model.get('object_name'), len(CORE_ADMIN_MODEL_SORT)),
+                    model.get('name', ''),
+                )
+            )
+    return app_list
+
+
+admin.site.get_app_list = _priority_get_app_list
 
 

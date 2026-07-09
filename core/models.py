@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
+import re
 
 # Helper always-available
 from django.db.models import Q
@@ -252,6 +253,7 @@ class Student(models.Model):
     LEVEL_BACHELOR = 'bachelor'
 
     name = models.CharField(max_length=100)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     roll_number = models.CharField(max_length=20, unique=True, null=True, blank=True)
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='school')
     student_class = models.CharField(max_length=20, help_text="Class/Division (e.g., 1, 5, 10, XI, XII, etc.)")
@@ -283,6 +285,36 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.roll_number})"
+
+    def _generate_username(self):
+        base = self.roll_number or self.name or 'student'
+        base = re.sub(r'[^a-zA-Z0-9_]+', '_', base.lower()).strip('_') or 'student'
+        if not base.startswith('student_'):
+            base = f'student_{base}'
+
+        username = base[:150]
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            suffix = f'_{counter}'
+            username = f'{base[:150 - len(suffix)]}{suffix}'
+            counter += 1
+        return username
+
+    def _create_user_account(self):
+        name_parts = self.name.split() if self.name else []
+        return User.objects.create_user(
+            username=self._generate_username(),
+            password='student123',
+            email=self.email or '',
+            first_name=name_parts[0] if name_parts else '',
+            last_name=' '.join(name_parts[1:]) if len(name_parts) > 1 else '',
+            is_active=True,
+        )
+
+    def save(self, *args, **kwargs):
+        if not self.user_id:
+            self.user = self._create_user_account()
+        super().save(*args, **kwargs)
 
     @property
     def current_age(self):

@@ -110,12 +110,19 @@ def is_teacher(user):
 
 
 def get_student_for_user(user, student_id=None):
-    """Resolve Student profile for a logged-in user (by id or username match)."""
+    """Resolve Student profile for a logged-in user."""
     if student_id:
         try:
             return Student.objects.get(id=student_id)
         except Student.DoesNotExist:
             return None
+    if not user.is_authenticated:
+        return None
+    try:
+        return Student.objects.get(user=user)
+    except Student.DoesNotExist:
+        pass
+
     username = user.username.lower().strip()
     for student in Student.objects.all():
         name = student.name.lower().strip()
@@ -193,19 +200,9 @@ def dashboard(request):
         return teacher_dashboard(request)
 
     # Check if user is a student (has username matching a student)
-    username = request.user.username.lower().strip()
-
-    # Try to find student by exact name match (case-insensitive)
-    students = Student.objects.all()
-    for student in students:
-        if student.name.lower().strip() == username:
-            # Redirect students to their own dashboard
-            return student_dashboard(request, student.id)
-
-    # Also try partial match
-    for student in students:
-        if username in student.name.lower() or student.name.lower() in username:
-            return student_dashboard(request, student.id)
+    student = get_student_for_user(request.user)
+    if student:
+        return student_dashboard(request, student.id)
 
     # Admin dashboard - Get all results for calculations
     results = Result.objects.all()

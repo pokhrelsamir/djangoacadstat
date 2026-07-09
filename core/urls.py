@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/subject-students-marks/<int:subject_id>/', views.api_subject_students_marks, name='api_subject_students_marks'),
     path('api/add-marks-bulk/', views.api_add_marks_bulk, name='api_add_marks_bulk'),
 
-    # ── Result Lock ───────────────────────────────────────────────────────────
+   
     path('lock-result/<int:result_id>/', views.lock_result, name='lock_result'),
     path('unlock-result/<int:result_id>/', views.unlock_result, name='unlock_result'),
     path('lock-all-results/', views.lock_all_results, name='lock_all_results'),
